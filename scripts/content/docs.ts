@@ -64,7 +64,7 @@ async function main() {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const body = await res.text();
           // A few pages come back as the claude.ai HTML shell instead of Markdown: keep the previous copy.
-          if (/^s*<!doctype html|^s*<html/i.test(body)) throw new Error("HTML en vez de Markdown");
+          if (/^\s*<!doctype html|^\s*<html/i.test(body)) throw new Error("HTML en vez de Markdown");
           const sha256 = createHash("sha256").update(body).digest("hex");
           if (prevBySlug.get(p.slug)?.sha256 !== sha256) changed.push(p.slug);
           if (!changedOnly) fs.writeFileSync(path.join(DIR, `${p.slug}.md`), `SOURCE: ${p.url}\n\n${body}`);

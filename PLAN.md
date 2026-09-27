@@ -18,7 +18,7 @@ Copia de learnaws (sin fork); si mantener ambas pesa, se extrae un paquete compa
 | Visual | Sistema Arcade de learnaws con el campo en terracota `#bf4f2a` (texto blanco 4.81:1, AA) y `#9e3f1f` de acento. |
 | Audio | El mismo paquete de learnaws (Juhani Junkala CC0, Kenney, SFX sintetizados, ducking). |
 | TTS | Los comandos, flags y archivos se leen en inglés tal como se escriben, con una glosa en español la primera vez en cada unidad. |
-| Dominio | `learnclaudecode.crafter.run`, repo `crafter-station/learnclaudecode`, Clerk de producción desde el día 1. |
+| Dominio | `learnclaudecode.crafter.run`, repo `crafter-games/learnclaudecode`, Clerk de producción desde el día 1. |
 
 ## Islas de "Descubrir"
 

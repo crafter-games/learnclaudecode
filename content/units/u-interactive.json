@@ -1,0 +1,420 @@
+{
+  "unitId": "u-interactive",
+  "audited": true,
+  "overview": {
+    "title": "Modo interactivo y atajos",
+    "hook": "Corregir a Claude en plena marcha sin perder el trabajo hecho.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "input",
+          "label": "Caja de entrada",
+          "kind": "service",
+          "x": 32,
+          "y": 50
+        },
+        {
+          "id": "queue",
+          "label": "Cola de mensajes",
+          "kind": "data",
+          "x": 56,
+          "y": 25
+        },
+        {
+          "id": "claude",
+          "label": "Claude (turno)",
+          "kind": "actor",
+          "x": 85,
+          "y": 50
+        },
+        {
+          "id": "shell",
+          "label": "Shell mode !",
+          "kind": "service",
+          "x": 56,
+          "y": 78
+        },
+        {
+          "id": "statusline",
+          "label": "Status line",
+          "kind": "service",
+          "x": 32,
+          "y": 90
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "input",
+          "label": "escribe"
+        },
+        {
+          "from": "input",
+          "to": "queue",
+          "label": "Enter"
+        },
+        {
+          "from": "queue",
+          "to": "claude",
+          "label": "tras tool calls"
+        },
+        {
+          "from": "you",
+          "to": "claude",
+          "label": "Esc"
+        },
+        {
+          "from": "input",
+          "to": "shell",
+          "label": "!"
+        },
+        {
+          "from": "shell",
+          "to": "claude",
+          "label": "output"
+        },
+        {
+          "from": "statusline",
+          "to": "you",
+          "label": "muestra"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Claude está a mitad de un turno y ves que va por mal camino. Empezar de cero desperdicia lo avanzado. La caja de entrada te deja corregir sin empezar de cero.",
+        "show": [
+          "you",
+          "input",
+          "claude"
+        ],
+        "focus": "input"
+      },
+      {
+        "narration": "Si escribes una corrección y presionas Enter, no interrumpes nada: el mensaje queda en cola. Claude lo lee apenas terminan las tool calls en curso, dentro del mismo turno.",
+        "show": [
+          "you",
+          "input",
+          "claude",
+          "queue"
+        ],
+        "focus": "queue"
+      },
+      {
+        "narration": "Si necesitas frenar ya, presiona Esc. Se cancela la respuesta o la tool call actual, Claude conserva lo hecho y espera. Si tenías mensajes en cola, se envían a continuación.",
+        "show": [
+          "you",
+          "input",
+          "claude",
+          "queue"
+        ],
+        "focus": "claude"
+      },
+      {
+        "narration": "Para no esperar a la cola, Ctrl+Enter la envía ahora. Si Claude corre un comando que puede ir a segundo plano, ese trabajo sigue y Claude lee tu mensaje en el mismo turno.",
+        "show": [
+          "you",
+          "input",
+          "claude",
+          "queue"
+        ],
+        "focus": "queue"
+      },
+      {
+        "narration": "Los prefijos cambian qué hace la entrada. / lanza un comando o skill, @ menciona un archivo, y ! corre un comando tuyo sin que Claude lo apruebe. Su salida entra al contexto y Claude responde.",
+        "show": [
+          "you",
+          "input",
+          "claude",
+          "queue",
+          "shell"
+        ],
+        "focus": "shell"
+      },
+      {
+        "narration": "Puedes personalizar los atajos con /keybindings y sumar una status line que corre un script local y no gasta tokens. No confundas todo esto con /btw: esa pregunta al margen no usa herramientas ni entra al historial.",
+        "show": [
+          "you",
+          "input",
+          "claude",
+          "queue",
+          "shell",
+          "statusline"
+        ],
+        "focus": "statusline"
+      }
+    ],
+    "keyPoints": [
+      "Esc detiene la tool call actual; Claude conserva el trabajo.",
+      "Enter mientras Claude trabaja encola; lo lee tras las tool calls.",
+      "`Ctrl+Enter` envía la cola ya; `Up` la recupera.",
+      "`!` corre tu comando directo; su salida entra al contexto.",
+      "La status line es un script local: no consume tokens."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/btw",
+        "difference": "Pregunta al margen sin herramientas que no entra al historial; no corrige ni frena el turno."
+      },
+      {
+        "unitOrService": "Rewind (Esc Esc)",
+        "difference": "Con la entrada vacía abre el menú para restaurar código y conversación; no es interrumpir."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-interactive--l1",
+      "conceptId": "interactive-interrupt-queue",
+      "format": "lightning",
+      "prompt": "Claude is editing the wrong file; stop the current tool call now → ?",
+      "promptEs": "Claude edita el archivo equivocado; detener la tool call actual ya → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ctrl+B"
+        },
+        {
+          "id": "B",
+          "text": "Esc"
+        },
+        {
+          "id": "C",
+          "text": "Ctrl+O"
+        },
+        {
+          "id": "D",
+          "text": "Ctrl+G"
+        }
+      ],
+      "answer": "B",
+      "why": "Esc cancela la respuesta o tool call en curso y Claude espera. `Ctrl+B` manda comandos a segundo plano sin detenerlos; `Ctrl+O` solo abre el transcript."
+    },
+    {
+      "id": "u-interactive--l2",
+      "conceptId": "interactive-interrupt-queue",
+      "format": "thisorthat",
+      "prompt": "Add a correction without canceling the tool calls already running → ?",
+      "promptEs": "Agregar una corrección sin cancelar las tool calls que ya corren → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type it and press Enter"
+        },
+        {
+          "id": "B",
+          "text": "Press Esc, then type it"
+        }
+      ],
+      "answer": "A",
+      "why": "Enter mientras Claude trabaja encola el mensaje y Claude lo lee al terminar las tool calls, en el mismo turno. Esc cancelaría la tool call en curso."
+    },
+    {
+      "id": "u-interactive--l3",
+      "conceptId": "interactive-interrupt-queue",
+      "format": "lightning",
+      "prompt": "You queued a correction; deliver it right now instead of waiting → ?",
+      "promptEs": "Encolaste una corrección; entregarla ahora en vez de esperar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ctrl+S"
+        },
+        {
+          "id": "B",
+          "text": "Up"
+        },
+        {
+          "id": "C",
+          "text": "Ctrl+Enter"
+        },
+        {
+          "id": "D",
+          "text": "Esc Esc"
+        }
+      ],
+      "answer": "C",
+      "why": "`Ctrl+Enter` envía la cola de inmediato. `Up` la saca de la cola para editarla, `Ctrl+S` guarda el borrador aparte y Esc Esc limpia el borrador o abre rewind."
+    },
+    {
+      "id": "u-interactive--l4",
+      "conceptId": "interactive-interrupt-queue",
+      "format": "lightning",
+      "prompt": "A long Bash build blocks the turn; keep it running and move on → ?",
+      "promptEs": "Un build largo de Bash bloquea el turno; que siga corriendo y avanzar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ctrl+Z"
+        },
+        {
+          "id": "B",
+          "text": "Esc"
+        },
+        {
+          "id": "C",
+          "text": "Ctrl+T"
+        },
+        {
+          "id": "D",
+          "text": "Ctrl+B"
+        }
+      ],
+      "answer": "D",
+      "why": "`Ctrl+B` pasa los comandos Bash en curso a segundo plano y siguen corriendo. Esc los cancela, `Ctrl+Z` suspende Claude Code y `Ctrl+T` solo muestra la lista de tareas."
+    },
+    {
+      "id": "u-interactive--l5",
+      "conceptId": "interactive-input-prefixes",
+      "format": "lightning",
+      "prompt": "Mention `src/auth.ts` in your prompt with path autocomplete → prefix?",
+      "promptEs": "Mencionar `src/auth.ts` en tu prompt con autocompletado de rutas → ¿prefijo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/"
+        },
+        {
+          "id": "B",
+          "text": "@"
+        },
+        {
+          "id": "C",
+          "text": "!"
+        },
+        {
+          "id": "D",
+          "text": ":"
+        }
+      ],
+      "answer": "B",
+      "why": "`@` dispara el autocompletado de rutas de archivo. `/` abre comandos y skills, `!` entra a shell mode y `:` sugiere emojis."
+    },
+    {
+      "id": "u-interactive--l6",
+      "conceptId": "interactive-input-prefixes",
+      "format": "lightning",
+      "prompt": "`!` commands should add output to context with no Claude reply → setting?",
+      "promptEs": "Los comandos `!` deben sumar su salida al contexto sin respuesta de Claude → ¿setting?",
+      "options": [
+        {
+          "id": "A",
+          "text": "disableAllHooks: true"
+        },
+        {
+          "id": "B",
+          "text": "tui: \"default\""
+        },
+        {
+          "id": "C",
+          "text": "respondToBashCommands: false"
+        },
+        {
+          "id": "D",
+          "text": "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1"
+        }
+      ],
+      "answer": "C",
+      "why": "Con `respondToBashCommands` en `false` la salida entra al contexto sin respuesta. Las otras opciones apagan hooks, cambian el renderer o desactivan tareas en segundo plano."
+    },
+    {
+      "id": "u-interactive--l7",
+      "conceptId": "interactive-input-prefixes",
+      "format": "lightning",
+      "prompt": "Insert a newline in any terminal, with no configuration → ?",
+      "promptEs": "Insertar un salto de línea en cualquier terminal, sin configurar nada → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ctrl+J"
+        },
+        {
+          "id": "B",
+          "text": "Shift+Enter"
+        },
+        {
+          "id": "C",
+          "text": "Option+Enter"
+        },
+        {
+          "id": "D",
+          "text": "Ctrl+Enter"
+        }
+      ],
+      "answer": "A",
+      "why": "`Ctrl+J` funciona en cualquier terminal. `Shift+Enter` es nativo solo en algunas, `Option+Enter` exige Option como Meta y `Ctrl+Enter` envía la cola."
+    },
+    {
+      "id": "u-interactive--l8",
+      "conceptId": "interactive-input-prefixes",
+      "format": "thisorthat",
+      "prompt": "Put the current `git diff` output into the conversation → ?",
+      "promptEs": "Meter la salida actual de `git diff` en la conversación → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/btw show me git diff"
+        },
+        {
+          "id": "B",
+          "text": "! git diff"
+        }
+      ],
+      "answer": "B",
+      "why": "`!` corre el comando directo y suma su salida al contexto. `/btw` no tiene herramientas y su respuesta nunca entra al historial."
+    },
+    {
+      "id": "u-interactive--l9",
+      "conceptId": "interactive-keybindings-statusline",
+      "format": "lightning",
+      "prompt": "Unbind a default shortcut in `keybindings.json` → value for the key?",
+      "promptEs": "Quitar un atajo por defecto en `keybindings.json` → ¿valor para la tecla?",
+      "options": [
+        {
+          "id": "A",
+          "text": "\"\""
+        },
+        {
+          "id": "B",
+          "text": "false"
+        },
+        {
+          "id": "C",
+          "text": "\"none\""
+        },
+        {
+          "id": "D",
+          "text": "null"
+        }
+      ],
+      "answer": "D",
+      "why": "Asignar `null` a la tecla quita el atajo por defecto. Un valor que no es string ni `null` se reporta como acción inválida."
+    },
+    {
+      "id": "u-interactive--l10",
+      "conceptId": "interactive-keybindings-statusline",
+      "format": "thisorthat",
+      "prompt": "Remap the key that cycles permission modes → ?",
+      "promptEs": "Reasignar la tecla que rota los modos de permisos → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/statusline"
+        },
+        {
+          "id": "B",
+          "text": "/keybindings"
+        }
+      ],
+      "answer": "B",
+      "why": "`/keybindings` abre `~/.claude/keybindings.json`, donde `chat:cycleMode` se puede reasignar. `/statusline` solo configura la barra inferior."
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "conceptId": "settings-verify-status",
+  "card": {
+    "en": {
+      "tldr": "Run `/status` to see which settings files loaded, and `claude doctor` to list entries Claude Code rejected. Settings files are strict JSON: a syntax error breaks the whole file, while a single bad entry is skipped.",
+      "whenToUse": [
+        "Confirming a settings file you just edited was loaded",
+        "Diagnosing a setting that doesn't seem to apply",
+        "Checking what Claude Code dropped after a `-p` run",
+        "Knowing whether an edit needs a restart or a command like `/model`"
+      ],
+      "keyFacts": [
+        "`/status` shows a `Setting sources` line listing the files loaded this session; it doesn't show which file supplied each key.",
+        "`claude doctor` lists entries Claude Code rejected, with details of each error.",
+        "Settings Error: invalid JSON (a `//` comment, a trailing comma) or a schema-rejected value in a user, project or local file; an interactive session shows a dialog to fix, exit or continue without it.",
+        "Settings Warning: individual entries fail, such as a malformed permission rule or an unknown hook event name; they're skipped and the rest of the file applies.",
+        "Edits to `permissions`, `hooks` and `apiKeyHelper` reload live; `model` and `effortLevel` are read at session start, so switch with `/model` or `/effort`.",
+        "`/config` lists a short set of personal options, not every key; its Config tab isn't a view of your `settings.json`."
+      ],
+      "gotchas": [
+        "A `-p` run shows no dialog: it skips the broken file or values and continues, so check `claude doctor` afterwards.",
+        "`Setting sources` confirms a file was read, not that your key won.",
+        "Editing `model` in a file mid-session doesn't change the running session."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/config",
+          "difference": "Edits a short list of personal options; it doesn't show your settings files or which file loaded."
+        }
+      ],
+      "examCues": [
+        "confirm the file loaded",
+        "which settings sources are active",
+        "a setting was silently dropped",
+        "a comment in settings.json",
+        "takes effect without a restart"
+      ]
+    },
+    "es": {
+      "tldr": "Corre `/status` para ver qué archivos de settings cargaron, y `claude doctor` para listar las entradas que Claude Code rechazó. Los settings son JSON estricto: un error de sintaxis rompe todo el archivo, mientras que una entrada mala suelta se omite.",
+      "whenToUse": [
+        "Confirmar que cargó un archivo de settings que acabas de editar",
+        "Diagnosticar un setting que parece no aplicar",
+        "Revisar qué descartó Claude Code tras una corrida `-p`",
+        "Saber si una edición necesita reinicio o un comando como `/model`"
+      ],
+      "keyFacts": [
+        "`/status` muestra la línea `Setting sources` con los archivos cargados en la sesión; no muestra de qué archivo salió cada clave.",
+        "`claude doctor` lista las entradas que Claude Code rechazó, con el detalle de cada error.",
+        "Settings Error: JSON inválido (un comentario `//`, una coma final) o un valor que el schema rechaza en un archivo user, proyecto o local; una sesión interactiva muestra un diálogo para arreglarlo, salir o seguir sin él.",
+        "Settings Warning: fallan entradas sueltas, como una regla de permisos mal formada o un nombre de evento de hook desconocido; se omiten y el resto del archivo aplica.",
+        "Las ediciones a `permissions`, `hooks` y `apiKeyHelper` recargan en vivo; `model` y `effortLevel` se leen al inicio, así que cámbialos con `/model` o `/effort`.",
+        "`/config` lista un conjunto corto de opciones personales, no todas las claves; su pestaña Config no es una vista de tu `settings.json`."
+      ],
+      "gotchas": [
+        "Una corrida `-p` no muestra diálogo: omite el archivo o los valores rotos y sigue, así que revisa `claude doctor` después.",
+        "`Setting sources` confirma que un archivo se leyó, no que tu clave ganó.",
+        "Editar `model` en un archivo a mitad de sesión no cambia la sesión en curso."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/config",
+          "difference": "Edita una lista corta de opciones personales; no muestra tus archivos ni cuáles cargaron."
+        }
+      ],
+      "examCues": [
+        "confirm the file loaded",
+        "which settings sources are active",
+        "a setting was silently dropped",
+        "a comment in settings.json",
+        "takes effect without a restart"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/settings.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-verify-status--311d96f5",
+      "conceptId": "settings-verify-status",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Diego just saved new deny rules in `~/.claude/settings.json` while a session is running. Before relying on them, he wants to confirm from inside that session, without restarting, that Claude Code loaded his user settings file. What should he do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open `/config` and read the rules on the Config tab",
+          "correct": false,
+          "why": "The Config tab lists a few personal options; it isn't a view of `settings.json`."
+        },
+        {
+          "id": "B",
+          "text": "Run `/status` and check the `Setting sources` line",
+          "correct": true,
+          "why": "That line lists each settings file Claude Code loaded for the current session."
+        },
+        {
+          "id": "C",
+          "text": "Restart Claude Code, since settings load only at startup",
+          "correct": false,
+          "why": "Claude Code reloads permission edits live; no restart is needed."
+        },
+        {
+          "id": "D",
+          "text": "Run `claude doctor` to see which file supplied each key",
+          "correct": false,
+          "why": "`claude doctor` is a shell command run outside the session, and it lists rejected entries; it doesn't show which file supplied each key."
+        }
+      ],
+      "explanation": "The requirement is to confirm the file loaded, from inside the session. `/status` shows the `Setting sources` line with every file read, and permission edits reload without a restart. `/config` is tempting because it opens the same dialog, but its Config tab is a short list of options, not your file's contents.",
+      "keywordCues": [
+        "confirm",
+        "loaded his user settings file",
+        "without restarting"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Diego acaba de guardar nuevas reglas deny en `~/.claude/settings.json` con una sesión corriendo. Antes de confiar en ellas quiere confirmar desde esa sesión, sin reiniciar, que Claude Code cargó su archivo de settings de user. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir `/config` y leer las reglas en la pestaña Config",
+            "why": "La pestaña Config lista unas pocas opciones personales; no es una vista de `settings.json`."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/status` y revisar la línea `Setting sources`",
+            "why": "Esa línea lista cada archivo de settings que Claude Code cargó en la sesión actual."
+          },
+          {
+            "id": "C",
+            "text": "Reiniciar Claude Code, porque los settings solo cargan al inicio",
+            "why": "Claude Code recarga en vivo las ediciones de permisos; no hace falta reiniciar."
+          },
+          {
+            "id": "D",
+            "text": "Correr `claude doctor` para ver de qué archivo salió cada clave",
+            "why": "`claude doctor` es un comando de shell que se corre fuera de la sesión y lista las entradas rechazadas; no muestra de qué archivo salió cada clave."
+          }
+        ],
+        "explanation": "El requisito es confirmar que el archivo cargó, desde la sesión. `/status` muestra la línea `Setting sources` con cada archivo leído, y las ediciones de permisos recargan sin reiniciar. `/config` tienta porque abre el mismo diálogo, pero su pestaña Config es una lista corta de opciones, no el contenido de tu archivo."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-verify-status--db1c07ca",
+      "conceptId": "settings-verify-status",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "To document the team's rules, a developer added `// deny secrets` comments inside the committed `.claude/settings.json`. Now teammates see a dialog at the start of every interactive session, and none of the file's hooks run. What is going on?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A Settings Warning: only the commented lines are skipped",
+          "correct": false,
+          "why": "Warnings are for individual bad entries; a comment makes the whole file invalid JSON."
+        },
+        {
+          "id": "B",
+          "text": "The file waits for workspace trust before applying",
+          "correct": false,
+          "why": "Trust delays keys such as allow rules, but it doesn't produce an error dialog about the file."
+        },
+        {
+          "id": "C",
+          "text": "A Settings Error: the file isn't valid JSON; remove the comments",
+          "correct": true,
+          "why": "Settings files are strict JSON, so a `//` comment breaks the whole file."
+        },
+        {
+          "id": "D",
+          "text": "Claude Code ignores comments; a hook event name is wrong",
+          "correct": false,
+          "why": "Comments aren't accepted, and an unknown event name would be a Warning with the rest still applying."
+        }
+      ],
+      "explanation": "Settings files are strict JSON, so a `//` comment or trailing comma is a syntax error and the whole file is reported as a Settings Error. The dialog lets you fix it with Claude's help, exit, or continue without the broken settings, which is why no hooks run. A Settings Warning would skip only the bad entry and keep the rest in effect.",
+      "keywordCues": [
+        "// deny secrets comments",
+        "a dialog at the start",
+        "none of the file's hooks run"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Para documentar las reglas del equipo, un desarrollador agregó comentarios `// deny secrets` dentro del `.claude/settings.json` commiteado. Ahora sus compañeros ven un diálogo al inicio de cada sesión interactiva y no corre ningún hook del archivo. ¿Qué está pasando?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un Settings Warning: solo se omiten las líneas comentadas",
+            "why": "Los warnings son para entradas malas sueltas; un comentario vuelve inválido todo el JSON."
+          },
+          {
+            "id": "B",
+            "text": "El archivo espera el workspace trust antes de aplicar",
+            "why": "El trust demora claves como las reglas allow, pero no produce un diálogo de error sobre el archivo."
+          },
+          {
+            "id": "C",
+            "text": "Un Settings Error: el archivo no es JSON válido; quita los comentarios",
+            "why": "Los settings son JSON estricto, así que un comentario `//` rompe todo el archivo."
+          },
+          {
+            "id": "D",
+            "text": "Claude Code ignora comentarios; un nombre de evento de hook está mal",
+            "why": "Los comentarios no se aceptan, y un evento desconocido sería un Warning con el resto aplicando."
+          }
+        ],
+        "explanation": "Los settings son JSON estricto, así que un comentario `//` o una coma final es un error de sintaxis y todo el archivo se reporta como Settings Error. El diálogo permite arreglarlo con ayuda de Claude, salir o seguir sin los settings rotos, por eso no corre ningún hook. Un Settings Warning omitiría solo la entrada mala y dejaría el resto."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-verify-status--a032a187",
+      "conceptId": "settings-verify-status",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Mid-session, a developer edits `~/.claude/settings.json` to add a `permissions.deny` rule, add a `PostToolUse` hook, change `model`, and change `effortLevel`. Which two edits reach the running session without a restart or a slash command? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The new `permissions.deny` rule",
+          "correct": true,
+          "why": "Claude Code watches settings files and reloads `permissions` edits live."
+        },
+        {
+          "id": "B",
+          "text": "The new `PostToolUse` hook",
+          "correct": true,
+          "why": "`hooks` edits are applied to the running session on reload."
+        },
+        {
+          "id": "C",
+          "text": "The new `model` value",
+          "correct": false,
+          "why": "`model` is read at session start; switch mid-session with `/model`."
+        },
+        {
+          "id": "D",
+          "text": "The new `effortLevel` value",
+          "correct": false,
+          "why": "`effortLevel` is read at session start; change it with `/effort`."
+        },
+        {
+          "id": "E",
+          "text": "None; every settings edit waits for the next session",
+          "correct": false,
+          "why": "Most edits reload live; only a few keys are read once at startup."
+        }
+      ],
+      "explanation": "Claude Code watches its settings files and applies most edits to the running session, including `permissions` and `hooks`. A few keys are read only at session start, and the ones you're most likely to edit are `model` and `effortLevel`/`modelSettings`. For those, use `/model` or `/effort` to change the running session.",
+      "keywordCues": [
+        "mid-session",
+        "reach the running session",
+        "without a restart"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "A mitad de sesión, un desarrollador edita `~/.claude/settings.json` para agregar una regla `permissions.deny`, agregar un hook `PostToolUse`, cambiar `model` y cambiar `effortLevel`. ¿Qué dos ediciones llegan a la sesión en curso sin reiniciar ni usar un slash command? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "La nueva regla `permissions.deny`",
+            "why": "Claude Code vigila los archivos de settings y recarga en vivo las ediciones de `permissions`."
+          },
+          {
+            "id": "B",
+            "text": "El nuevo hook `PostToolUse`",
+            "why": "Las ediciones de `hooks` se aplican a la sesión en curso al recargar."
+          },
+          {
+            "id": "C",
+            "text": "El nuevo valor de `model`",
+            "why": "`model` se lee al iniciar la sesión; cámbialo a mitad de sesión con `/model`."
+          },
+          {
+            "id": "D",
+            "text": "El nuevo valor de `effortLevel`",
+            "why": "`effortLevel` se lee al iniciar la sesión; cámbialo con `/effort`."
+          },
+          {
+            "id": "E",
+            "text": "Ninguna; toda edición espera a la siguiente sesión",
+            "why": "La mayoría de las ediciones recargan en vivo; solo unas pocas claves se leen una vez al inicio."
+          }
+        ],
+        "explanation": "Claude Code vigila sus archivos de settings y aplica la mayoría de las ediciones a la sesión en curso, incluidas `permissions` y `hooks`. Unas pocas claves se leen solo al inicio, y las que más probablemente edites son `model` y `effortLevel`/`modelSettings`. Para esas, usa `/model` o `/effort` para cambiar la sesión en curso."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-verify-status--08e25534",
+      "conceptId": "settings-verify-status",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Inside Claude Code, which command shows the `Setting sources` line listing the settings files loaded for the current session?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/status",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/status` opens the Status tab, whose `Setting sources` line lists each settings file loaded, such as `User settings` or `Project local settings`, and how managed settings reached the machine.",
+      "keywordCues": [
+        "Setting sources",
+        "loaded for the current session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Dentro de Claude Code, ¿qué comando muestra la línea `Setting sources` con los archivos de settings cargados en la sesión actual?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/status",
+            "why": ""
+          }
+        ],
+        "explanation": "`/status` abre la pestaña Status, cuya línea `Setting sources` lista cada archivo de settings cargado, como `User settings` o `Project local settings`, y cómo llegaron los managed settings a la máquina."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-verify-status--d292f2d5",
+      "conceptId": "settings-verify-status",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A `claude -p` run in CI silently ignored a setting. Which shell command lists the settings entries Claude Code dropped?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude doctor",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "A `-p` run shows no dialog: it skips broken files or values and continues. Run `claude doctor` afterwards to list the entries Claude Code rejected and the details of each error.",
+      "keywordCues": [
+        "-p run",
+        "silently ignored",
+        "entries Claude Code dropped"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Una corrida `claude -p` en CI ignoró un setting en silencio. ¿Qué comando de shell lista las entradas de settings que Claude Code descartó?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude doctor",
+            "why": ""
+          }
+        ],
+        "explanation": "Una corrida `-p` no muestra diálogo: omite archivos o valores rotos y sigue. Corre `claude doctor` después para listar las entradas que Claude Code rechazó y el detalle de cada error."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-verify-status--r0",
+      "conceptId": "settings-verify-status",
+      "kind": "recall",
+      "prompt": "How do you confirm which settings files loaded, find entries Claude Code rejected, and tell a Settings Error from a Settings Warning?",
+      "promptEs": "¿Cómo confirmas qué archivos de settings cargaron, encuentras las entradas rechazadas y distingues un Settings Error de un Settings Warning?",
+      "idealAnswer": "Run `/status` and read the `Setting sources` line, which lists the files loaded but not which file supplied each key; run `claude doctor` to list rejected entries. A Settings Error means the whole file is invalid JSON or has a rejected value, while a Settings Warning means individual entries failed and were skipped while the rest applies.",
+      "rubric": [
+        "/status Setting sources shows loaded files, not per-key origin",
+        "claude doctor lists rejected entries",
+        "Error: whole file invalid (e.g. comment, trailing comma)",
+        "Warning: only bad entries skipped, rest applies"
+      ]
+    }
+  ]
+}

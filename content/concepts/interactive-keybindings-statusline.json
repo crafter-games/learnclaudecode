@@ -1,0 +1,386 @@
+{
+  "conceptId": "interactive-keybindings-statusline",
+  "card": {
+    "en": {
+      "tldr": "`/keybindings` opens `~/.claude/keybindings.json`, where you remap or unbind shortcuts per context. A status line is a `statusLine` command in settings that receives session JSON on stdin and prints what to show; it runs locally and costs no tokens.",
+      "whenToUse": [
+        "A shortcut conflicts with your terminal or tmux: rebind it with `/keybindings`",
+        "You want context usage, cost or git branch always visible: add a `statusLine`",
+        "You'd rather describe the status line than script it: run `/statusline`",
+        "The screen flickers in long sessions: run `/tui fullscreen`"
+      ],
+      "keyFacts": [
+        "`keybindings.json` has a `bindings` array; each block has a `context` (such as `Global`, `Chat`, `Confirmation`) and a map of keystrokes to `namespace:action` actions.",
+        "Setting a keystroke to `null` unbinds the default; changes apply without restarting.",
+        "`Ctrl+C`, `Ctrl+D` and `Ctrl+M` are reserved and can't be rebound.",
+        "`\"statusLine\": {\"type\": \"command\", \"command\": \"~/.claude/statusline.sh\"}` in user or project settings; optional `padding` (default `0`) and `refreshInterval` in seconds (minimum `1`).",
+        "The script reads session JSON on stdin and prints to stdout; each printed line is a row, and it consumes no API tokens.",
+        "`/tui fullscreen` switches to the flicker-free renderer mid-session; `/tui default` switches back."
+      ],
+      "gotchas": [
+        "The status line updates on events (new assistant message, `/compact`, mode change) debounced at 300ms; without `refreshInterval` a clock goes stale while idle.",
+        "Printing to stderr shows nothing; the status line reads stdout.",
+        "Chords like `ctrl+x ctrl+k` reserve their prefix until every chord on it is unbound.",
+        "Vim keys aren't remappable in `keybindings.json`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Hooks",
+          "difference": "Hooks react to lifecycle events and can affect Claude; the status line only displays."
+        }
+      ],
+      "examCues": [
+        "always visible at the bottom",
+        "without spending tokens",
+        "remap a shortcut",
+        "conflicts with tmux",
+        "flicker-free"
+      ]
+    },
+    "es": {
+      "tldr": "`/keybindings` abre `~/.claude/keybindings.json`, donde reasignas o quitas atajos por contexto. Una status line es un comando `statusLine` en settings que recibe JSON de la sesión por stdin e imprime lo que se muestra; corre localmente y no gasta tokens.",
+      "whenToUse": [
+        "Un atajo choca con tu terminal o tmux: reasígnalo con `/keybindings`",
+        "Quieres ver siempre el uso de contexto, el costo o la rama git: agrega una `statusLine`",
+        "Prefieres describir la status line en vez de programarla: corre `/statusline`",
+        "La pantalla parpadea en sesiones largas: corre `/tui fullscreen`"
+      ],
+      "keyFacts": [
+        "`keybindings.json` tiene un array `bindings`; cada bloque tiene un `context` (como `Global`, `Chat`, `Confirmation`) y un mapa de teclas a acciones `namespace:action`.",
+        "Poner una tecla en `null` quita el atajo por defecto; los cambios aplican sin reiniciar.",
+        "`Ctrl+C`, `Ctrl+D` y `Ctrl+M` están reservados y no se pueden reasignar.",
+        "`\"statusLine\": {\"type\": \"command\", \"command\": \"~/.claude/statusline.sh\"}` en settings de usuario o proyecto; `padding` opcional (por defecto `0`) y `refreshInterval` en segundos (mínimo `1`).",
+        "El script lee JSON de la sesión por stdin e imprime a stdout; cada línea impresa es una fila y no consume tokens de la API.",
+        "`/tui fullscreen` cambia al renderer sin parpadeo a mitad de sesión; `/tui default` vuelve al clásico."
+      ],
+      "gotchas": [
+        "La status line se actualiza por eventos (nuevo mensaje del asistente, `/compact`, cambio de modo) con debounce de 300ms; sin `refreshInterval` un reloj se congela en reposo.",
+        "Imprimir a stderr no muestra nada; la status line lee stdout.",
+        "Los chords como `ctrl+x ctrl+k` reservan su prefijo hasta quitar todos los chords que lo usan.",
+        "Las teclas de vim no se reasignan en `keybindings.json`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Hooks",
+          "difference": "Los hooks reaccionan a eventos del ciclo de vida y pueden afectar a Claude; la status line solo muestra."
+        }
+      ],
+      "examCues": [
+        "always visible at the bottom",
+        "without spending tokens",
+        "remap a shortcut",
+        "conflicts with tmux",
+        "flicker-free"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/keybindings.md",
+      "https://code.claude.com/docs/en/statusline.md",
+      "https://code.claude.com/docs/en/fullscreen.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "interactive-keybindings-statusline--a1a44401",
+      "conceptId": "interactive-keybindings-statusline",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer wants the current git branch and context usage percentage always visible at the bottom of Claude Code, in every project on their machine, without spending any tokens. They already have a script that prints this line. Where should it go?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `statusLine` command in `~/.claude/settings.json` pointing at the script.",
+          "correct": true,
+          "why": "User settings apply to every project, and the status line runs locally without consuming tokens."
+        },
+        {
+          "id": "B",
+          "text": "A `statusLine` command in the repository's `.claude/settings.json`.",
+          "correct": false,
+          "why": "Project settings only apply to that one project."
+        },
+        {
+          "id": "C",
+          "text": "A line in `~/.claude/CLAUDE.md` asking Claude to report the branch and context in every reply.",
+          "correct": false,
+          "why": "Claude would spend tokens writing it, and it is guidance, not a persistent display."
+        },
+        {
+          "id": "D",
+          "text": "A binding in `~/.claude/keybindings.json` that runs the script.",
+          "correct": false,
+          "why": "Keybindings map keystrokes to built-in actions; they don't display script output."
+        }
+      ],
+      "explanation": "The requirements are always visible, every project, and no token cost. A `statusLine` with `type: \"command\"` runs the script with session JSON on stdin and shows its stdout; it runs locally and consumes no API tokens. Putting it in user settings (`~/.claude/settings.json`) makes it apply everywhere, while project settings cover only one repository. A CLAUDE.md instruction would cost tokens on every reply.",
+      "keywordCues": [
+        "always visible at the bottom",
+        "in every project on their machine",
+        "without spending any tokens"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/keybindings.md",
+        "https://code.claude.com/docs/en/statusline.md",
+        "https://code.claude.com/docs/en/fullscreen.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere ver siempre la rama git actual y el porcentaje de contexto usado al pie de Claude Code, en todos los proyectos de su máquina, sin gastar tokens. Ya tiene un script que imprime esa línea. ¿Dónde debe ir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un comando `statusLine` en `~/.claude/settings.json` que apunte al script.",
+            "why": "Los settings de usuario aplican a todos los proyectos y la status line corre localmente sin consumir tokens."
+          },
+          {
+            "id": "B",
+            "text": "Un comando `statusLine` en el `.claude/settings.json` del repositorio.",
+            "why": "Los settings de proyecto solo aplican a ese proyecto."
+          },
+          {
+            "id": "C",
+            "text": "Una línea en `~/.claude/CLAUDE.md` pidiendo a Claude que informe rama y contexto en cada respuesta.",
+            "why": "Claude gastaría tokens al escribirlo, y es guía, no una vista persistente."
+          },
+          {
+            "id": "D",
+            "text": "Un binding en `~/.claude/keybindings.json` que corra el script.",
+            "why": "Los keybindings asignan teclas a acciones integradas; no muestran la salida de un script."
+          }
+        ],
+        "explanation": "Los requisitos son siempre visible, todos los proyectos y sin costo en tokens. Una `statusLine` con `type: \"command\"` corre el script con JSON de la sesión por stdin y muestra su stdout; corre localmente y no consume tokens de la API. Ponerla en settings de usuario (`~/.claude/settings.json`) la aplica en todas partes, mientras que los settings de proyecto cubren un solo repositorio. Una instrucción en CLAUDE.md costaría tokens en cada respuesta."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-keybindings-statusline--7c4b7aea",
+      "conceptId": "interactive-keybindings-statusline",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command creates or opens your keyboard shortcuts configuration file?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/keybindings",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/keybindings` creates or opens `~/.claude/keybindings.json`, where each block in the `bindings` array maps keystrokes to actions for one context. Changes apply without restarting Claude Code.",
+      "keywordCues": [
+        "keyboard shortcuts configuration file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/keybindings.md",
+        "https://code.claude.com/docs/en/statusline.md",
+        "https://code.claude.com/docs/en/fullscreen.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando crea o abre tu archivo de configuración de atajos de teclado?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/keybindings",
+            "why": ""
+          }
+        ],
+        "explanation": "`/keybindings` crea o abre `~/.claude/keybindings.json`, donde cada bloque del array `bindings` asigna teclas a acciones para un contexto. Los cambios aplican sin reiniciar Claude Code."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-keybindings-statusline--55412804",
+      "conceptId": "interactive-keybindings-statusline",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "The screen flickers as tool output streams in. Which command switches the current conversation to the flicker-free renderer?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/tui fullscreen",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/tui fullscreen` saves the `tui` setting and relaunches into fullscreen rendering with the conversation intact. It draws on the alternate screen buffer and only renders visible messages, which removes flicker. `/tui default` switches back.",
+      "keywordCues": [
+        "flicker-free renderer",
+        "current conversation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/keybindings.md",
+        "https://code.claude.com/docs/en/statusline.md",
+        "https://code.claude.com/docs/en/fullscreen.md"
+      ],
+      "es": {
+        "stem": "La pantalla parpadea mientras llega la salida de las herramientas. ¿Qué comando cambia la conversación actual al renderer sin parpadeo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/tui fullscreen",
+            "why": ""
+          }
+        ],
+        "explanation": "`/tui fullscreen` guarda el setting `tui` y relanza en fullscreen rendering con la conversación intacta. Dibuja en el buffer alternativo de pantalla y solo renderiza los mensajes visibles, lo que elimina el parpadeo. `/tui default` vuelve al clásico."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-keybindings-statusline--12451492",
+      "conceptId": "interactive-keybindings-statusline",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make Claude Code run `~/.claude/statusline.sh` as the status line and re-run it every 5 seconds, so its clock stays current even while the session is idle.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "kind",
+          "correct": false,
+          "why": "Not a `statusLine` field; the field is `type`."
+        },
+        {
+          "id": "1b",
+          "text": "type",
+          "correct": true,
+          "why": "`type: \"command\"` tells Claude Code to run the shell command."
+        },
+        {
+          "id": "1c",
+          "text": "mode",
+          "correct": false,
+          "why": "Not a `statusLine` field."
+        },
+        {
+          "id": "2a",
+          "text": "padding",
+          "correct": false,
+          "why": "Adds horizontal spacing in characters; it doesn't re-run the script."
+        },
+        {
+          "id": "2b",
+          "text": "debounce",
+          "correct": false,
+          "why": "Not a setting; the 300ms debounce is built in."
+        },
+        {
+          "id": "2c",
+          "text": "refreshInterval",
+          "correct": true,
+          "why": "Re-runs the command every N seconds in addition to event-driven updates."
+        }
+      ],
+      "explanation": "A status line is configured with `type` set to `\"command\"` and a `command` to run. It normally re-runs only on events such as a new assistant message, which can go quiet while idle. `refreshInterval` adds a timer in seconds (minimum 1) so time-based output stays current. `padding` only changes horizontal spacing.",
+      "keywordCues": [
+        "re-run it every 5 seconds",
+        "even while the session is idle"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/keybindings.md",
+        "https://code.claude.com/docs/en/statusline.md",
+        "https://code.claude.com/docs/en/fullscreen.md"
+      ],
+      "es": {
+        "stem": "Haz que Claude Code corra `~/.claude/statusline.sh` como status line y lo vuelva a correr cada 5 segundos, para que su reloj esté al día aunque la sesión esté en reposo.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "kind",
+            "why": "No es un campo de `statusLine`; el campo es `type`."
+          },
+          {
+            "id": "1b",
+            "text": "type",
+            "why": "`type: \"command\"` le dice a Claude Code que corra el comando de shell."
+          },
+          {
+            "id": "1c",
+            "text": "mode",
+            "why": "No es un campo de `statusLine`."
+          },
+          {
+            "id": "2a",
+            "text": "padding",
+            "why": "Agrega espacio horizontal en caracteres; no vuelve a correr el script."
+          },
+          {
+            "id": "2b",
+            "text": "debounce",
+            "why": "No es un setting; el debounce de 300ms viene integrado."
+          },
+          {
+            "id": "2c",
+            "text": "refreshInterval",
+            "why": "Vuelve a correr el comando cada N segundos además de las actualizaciones por eventos."
+          }
+        ],
+        "explanation": "Una status line se configura con `type` en `\"command\"` y un `command` que correr. Normalmente se vuelve a correr solo por eventos, como un nuevo mensaje del asistente, que pueden detenerse en reposo. `refreshInterval` agrega un temporizador en segundos (mínimo 1) para que la salida basada en tiempo siga al día. `padding` solo cambia el espaciado horizontal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"statusLine\": {\n    \"{{1}}\": \"command\",\n    \"command\": \"~/.claude/statusline.sh\",\n    \"{{2}}\": 5\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "interactive-keybindings-statusline--r0",
+      "conceptId": "interactive-keybindings-statusline",
+      "kind": "recall",
+      "prompt": "Explain how a custom status line gets its data and what it costs, and how you'd set one up without writing the script yourself.",
+      "promptEs": "Explica cómo obtiene sus datos una status line personalizada, qué cuesta y cómo la configurarías sin escribir el script tú mismo.",
+      "idealAnswer": "A `statusLine` of type `command` in settings runs your script with session JSON on stdin and displays whatever it prints to stdout, one row per line. It runs locally and consumes no API tokens. `/statusline` with a natural-language description generates the script in `~/.claude/` and updates your settings.",
+      "rubric": [
+        "Session JSON arrives on stdin",
+        "Output printed to stdout is displayed",
+        "Runs locally, no token cost",
+        "/statusline generates the script and settings"
+      ]
+    }
+  ]
+}

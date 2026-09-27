@@ -1,0 +1,411 @@
+{
+  "unitId": "u-tools",
+  "audited": true,
+  "overview": {
+    "title": "Las herramientas integradas",
+    "hook": "Nombrar bien cada herramienta y saber qué hace y qué no persiste.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "rule",
+          "label": "ToolName(spec)",
+          "kind": "data",
+          "x": 40,
+          "y": 15
+        },
+        {
+          "id": "read",
+          "label": "Read / Grep / Glob",
+          "kind": "service",
+          "x": 70,
+          "y": 20
+        },
+        {
+          "id": "edit",
+          "label": "Edit / Write",
+          "kind": "service",
+          "x": 70,
+          "y": 50
+        },
+        {
+          "id": "bash",
+          "label": "Bash",
+          "kind": "service",
+          "x": 70,
+          "y": 80
+        },
+        {
+          "id": "proc",
+          "label": "Proceso aparte",
+          "kind": "zone",
+          "x": 92,
+          "y": 80
+        }
+      ],
+      "edges": [
+        {
+          "from": "rule",
+          "to": "claude",
+          "label": "permite o bloquea"
+        },
+        {
+          "from": "claude",
+          "to": "read",
+          "label": "lee y busca"
+        },
+        {
+          "from": "claude",
+          "to": "edit",
+          "label": "cambia archivos"
+        },
+        {
+          "from": "claude",
+          "to": "bash",
+          "label": "corre comandos"
+        },
+        {
+          "from": "bash",
+          "to": "proc",
+          "label": "cada comando"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Escribes una regla para bloquear un archivo y no funciona, o un hook que nunca se dispara. Casi siempre el problema es el nombre de la herramienta o el formato de la regla.",
+        "show": [
+          "claude"
+        ],
+        "focus": "claude"
+      },
+      {
+        "narration": "Claude actúa con herramientas integradas. Read, Grep y Glob leen y buscan. Edit y Write cambian archivos. Bash corre comandos de shell. Sus nombres exactos son los que usas en permisos, flags, skills, subagentes y hooks.",
+        "show": [
+          "claude",
+          "read",
+          "edit",
+          "bash"
+        ],
+        "focus": "read"
+      },
+      {
+        "narration": "Las reglas usan el formato ToolName(especificador), por ejemplo Bash(npm run *) o WebFetch(domain:example.com). Los matchers de hooks, en cambio, usan el nombre pelado, como Edit|Write.",
+        "show": [
+          "claude",
+          "read",
+          "edit",
+          "bash",
+          "rule"
+        ],
+        "focus": "rule"
+      },
+      {
+        "narration": "Edit reemplaza un texto exacto que aparece una sola vez, sin regex. Write crea o sobrescribe el archivo completo y nunca agrega al final. Para un cambio parcial, Claude usa Edit.",
+        "show": [
+          "claude",
+          "read",
+          "edit",
+          "bash",
+          "rule"
+        ],
+        "focus": "edit"
+      },
+      {
+        "narration": "Cada comando de Bash corre en un proceso aparte. Un cd dentro del proyecto se mantiene, pero un export no. Para variables persistentes usa CLAUDE_ENV_FILE, y para procesos largos, run_in_background.",
+        "show": [
+          "claude",
+          "read",
+          "edit",
+          "bash",
+          "rule",
+          "proc"
+        ],
+        "focus": "proc"
+      },
+      {
+        "narration": "Ojo en macOS, Linux y WSL: Glob y Grep no vienen por defecto, y las búsquedas llegan a tus hooks como llamadas a Bash. Y una regla de ruta con Write nunca se consulta; usa Edit.",
+        "show": [
+          "claude",
+          "read",
+          "edit",
+          "bash",
+          "rule",
+          "proc"
+        ],
+        "focus": "bash"
+      }
+    ],
+    "keyPoints": [
+      "Reglas: ToolName(specifier); matchers de hooks: nombres pelados.",
+      "Reglas de ruta solo con Read(...) o Edit(...).",
+      "Edit: reemplazo exacto y único; Write: archivo completo.",
+      "Cada comando Bash es un proceso aparte: export no persiste.",
+      "Glob y Grep faltan por defecto en macOS, Linux y WSL."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "PowerShell tool",
+        "difference": "Es otra herramienta de shell; un hook que inspecciona comandos debe usar Bash|PowerShell."
+      },
+      {
+        "unitOrService": "Monitor",
+        "difference": "Comparte el formato Bash(...) pero envía cada línea de salida a Claude mientras corre."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-tools--l1",
+      "conceptId": "tools-builtin-names",
+      "format": "lightning",
+      "prompt": "Permission rule that stops Claude's file tools from reading anything under ~/secrets → ?",
+      "promptEs": "Regla de permisos que impide a las herramientas de archivos leer algo bajo ~/secrets → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Edit(~/secrets/**)"
+        },
+        {
+          "id": "B",
+          "text": "Read(~/secrets/**)"
+        },
+        {
+          "id": "C",
+          "text": "Glob(~/secrets/**)"
+        },
+        {
+          "id": "D",
+          "text": "WebFetch(domain:secrets)"
+        }
+      ],
+      "answer": "B",
+      "why": "Las reglas de ruta solo se revisan con Read(...) y Edit(...); Read cubre la lectura. Edit(...) solo bloquea cambios, y una regla Glob con ruta nunca se consulta."
+    },
+    {
+      "id": "u-tools--l2",
+      "conceptId": "tools-builtin-names",
+      "format": "thisorthat",
+      "prompt": "Hook matcher that fires on every Edit and Write call → ?",
+      "promptEs": "Matcher de hook que se dispara en cada llamada a Edit y Write → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Edit|Write"
+        },
+        {
+          "id": "B",
+          "text": "Edit(**)|Write(**)"
+        }
+      ],
+      "answer": "A",
+      "why": "Los matchers de hooks usan nombres pelados de herramientas, no el formato con paréntesis de las reglas de permisos. Edit|Write coincide exactamente con cualquiera de las dos."
+    },
+    {
+      "id": "u-tools--l3",
+      "conceptId": "tools-builtin-names",
+      "format": "lightning",
+      "prompt": "Allow rule for fetching pages from docs.example.com only → ?",
+      "promptEs": "Regla allow para traer páginas solo de docs.example.com → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "WebSearch(docs.example.com)"
+        },
+        {
+          "id": "B",
+          "text": "WebFetch(https://docs.example.com/*)"
+        },
+        {
+          "id": "C",
+          "text": "Bash(curl docs.example.com)"
+        },
+        {
+          "id": "D",
+          "text": "WebFetch(domain:docs.example.com)"
+        }
+      ],
+      "answer": "D",
+      "why": "WebFetch usa el prefijo domain: y compara con el hostname. Una URL completa no es ese formato, y WebSearch no acepta especificador: se permite o niega entero."
+    },
+    {
+      "id": "u-tools--l4",
+      "conceptId": "tools-builtin-names",
+      "format": "lightning",
+      "prompt": "On Linux by default, Claude's file searches reach your hooks as which tool → ?",
+      "promptEs": "En Linux por defecto, las búsquedas de archivos de Claude llegan a tus hooks como qué herramienta → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Glob"
+        },
+        {
+          "id": "B",
+          "text": "Grep"
+        },
+        {
+          "id": "C",
+          "text": "Bash"
+        },
+        {
+          "id": "D",
+          "text": "Read"
+        }
+      ],
+      "answer": "C",
+      "why": "En macOS, Linux y WSL, Glob y Grep faltan por defecto; Claude busca con find y grep vía Bash, así que hooks y permisos ven llamadas Bash."
+    },
+    {
+      "id": "u-tools--l5",
+      "conceptId": "tools-edit-vs-write",
+      "format": "thisorthat",
+      "prompt": "Create a brand-new config file with its full content → ?",
+      "promptEs": "Crear un archivo de configuración nuevo con todo su contenido → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Edit"
+        },
+        {
+          "id": "B",
+          "text": "Write"
+        }
+      ],
+      "answer": "B",
+      "why": "Write crea un archivo nuevo o sobrescribe uno existente con el contenido completo. Edit necesita un old_string que ya exista en el archivo."
+    },
+    {
+      "id": "u-tools--l6",
+      "conceptId": "tools-edit-vs-write",
+      "format": "lightning",
+      "prompt": "Edit fails because old_string appears three times in the file → ?",
+      "promptEs": "Edit falla porque old_string aparece tres veces en el archivo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Switch the edit to regex matching"
+        },
+        {
+          "id": "B",
+          "text": "Use Write to append the change"
+        },
+        {
+          "id": "C",
+          "text": "Search the file with Grep first"
+        },
+        {
+          "id": "D",
+          "text": "Longer old_string, or replace_all: true"
+        }
+      ],
+      "answer": "D",
+      "why": "old_string debe aparecer una sola vez: se agrega contexto para fijar una ocurrencia o se usa replace_all para todas. Edit no usa regex y Write nunca agrega al final."
+    },
+    {
+      "id": "u-tools--l7",
+      "conceptId": "tools-edit-vs-write",
+      "format": "lightning",
+      "prompt": "A whole-file Read exceeds the token limit → ?",
+      "promptEs": "Una lectura de archivo completo con Read supera el límite de tokens → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "First page with a PARTIAL view notice"
+        },
+        {
+          "id": "B",
+          "text": "An error with no content"
+        },
+        {
+          "id": "C",
+          "text": "Silent truncation, no notice"
+        },
+        {
+          "id": "D",
+          "text": "An automatic summary of the file"
+        }
+      ],
+      "answer": "A",
+      "why": "Read devuelve la primera página con un aviso PARTIAL view que indica cómo seguir con offset y limit. El error aparece solo si pasaste offset o limit y aun así se excede."
+    },
+    {
+      "id": "u-tools--l8",
+      "conceptId": "tools-bash-behavior",
+      "format": "lightning",
+      "prompt": "Make an exported variable visible to every later Bash command → ?",
+      "promptEs": "Hacer que una variable exportada se vea en cada comando Bash posterior → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "export it in the first command"
+        },
+        {
+          "id": "B",
+          "text": "Raise BASH_DEFAULT_TIMEOUT_MS"
+        },
+        {
+          "id": "C",
+          "text": "A script set in CLAUDE_ENV_FILE"
+        },
+        {
+          "id": "D",
+          "text": "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1"
+        }
+      ],
+      "answer": "C",
+      "why": "Cada comando corre en un proceso aparte, así que un export se pierde. CLAUDE_ENV_FILE apunta a un script que Claude Code ejecuta antes de cada comando Bash."
+    },
+    {
+      "id": "u-tools--l9",
+      "conceptId": "tools-bash-behavior",
+      "format": "thisorthat",
+      "prompt": "Claude runs cd packages/api inside the project; the next Bash command starts in → ?",
+      "promptEs": "Claude corre cd packages/api dentro del proyecto; el siguiente comando Bash empieza en → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "packages/api"
+        },
+        {
+          "id": "B",
+          "text": "The project root"
+        }
+      ],
+      "answer": "A",
+      "why": "En la sesión principal, un cd que queda dentro del proyecto o de un directorio agregado se mantiene. Solo se resetea si sale de ellos o si activas CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1."
+    },
+    {
+      "id": "u-tools--l10",
+      "conceptId": "tools-bash-behavior",
+      "format": "lightning",
+      "prompt": "Start a dev server and let Claude keep working while it runs → ?",
+      "promptEs": "Levantar un dev server y que Claude siga trabajando mientras corre → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Raise BASH_MAX_TIMEOUT_MS"
+        },
+        {
+          "id": "B",
+          "text": "run_in_background: true"
+        },
+        {
+          "id": "C",
+          "text": "A SessionStart hook"
+        },
+        {
+          "id": "D",
+          "text": "Set CLAUDE_ENV_FILE"
+        }
+      ],
+      "answer": "B",
+      "why": "run_in_background inicia el comando como tarea en segundo plano y Claude continúa; se gestiona con /tasks. Subir el timeout solo hace esperar más al comando en primer plano."
+    }
+  ]
+}

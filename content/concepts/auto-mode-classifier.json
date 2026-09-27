@@ -1,0 +1,573 @@
+{
+  "conceptId": "auto-mode-classifier",
+  "card": {
+    "en": {
+      "tldr": "In auto mode, each action goes through a fixed order: your allow, ask and deny rules resolve first, read-only actions and working-directory edits are auto-approved, and everything else goes to a separate classifier model. Use it to predict whether an action runs, prompts or gets blocked.",
+      "whenToUse": [
+        "Predict why a command was blocked in auto mode even though an allow rule exists",
+        "Decide which allow rules keep working after you enter auto mode",
+        "Understand what happens after repeated classifier blocks",
+        "Retry an action the classifier denied"
+      ],
+      "keyFacts": [
+        "Decision order: permission rules, then auto-approval of read-only actions and working-directory edits, then the classifier; the first matching step wins.",
+        "Entering auto mode drops broad allow rules such as `Bash(*)`, `PowerShell(*)`, `Bash(python*)`, package-manager run commands, `Agent` and `Monitor` rules; narrow rules like `Bash(npm test)` stay and the dropped ones return when you leave.",
+        "Blocked by default includes `curl | bash`, sending sensitive data externally, production deploys and migrations, and force push; installing dependencies declared in lock files is allowed.",
+        "By default the classifier trusts only the working directory and the remotes configured when the session started.",
+        "After 3 blocks in a row or 20 in total, auto mode pauses and prompting resumes; these thresholds are not configurable.",
+        "Denied actions appear in `/permissions` under Recently denied, where `r` marks one for retry."
+      ],
+      "gotchas": [
+        "The classifier sees your messages, tool calls and CLAUDE.md, but tool results are stripped, so hostile file content can't talk to it directly.",
+        "A `-p` run without `--permission-prompt-tool` can't fall back to prompting: the blocked action doesn't run and Claude keeps working.",
+        "Auto mode reduces prompts but does not guarantee safety.",
+        "Set `autoMode.classifyAllShell` to `true` if you want even narrow Bash allow rules suspended."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Permission rules",
+          "difference": "Rules are checked first and in every mode; the classifier only reviews what they didn't resolve, and only where it is active (auto mode, and plan mode's command review when auto mode is available)."
+        },
+        {
+          "concept": "Sandbox",
+          "difference": "The sandbox enforces OS-level limits on the running process; the classifier judges the action before it runs."
+        }
+      ],
+      "examCues": [
+        "Bash(*) stopped working in auto mode",
+        "blocked three times in a row",
+        "retry the denied action",
+        "which actions skip the classifier",
+        "a separate model reviews the command"
+      ]
+    },
+    "es": {
+      "tldr": "En auto mode cada acción sigue un orden fijo: tus reglas allow, ask y deny resuelven primero, las acciones de solo lectura y las ediciones en el directorio de trabajo se aprueban solas, y todo lo demás va a un modelo clasificador aparte. Úsalo para predecir si una acción corre, pregunta o se bloquea.",
+      "whenToUse": [
+        "Entender por qué se bloqueó un comando en auto mode aunque exista una regla allow",
+        "Decidir qué reglas allow siguen funcionando al entrar en auto mode",
+        "Saber qué pasa tras bloqueos repetidos del clasificador",
+        "Reintentar una acción que el clasificador denegó"
+      ],
+      "keyFacts": [
+        "Orden: reglas de permisos, luego auto-aprobación de acciones de solo lectura y ediciones en el directorio de trabajo, luego el clasificador; gana el primer paso que coincide.",
+        "Al entrar en auto mode se descartan reglas allow amplias como `Bash(*)`, `PowerShell(*)`, `Bash(python*)`, comandos run de gestores de paquetes y reglas de `Agent` y `Monitor`; las estrechas como `Bash(npm test)` siguen y las descartadas vuelven al salir.",
+        "Se bloquea por defecto, entre otros: `curl | bash`, enviar datos sensibles afuera, deploys y migraciones a producción, y force push; instalar dependencias declaradas en los lock files está permitido.",
+        "Por defecto el clasificador solo confía en el directorio de trabajo y los remotes configurados al iniciar la sesión.",
+        "Tras 3 bloqueos seguidos o 20 en total, auto mode se pausa y vuelven los prompts; esos umbrales no se configuran.",
+        "Las acciones denegadas aparecen en `/permissions`, pestaña Recently denied, donde `r` marca una para reintentar."
+      ],
+      "gotchas": [
+        "El clasificador ve tus mensajes, las llamadas a herramientas y CLAUDE.md, pero no los resultados de las herramientas, así que contenido hostil en un archivo no le habla directo.",
+        "Una corrida `-p` sin `--permission-prompt-tool` no puede volver a preguntar: la acción bloqueada no corre y Claude sigue trabajando.",
+        "Auto mode reduce los prompts pero no garantiza seguridad.",
+        "Pon `autoMode.classifyAllShell` en `true` si quieres suspender incluso las reglas allow estrechas de Bash."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas de permisos",
+          "difference": "Las reglas se revisan primero y en todo modo; el clasificador solo revisa lo que no resolvieron, y solo donde está activo (auto mode, y la revisión de comandos en plan mode cuando auto mode está disponible)."
+        },
+        {
+          "concept": "Sandbox",
+          "difference": "El sandbox impone límites del sistema operativo al proceso; el clasificador juzga la acción antes de que corra."
+        }
+      ],
+      "examCues": [
+        "Bash(*) stopped working in auto mode",
+        "blocked three times in a row",
+        "retry the denied action",
+        "which actions skip the classifier",
+        "a separate model reviews the command"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permission-modes.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "auto-mode-classifier--b46218f9",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [
+        "perm-rule-eval-order"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer switched to auto mode and has `Bash(*)` in the allow list of `~/.claude/settings.json`. They notice `npm test` now waits for a classifier decision instead of running instantly. They want `npm test` to run immediately without classifier review, with the least change to their setup.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Keep `Bash(*)`; it applies again after the first classifier approval.",
+          "correct": false,
+          "why": "Broad rules like `Bash(*)` stay dropped for as long as auto mode is active."
+        },
+        {
+          "id": "B",
+          "text": "Add a narrow allow rule `Bash(npm test)` to `permissions.allow`.",
+          "correct": true,
+          "why": "Narrow Bash allow rules stay in effect in auto mode and resolve before the classifier runs."
+        },
+        {
+          "id": "C",
+          "text": "Add an `autoMode.allow` entry describing `npm test` as routine.",
+          "correct": false,
+          "why": "`autoMode.allow` is read by the classifier, so the command would still wait for a classifier decision."
+        },
+        {
+          "id": "D",
+          "text": "Set `autoMode.classifyAllShell` to `true`.",
+          "correct": false,
+          "why": "This does the opposite: it suspends every Bash allow rule so every shell command goes to the classifier."
+        }
+      ],
+      "explanation": "The requirement is that `npm test` skips classifier review. On entering auto mode, broad rules that grant arbitrary code execution, such as `Bash(*)`, are dropped, while narrow rules like `Bash(npm test)` stay and resolve before the classifier. An `autoMode.allow` entry is tempting, but it is an exception read inside the classifier, so the command still waits for a classifier call.",
+      "keywordCues": [
+        "without classifier review",
+        "`Bash(*)` in the allow list",
+        "with the least change"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador cambió a auto mode y tiene `Bash(*)` en la lista allow de `~/.claude/settings.json`. Nota que `npm test` ahora espera una decisión del clasificador en vez de correr al instante. Quiere que `npm test` corra de inmediato sin revisión del clasificador, con el menor cambio posible.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mantener `Bash(*)`; vuelve a aplicar tras la primera aprobación del clasificador.",
+            "why": "Las reglas amplias como `Bash(*)` quedan descartadas mientras auto mode esté activo."
+          },
+          {
+            "id": "B",
+            "text": "Agregar una regla allow estrecha `Bash(npm test)` en `permissions.allow`.",
+            "why": "Las reglas allow estrechas de Bash siguen vigentes en auto mode y resuelven antes del clasificador."
+          },
+          {
+            "id": "C",
+            "text": "Agregar una entrada `autoMode.allow` que describa `npm test` como rutina.",
+            "why": "`autoMode.allow` lo lee el clasificador, así que el comando igual esperaría su decisión."
+          },
+          {
+            "id": "D",
+            "text": "Poner `autoMode.classifyAllShell` en `true`.",
+            "why": "Hace lo contrario: suspende toda regla allow de Bash para que todo comando de shell vaya al clasificador."
+          }
+        ],
+        "explanation": "El requisito es que `npm test` se salte la revisión del clasificador. Al entrar en auto mode se descartan reglas amplias de ejecución arbitraria como `Bash(*)`, mientras que reglas estrechas como `Bash(npm test)` siguen y resuelven antes del clasificador. Una entrada `autoMode.allow` tienta, pero es una excepción que se lee dentro del clasificador, así que el comando igual espera una llamada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-classifier--92364779",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A nightly CI job runs `claude -p` in auto mode with no `--permission-prompt-tool`. During one run, the classifier blocks the same kind of action several times in a row until the repeated-block threshold is reached. What happens next in that run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude Code stops the run with a non-zero exit code.",
+          "correct": false,
+          "why": "The docs state Claude Code doesn't stop the run in this case."
+        },
+        {
+          "id": "B",
+          "text": "Auto mode pauses and the run waits for a permission prompt.",
+          "correct": false,
+          "why": "A non-interactive run without a prompt tool has no prompt to fall back to."
+        },
+        {
+          "id": "C",
+          "text": "The blocked action doesn't run and Claude keeps working.",
+          "correct": true,
+          "why": "Without a prompt to fall back to, the action is skipped and the run continues."
+        },
+        {
+          "id": "D",
+          "text": "Claude Code raises the threshold so the classifier can keep reviewing.",
+          "correct": false,
+          "why": "The 3-in-a-row and 20-total thresholds are fixed and not configurable."
+        }
+      ],
+      "explanation": "The deciding detail is that the run is non-interactive with no `--permission-prompt-tool`. In an interactive session, hitting 3 consecutive or 20 total blocks pauses auto mode and resumes prompting. A `-p` run has no prompt to fall back to, so the action doesn't run and Claude keeps working; Claude Code doesn't stop the run. Waiting for a prompt is the tempting answer, but it only describes interactive sessions.",
+      "keywordCues": [
+        "`claude -p`",
+        "no `--permission-prompt-tool`",
+        "repeated-block threshold"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un job nocturno de CI corre `claude -p` en auto mode sin `--permission-prompt-tool`. En una corrida, el clasificador bloquea el mismo tipo de acción varias veces seguidas hasta alcanzar el umbral de bloqueos repetidos. ¿Qué pasa después en esa corrida?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Claude Code detiene la corrida con un código de salida distinto de cero.",
+            "why": "La documentación dice que Claude Code no detiene la corrida en este caso."
+          },
+          {
+            "id": "B",
+            "text": "Auto mode se pausa y la corrida espera un prompt de permiso.",
+            "why": "Una corrida no interactiva sin prompt tool no tiene prompt al cual volver."
+          },
+          {
+            "id": "C",
+            "text": "La acción bloqueada no corre y Claude sigue trabajando.",
+            "why": "Sin prompt al cual volver, la acción se omite y la corrida continúa."
+          },
+          {
+            "id": "D",
+            "text": "Claude Code sube el umbral para que el clasificador siga revisando.",
+            "why": "Los umbrales de 3 seguidos y 20 totales son fijos y no se configuran."
+          }
+        ],
+        "explanation": "El detalle que decide es que la corrida es no interactiva y sin `--permission-prompt-tool`. En una sesión interactiva, llegar a 3 bloqueos seguidos o 20 totales pausa auto mode y vuelven los prompts. Una corrida `-p` no tiene prompt al cual volver, así que la acción no corre y Claude sigue trabajando; Claude Code no detiene la corrida. Esperar un prompt tienta, pero solo describe sesiones interactivas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-classifier--943ec6e5",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer starts auto mode in a fresh clone with no custom permission rules and no `autoMode` configuration. They ask Claude to set up the project. Which two actions run without a prompt or block under the default behavior? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Editing `src/config.ts` inside the working directory",
+          "correct": true,
+          "why": "File edits in the working directory are auto-approved before the classifier."
+        },
+        {
+          "id": "B",
+          "text": "Running `curl https://get.example.sh | bash` to install a tool",
+          "correct": false,
+          "why": "Downloading and executing code is blocked by default."
+        },
+        {
+          "id": "C",
+          "text": "Installing the dependencies declared in the lock file",
+          "correct": true,
+          "why": "Installing dependencies declared in lock files or manifests is allowed by default."
+        },
+        {
+          "id": "D",
+          "text": "Force pushing the current branch to rewrite history",
+          "correct": false,
+          "why": "Force push is blocked by default."
+        },
+        {
+          "id": "E",
+          "text": "Running the production database migration",
+          "correct": false,
+          "why": "Production deploys and migrations are blocked by default."
+        }
+      ],
+      "explanation": "The requirement is the default behavior with nothing configured. Working-directory edits are auto-approved in step 2 of the decision order, and installing declared dependencies is on the classifier's default allow list. `curl | bash`, force push and production migrations are all on the default block list. A force push to your own branch can look routine, but the classifier blocks it unless you approve it specifically.",
+      "keywordCues": [
+        "no custom permission rules",
+        "no `autoMode` configuration",
+        "under the default behavior"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador inicia auto mode en un clon nuevo, sin reglas de permisos propias ni configuración `autoMode`. Le pide a Claude que prepare el proyecto. ¿Qué dos acciones corren sin prompt ni bloqueo con el comportamiento por defecto? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Editar `src/config.ts` dentro del directorio de trabajo",
+            "why": "Las ediciones en el directorio de trabajo se aprueban solas antes del clasificador."
+          },
+          {
+            "id": "B",
+            "text": "Correr `curl https://get.example.sh | bash` para instalar una herramienta",
+            "why": "Descargar y ejecutar código se bloquea por defecto."
+          },
+          {
+            "id": "C",
+            "text": "Instalar las dependencias declaradas en el lock file",
+            "why": "Instalar dependencias declaradas en lock files o manifests está permitido por defecto."
+          },
+          {
+            "id": "D",
+            "text": "Hacer force push de la rama actual para reescribir historia",
+            "why": "El force push se bloquea por defecto."
+          },
+          {
+            "id": "E",
+            "text": "Correr la migración de la base de datos de producción",
+            "why": "Los deploys y migraciones a producción se bloquean por defecto."
+          }
+        ],
+        "explanation": "El requisito es el comportamiento por defecto sin nada configurado. Las ediciones en el directorio de trabajo se aprueban en el paso 2 del orden de decisión, e instalar dependencias declaradas está en la lista allow por defecto del clasificador. `curl | bash`, force push y migraciones a producción están en la lista de bloqueo por defecto. Un force push a tu propia rama puede parecer rutina, pero el clasificador lo bloquea salvo que lo apruebes de forma específica."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-classifier--04fbd024",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In an interactive auto mode session, the classifier blocked a `gh release create` command that the developer actually wanted. They want to run that one action with a manual approval, without changing any configuration.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/auto-mode-setup` so it drafts entries covering releases.",
+          "correct": false,
+          "why": "It drafts configuration and writes it to `~/.claude/settings.json`, which changes configuration."
+        },
+        {
+          "id": "B",
+          "text": "Add an `autoMode.allow` entry describing release creation.",
+          "correct": false,
+          "why": "That is a configuration change that approves the pattern from now on, not a one-off approval."
+        },
+        {
+          "id": "C",
+          "text": "Open `/permissions`, go to Recently denied and press `r` on it.",
+          "correct": true,
+          "why": "Recently denied lists classifier denials; `r` marks one for retry with a manual approval."
+        },
+        {
+          "id": "D",
+          "text": "Add the release host to `autoMode.environment`.",
+          "correct": false,
+          "why": "It edits settings and is meant for destinations needed throughout a task."
+        }
+      ],
+      "explanation": "The requirement is a single manual approval with no configuration change. Claude Code records each classifier denial in `/permissions` under Recently denied, and pressing `r` marks it for retry; when you exit, Claude is told it may retry that call. `autoMode.allow` and `autoMode.environment` would work for future calls but change settings, and `/auto-mode-setup` writes settings too.",
+      "keywordCues": [
+        "that one action",
+        "with a manual approval",
+        "without changing any configuration"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "En una sesión interactiva en auto mode, el clasificador bloqueó un `gh release create` que el desarrollador sí quería. Quiere correr esa única acción con aprobación manual, sin cambiar ninguna configuración.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/auto-mode-setup` para que redacte entradas que cubran releases.",
+            "why": "Redacta configuración y la escribe en `~/.claude/settings.json`, o sea, cambia configuración."
+          },
+          {
+            "id": "B",
+            "text": "Agregar una entrada `autoMode.allow` que describa crear releases.",
+            "why": "Es un cambio de configuración que aprueba el patrón de ahí en adelante, no una aprobación puntual."
+          },
+          {
+            "id": "C",
+            "text": "Abrir `/permissions`, ir a Recently denied y presionar `r` sobre ella.",
+            "why": "Recently denied lista las denegaciones del clasificador; `r` marca una para reintentar con aprobación manual."
+          },
+          {
+            "id": "D",
+            "text": "Agregar el host de releases a `autoMode.environment`.",
+            "why": "Edita settings y está pensado para destinos que se necesitan durante toda una tarea."
+          }
+        ],
+        "explanation": "El requisito es una sola aprobación manual sin cambiar configuración. Claude Code registra cada denegación del clasificador en `/permissions`, pestaña Recently denied, y `r` la marca para reintentar; al salir, se le avisa a Claude que puede reintentar esa llamada. `autoMode.allow` y `autoMode.environment` servirían para el futuro pero cambian settings, y `/auto-mode-setup` también escribe settings."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-classifier--996c8b72",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Which `autoMode` key, set to `true`, suspends every Bash and PowerShell allow rule so the classifier evaluates every shell command?",
+      "options": [
+        {
+          "id": "A",
+          "text": "classifyAllShell",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "autoMode.classifyAllShell",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`autoMode.classifyAllShell: true` suspends every Bash and PowerShell allow rule while auto mode is active, so even narrow rules like `Bash(npm test)` no longer skip the classifier, except critical-path removals. It trades latency for coverage, and allow rules behave normally in other modes.",
+      "keywordCues": [
+        "suspends every Bash and PowerShell allow rule",
+        "evaluates every shell command"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de `autoMode`, en `true`, suspende toda regla allow de Bash y PowerShell para que el clasificador evalúe cada comando de shell?",
+        "options": [
+          {
+            "id": "A",
+            "text": "classifyAllShell",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "autoMode.classifyAllShell",
+            "why": ""
+          }
+        ],
+        "explanation": "`autoMode.classifyAllShell: true` suspende toda regla allow de Bash y PowerShell mientras auto mode está activo, así que ni las reglas estrechas como `Bash(npm test)` se saltan el clasificador, salvo las eliminaciones de rutas críticas. Cambia latencia por cobertura, y las reglas allow funcionan normal en otros modos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-classifier--8f518cfa",
+      "conceptId": "auto-mode-classifier",
+      "secondaryConcepts": [
+        "perm-rule-eval-order"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Put the steps auto mode applies to an action in order, from first to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Your allow, ask and deny rules resolve matching actions",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Read-only actions and working-directory edits are auto-approved",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "The classifier model reviews everything else",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "If blocked, Claude receives the reason and tries an alternative",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Each action goes through a fixed order and the first matching step wins. Permission rules resolve first, then read-only actions and working-directory edits are auto-approved, and only what remains reaches the classifier. When the classifier blocks, Claude gets the reason and tries another approach.",
+      "keywordCues": [
+        "from first to last"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Ordena los pasos que auto mode aplica a una acción, del primero al último.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Tus reglas allow, ask y deny resuelven las acciones que coinciden",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Las acciones de solo lectura y las ediciones en el directorio de trabajo se aprueban solas",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "El modelo clasificador revisa todo lo demás",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "Si bloquea, Claude recibe el motivo y prueba una alternativa",
+            "why": ""
+          }
+        ],
+        "explanation": "Cada acción sigue un orden fijo y gana el primer paso que coincide. Las reglas de permisos resuelven primero, luego se aprueban solas las acciones de solo lectura y las ediciones en el directorio de trabajo, y solo lo que queda llega al clasificador. Si el clasificador bloquea, Claude recibe el motivo y prueba otro camino."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "auto-mode-classifier--r0",
+      "conceptId": "auto-mode-classifier",
+      "kind": "recall",
+      "prompt": "Explain how auto mode decides whether an action runs, and what happens to broad allow rules like Bash(*) when you enter it.",
+      "promptEs": "Explica cómo decide auto mode si una acción corre, y qué pasa con reglas allow amplias como Bash(*) al entrar.",
+      "idealAnswer": "Your allow, ask and deny rules resolve first, then read-only actions and working-directory edits are auto-approved, and everything else goes to a separate classifier model that blocks risky actions. On entering auto mode, broad rules that grant arbitrary code execution, like Bash(*), are dropped while narrow rules stay. After 3 blocks in a row or 20 in total, it falls back to prompting.",
+      "rubric": [
+        "Rules first, then read-only and working-directory edits, then the classifier",
+        "The classifier is a separate model that blocks risky actions",
+        "Broad allow rules like Bash(*) are dropped; narrow ones stay",
+        "Repeated blocks (3 in a row or 20 total) fall back to prompting"
+      ]
+    },
+    {
+      "id": "auto-mode-classifier--r1",
+      "conceptId": "auto-mode-classifier",
+      "kind": "why-not",
+      "prompt": "A developer wants a guarantee that `rm -rf build/` never runs in any permission mode. Why is relying on the auto mode classifier not enough?",
+      "promptEs": "Un desarrollador quiere garantizar que `rm -rf build/` nunca corra en ningún modo de permisos. ¿Por qué no basta con confiar en el clasificador de auto mode?",
+      "idealAnswer": "The classifier only reviews actions where it is active, in auto mode (and plan mode's command review when auto mode is available), not in modes like Manual or bypassPermissions. Even there it only reviews actions that permission rules didn't resolve, and it is a model's judgment, not a guarantee. A permission deny rule is checked before the classifier in every mode, including bypassPermissions, and blocks the matching call deterministically.",
+      "rubric": [
+        "The classifier does not review actions in every mode (e.g. not in Manual or bypassPermissions)",
+        "It reviews only what rules didn't resolve and is a model judgment",
+        "Use a permission deny rule, which is checked first in every mode"
+      ]
+    }
+  ]
+}

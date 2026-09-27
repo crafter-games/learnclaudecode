@@ -1,0 +1,601 @@
+{
+  "conceptId": "auto-mode-environment",
+  "card": {
+    "en": {
+      "tldr": "The `autoMode` settings block tells the classifier what your organization trusts and adds or relaxes its rules, all as prose entries. Use `environment` for trusted repos, buckets and domains, and `allow`, `soft_deny` and `hard_deny` to tune what gets blocked.",
+      "whenToUse": [
+        "The classifier keeps blocking pushes to your company's source-control org or writes to a team bucket",
+        "Add an organization-specific block the defaults miss",
+        "Stop a routine pattern from being flagged again and again",
+        "Check the effective configuration after editing settings"
+      ],
+      "keyFacts": [
+        "The classifier reads `autoMode` from `~/.claude/settings.json`, managed settings and the `--settings` flag or Agent SDK, never from `.claude/settings.json` or `.claude/settings.local.json`.",
+        "Entries are prose read as natural-language rules, not regex or tool patterns.",
+        "Include the literal string `\"$defaults\"` in an array to keep the built-in entries; an array without it replaces that section's defaults, and each section is independent.",
+        "`hard_deny` blocks unconditionally; `soft_deny` blocks unless an `allow` exception or explicit user intent clears it.",
+        "`claude auto-mode defaults` prints the built-in rules, `config` the effective rules, `critique` reviews your custom rules and `reset` removes your user-level `autoMode` section.",
+        "`/auto-mode-setup` drafts entries from your project and recent sessions and, if you accept, writes them to `~/.claude/settings.json`."
+      ],
+      "gotchas": [
+        "A `soft_deny` array without `\"$defaults\"` discards built-in blocks like force push, `curl | bash` and production deploys.",
+        "Scopes combine additively: a developer's `allow` entry can override an organization `soft_deny`, so it is not a hard policy boundary.",
+        "For a block nothing can override, use `permissions.deny` in managed settings, not `autoMode`.",
+        "Project conventions such as 'never force push' belong in CLAUDE.md, which the classifier also reads."
+      ],
+      "confusedWith": [
+        {
+          "concept": "permissions.ask / permissions.deny",
+          "difference": "Tool-pattern rules checked before the classifier; `autoMode` entries are prose read inside the classifier."
+        },
+        {
+          "concept": "Project settings",
+          "difference": "`.claude/settings.json` works for permissions, but the classifier ignores any `autoMode` block there."
+        }
+      ],
+      "examCues": [
+        "our company's GitHub org keeps getting blocked",
+        "trusted cloud buckets",
+        "keep the built-in rules",
+        "no allow exception can clear it",
+        "confirm the effective rules"
+      ]
+    },
+    "es": {
+      "tldr": "El bloque de settings `autoMode` le dice al clasificador en qué confía tu organización y agrega o afloja sus reglas, todo con entradas en prosa. Usa `environment` para repos, buckets y dominios de confianza, y `allow`, `soft_deny` y `hard_deny` para ajustar qué se bloquea.",
+      "whenToUse": [
+        "El clasificador bloquea una y otra vez los push a la org de source control de tu empresa o las escrituras a un bucket del equipo",
+        "Agregar un bloqueo propio de tu organización que los defaults no cubren",
+        "Evitar que un patrón de rutina se marque una y otra vez",
+        "Verificar la configuración efectiva tras editar settings"
+      ],
+      "keyFacts": [
+        "El clasificador lee `autoMode` de `~/.claude/settings.json`, managed settings y el flag `--settings` o el Agent SDK, nunca de `.claude/settings.json` ni de `.claude/settings.local.json`.",
+        "Las entradas son prosa que se lee como reglas en lenguaje natural, no regex ni patrones de herramientas.",
+        "Incluye el string literal `\"$defaults\"` en un array para conservar las entradas integradas; un array sin él reemplaza los defaults de esa sección, y cada sección es independiente.",
+        "`hard_deny` bloquea sin condiciones; `soft_deny` bloquea salvo que una excepción `allow` o la intención explícita del usuario lo levante.",
+        "`claude auto-mode defaults` imprime las reglas integradas, `config` las efectivas, `critique` revisa tus reglas propias y `reset` borra tu sección `autoMode` de usuario.",
+        "`/auto-mode-setup` redacta entradas a partir de tu proyecto y sesiones recientes y, si aceptas, las escribe en `~/.claude/settings.json`."
+      ],
+      "gotchas": [
+        "Un array `soft_deny` sin `\"$defaults\"` descarta bloqueos integrados como force push, `curl | bash` y deploys a producción.",
+        "Las scopes se suman: una entrada `allow` de un desarrollador puede anular un `soft_deny` de la organización, así que no es un límite de política firme.",
+        "Para un bloqueo que nada pueda anular, usa `permissions.deny` en managed settings, no `autoMode`.",
+        "Las convenciones del proyecto como 'nunca hagas force push' van en CLAUDE.md, que el clasificador también lee."
+      ],
+      "confusedWith": [
+        {
+          "concept": "permissions.ask / permissions.deny",
+          "difference": "Reglas por patrón de herramienta que se revisan antes del clasificador; las entradas de `autoMode` son prosa que se lee dentro del clasificador."
+        },
+        {
+          "concept": "Settings del proyecto",
+          "difference": "`.claude/settings.json` sirve para permisos, pero el clasificador ignora cualquier bloque `autoMode` ahí."
+        }
+      ],
+      "examCues": [
+        "our company's GitHub org keeps getting blocked",
+        "trusted cloud buckets",
+        "keep the built-in rules",
+        "no allow exception can clear it",
+        "confirm the effective rules"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/auto-mode-config.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "auto-mode-environment--12cd8bfb",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A platform team committed an `autoMode.environment` block listing their GitHub org and internal domains to the repo's `.claude/settings.json`, but auto mode still blocks pushes to other org repos. They want the trusted-infrastructure list distributed to every developer across all projects.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the block to `.claude/settings.local.json` in each repo.",
+          "correct": false,
+          "why": "The classifier doesn't read `autoMode` from `.claude/settings.local.json` either."
+        },
+        {
+          "id": "B",
+          "text": "Deploy the `autoMode.environment` block through managed settings.",
+          "correct": true,
+          "why": "Managed settings are the organization-wide scope the classifier reads for trusted infrastructure."
+        },
+        {
+          "id": "C",
+          "text": "Rewrite the entries as `permissions.allow` rules in `.claude/settings.json`.",
+          "correct": false,
+          "why": "Permission rules don't tell the classifier what infrastructure is trusted."
+        },
+        {
+          "id": "D",
+          "text": "Describe the org and domains in the repo's CLAUDE.md.",
+          "correct": false,
+          "why": "The classifier reads CLAUDE.md, but a repo's file doesn't reach every developer across all projects."
+        }
+      ],
+      "explanation": "The classifier never reads `autoMode` from `.claude/settings.json` or `.claude/settings.local.json`, because a checked-in repo could otherwise inject its own rules. For trusted infrastructure distributed to all developers, the documented scope is managed settings. A project's CLAUDE.md does steer the classifier, but it only applies in that repo, not across all projects.",
+      "keywordCues": [
+        "`.claude/settings.json`",
+        "distributed to every developer",
+        "across all projects"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma commiteó un bloque `autoMode.environment` con su org de GitHub y dominios internos en el `.claude/settings.json` del repo, pero auto mode sigue bloqueando los push a otros repos de la org. Quieren que la lista de infraestructura de confianza llegue a todos los desarrolladores en todos los proyectos.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover el bloque a `.claude/settings.local.json` en cada repo.",
+            "why": "El clasificador tampoco lee `autoMode` de `.claude/settings.local.json`."
+          },
+          {
+            "id": "B",
+            "text": "Distribuir el bloque `autoMode.environment` mediante managed settings.",
+            "why": "Managed settings es la scope de toda la organización que el clasificador lee para infraestructura de confianza."
+          },
+          {
+            "id": "C",
+            "text": "Reescribir las entradas como reglas `permissions.allow` en `.claude/settings.json`.",
+            "why": "Las reglas de permisos no le dicen al clasificador qué infraestructura es de confianza."
+          },
+          {
+            "id": "D",
+            "text": "Describir la org y los dominios en el CLAUDE.md del repo.",
+            "why": "El clasificador lee CLAUDE.md, pero el archivo de un repo no llega a todos los desarrolladores en todos los proyectos."
+          }
+        ],
+        "explanation": "El clasificador nunca lee `autoMode` de `.claude/settings.json` ni de `.claude/settings.local.json`, porque un repo commiteado podría inyectar sus propias reglas. Para infraestructura de confianza distribuida a todos, la scope documentada es managed settings. El CLAUDE.md del proyecto sí guía al clasificador, pero solo aplica en ese repo, no en todos los proyectos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-environment--59bd976c",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer wants the classifier to also block database migrations run outside the team's migrations CLI. They must not lose any built-in protection such as the force push and `curl | bash` blocks, and they want to keep inheriting updates to the built-in list.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `autoMode.soft_deny` to an array holding only the new rule.",
+          "correct": false,
+          "why": "An array without `\"$defaults\"` replaces every built-in soft block rule."
+        },
+        {
+          "id": "B",
+          "text": "Set `autoMode.soft_deny` to `[\"$defaults\", \"<new rule>\"]`.",
+          "correct": true,
+          "why": "`\"$defaults\"` splices in the built-in rules and keeps inheriting their updates."
+        },
+        {
+          "id": "C",
+          "text": "Copy `claude auto-mode defaults` output into `soft_deny`, then add the rule.",
+          "correct": false,
+          "why": "This keeps today's rules but takes full ownership, so future updates to the built-in list aren't inherited."
+        },
+        {
+          "id": "D",
+          "text": "Add the rule to `autoMode.environment` instead.",
+          "correct": false,
+          "why": "`environment` describes trusted infrastructure; block rules belong in `soft_deny` or `hard_deny`."
+        }
+      ],
+      "explanation": "Setting any `autoMode` array without the literal `\"$defaults\"` replaces the built-in list for that section, which for `soft_deny` drops force push, `curl | bash` and production deploy blocks. Including `\"$defaults\"` splices the built-in rules in and keeps inheriting updates across releases. Copying the defaults by hand is the tempting option, but it freezes the list and misses the requirement to inherit updates.",
+      "keywordCues": [
+        "must not lose any built-in protection",
+        "keep inheriting updates"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que el clasificador también bloquee migraciones de base de datos corridas fuera del CLI de migraciones del equipo. No debe perder ninguna protección integrada, como los bloqueos de force push y `curl | bash`, y quiere seguir heredando las actualizaciones de la lista integrada.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner en `autoMode.soft_deny` un array solo con la regla nueva.",
+            "why": "Un array sin `\"$defaults\"` reemplaza todas las reglas soft integradas."
+          },
+          {
+            "id": "B",
+            "text": "Poner `autoMode.soft_deny` en `[\"$defaults\", \"<regla nueva>\"]`.",
+            "why": "`\"$defaults\"` inserta las reglas integradas y sigue heredando sus actualizaciones."
+          },
+          {
+            "id": "C",
+            "text": "Copiar la salida de `claude auto-mode defaults` en `soft_deny` y agregar la regla.",
+            "why": "Conserva las reglas de hoy pero asume la lista completa, así que no hereda futuras actualizaciones."
+          },
+          {
+            "id": "D",
+            "text": "Agregar la regla a `autoMode.environment`.",
+            "why": "`environment` describe infraestructura de confianza; las reglas de bloqueo van en `soft_deny` o `hard_deny`."
+          }
+        ],
+        "explanation": "Definir cualquier array de `autoMode` sin el literal `\"$defaults\"` reemplaza la lista integrada de esa sección, y en `soft_deny` eso elimina los bloqueos de force push, `curl | bash` y deploys a producción. Incluir `\"$defaults\"` inserta las reglas integradas y sigue heredando sus actualizaciones. Copiar los defaults a mano tienta, pero congela la lista y no cumple el requisito de heredar actualizaciones."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-environment--f3e9fb7c",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "On a Max plan, auto mode keeps blocking routine pushes to `github.example.com/acme-corp` repos and uploads to `s3://acme-builds`. The developer wants these treated as trusted for themselves in every project, without affecting teammates. Which two actions each achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add prose entries for the org and bucket to `autoMode.environment` in `~/.claude/settings.json`",
+          "correct": true,
+          "why": "User settings is the per-developer scope the classifier reads for trusted infrastructure."
+        },
+        {
+          "id": "B",
+          "text": "Run `/auto-mode-setup` and accept the drafted environment entries",
+          "correct": true,
+          "why": "It drafts entries from the project and recent sessions and writes them to `~/.claude/settings.json`."
+        },
+        {
+          "id": "C",
+          "text": "Add the same entries to `.claude/settings.local.json`",
+          "correct": false,
+          "why": "The classifier doesn't read `autoMode` from `.claude/settings.local.json`."
+        },
+        {
+          "id": "D",
+          "text": "Add regex entries like `^s3://acme-.*` to `autoMode.allow`",
+          "correct": false,
+          "why": "Entries are prose read as natural-language rules, not regex patterns."
+        },
+        {
+          "id": "E",
+          "text": "Add `Bash(git push *)` to `permissions.ask`",
+          "correct": false,
+          "why": "That forces a prompt on pushes instead of teaching the classifier what is trusted."
+        }
+      ],
+      "explanation": "Repeated blocks for the same destinations usually mean the classifier is missing context, and the fix is `autoMode.environment` in a scope it reads. `~/.claude/settings.json` is personal and applies across projects, and `/auto-mode-setup` writes its accepted draft there too. `.claude/settings.local.json` looks personal, but the classifier ignores `autoMode` in it.",
+      "keywordCues": [
+        "keeps blocking routine pushes",
+        "for themselves in every project",
+        "without affecting teammates"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "En un plan Max, auto mode bloquea una y otra vez push de rutina a repos de `github.example.com/acme-corp` y subidas a `s3://acme-builds`. El desarrollador quiere que sean de confianza para él en todos sus proyectos, sin afectar a sus compañeros. ¿Qué dos acciones lo logran cada una? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar entradas en prosa para la org y el bucket en `autoMode.environment` de `~/.claude/settings.json`",
+            "why": "Los settings de usuario son la scope por desarrollador que el clasificador lee para infraestructura de confianza."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/auto-mode-setup` y aceptar las entradas de environment redactadas",
+            "why": "Redacta entradas desde el proyecto y las sesiones recientes y las escribe en `~/.claude/settings.json`."
+          },
+          {
+            "id": "C",
+            "text": "Agregar las mismas entradas en `.claude/settings.local.json`",
+            "why": "El clasificador no lee `autoMode` de `.claude/settings.local.json`."
+          },
+          {
+            "id": "D",
+            "text": "Agregar entradas regex como `^s3://acme-.*` en `autoMode.allow`",
+            "why": "Las entradas son prosa que se lee como reglas en lenguaje natural, no patrones regex."
+          },
+          {
+            "id": "E",
+            "text": "Agregar `Bash(git push *)` en `permissions.ask`",
+            "why": "Eso fuerza un prompt en los push en vez de enseñarle al clasificador qué es de confianza."
+          }
+        ],
+        "explanation": "Bloqueos repetidos al mismo destino suelen significar que al clasificador le falta contexto, y se arregla con `autoMode.environment` en una scope que lea. `~/.claude/settings.json` es personal y aplica en todos los proyectos, y `/auto-mode-setup` también escribe ahí el borrador aceptado. `.claude/settings.local.json` parece personal, pero el clasificador ignora `autoMode` ahí."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-environment--e3b71c95",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You want to take full ownership of the `soft_deny` list. Which command prints the built-in rules as JSON so you can copy them first?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude auto-mode defaults",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude auto-mode defaults` prints the built-in `environment`, `allow`, `soft_deny` and `hard_deny` rules as JSON. The docs recommend copying them into your settings before omitting `\"$defaults\"`, then reviewing each rule. `claude auto-mode config` instead shows the effective rules with your settings applied.",
+      "keywordCues": [
+        "prints the built-in rules",
+        "take full ownership"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "Quieres asumir por completo la lista `soft_deny`. ¿Qué comando imprime las reglas integradas en JSON para copiarlas primero?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude auto-mode defaults",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude auto-mode defaults` imprime en JSON las reglas integradas de `environment`, `allow`, `soft_deny` y `hard_deny`. La documentación recomienda copiarlas a tus settings antes de omitir `\"$defaults\"` y revisar cada regla. `claude auto-mode config`, en cambio, muestra las reglas efectivas con tus settings aplicados."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-environment--4006f791",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which literal string do you put in an `autoMode.environment` array so your entries are added alongside the built-in ones instead of replacing them?",
+      "options": [
+        {
+          "id": "A",
+          "text": "$defaults",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The literal string `\"$defaults\"` splices the built-in entries in at that position, so your own entries can go before or after them. Without it, the array replaces the whole default list for that section.",
+      "keywordCues": [
+        "added alongside the built-in ones",
+        "instead of replacing them"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "¿Qué string literal pones en un array `autoMode.environment` para que tus entradas se sumen a las integradas en vez de reemplazarlas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$defaults",
+            "why": ""
+          }
+        ],
+        "explanation": "El string literal `\"$defaults\"` inserta las entradas integradas en esa posición, así que las tuyas pueden ir antes o después. Sin él, el array reemplaza toda la lista por defecto de esa sección."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-environment--60493488",
+      "conceptId": "auto-mode-environment",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Tell the classifier your source-control org while keeping the built-in trusted entries, and add a block on sending repository contents to third-party review APIs that no allow exception or user approval can clear.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "allow",
+          "correct": false,
+          "why": "`allow` holds exceptions to soft block rules, not trusted infrastructure."
+        },
+        {
+          "id": "1b",
+          "text": "environment",
+          "correct": true,
+          "why": "`environment` tells the classifier which repos, buckets and domains are trusted."
+        },
+        {
+          "id": "1c",
+          "text": "soft_deny",
+          "correct": false,
+          "why": "`soft_deny` holds block rules, not trusted infrastructure."
+        },
+        {
+          "id": "2a",
+          "text": "*",
+          "correct": false,
+          "why": "Not a documented marker; the entries are prose."
+        },
+        {
+          "id": "2b",
+          "text": "defaults",
+          "correct": false,
+          "why": "The marker must be the literal string with a leading `$`."
+        },
+        {
+          "id": "2c",
+          "text": "$defaults",
+          "correct": true,
+          "why": "The literal `$defaults` splices the built-in entries in so yours are added, not substituted."
+        },
+        {
+          "id": "3a",
+          "text": "hard_deny",
+          "correct": true,
+          "why": "`hard_deny` blocks unconditionally; allow exceptions and user intent don't apply."
+        },
+        {
+          "id": "3b",
+          "text": "soft_deny",
+          "correct": false,
+          "why": "An `allow` exception or explicit user intent can clear a `soft_deny` block."
+        },
+        {
+          "id": "3c",
+          "text": "allow",
+          "correct": false,
+          "why": "`allow` would permit the action instead of blocking it."
+        }
+      ],
+      "explanation": "Trusted source control goes in `environment`, and the literal `$defaults` keeps the built-in entries alongside yours. A block that neither an allow exception nor user intent can clear must be `hard_deny`; `soft_deny` is overridable by both. The second array already includes `$defaults`, so the built-in hard block rules stay too.",
+      "keywordCues": [
+        "keeping the built-in trusted entries",
+        "no allow exception or user approval can clear"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md"
+      ],
+      "es": {
+        "stem": "Indícale al clasificador tu org de source control conservando las entradas de confianza integradas, y agrega un bloqueo al envío del contenido del repo a APIs de revisión de terceros que ninguna excepción allow ni aprobación del usuario pueda levantar.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "allow",
+            "why": "`allow` contiene excepciones a reglas soft, no infraestructura de confianza."
+          },
+          {
+            "id": "1b",
+            "text": "environment",
+            "why": "`environment` le dice al clasificador qué repos, buckets y dominios son de confianza."
+          },
+          {
+            "id": "1c",
+            "text": "soft_deny",
+            "why": "`soft_deny` contiene reglas de bloqueo, no infraestructura de confianza."
+          },
+          {
+            "id": "2a",
+            "text": "*",
+            "why": "No es un marcador documentado; las entradas son prosa."
+          },
+          {
+            "id": "2b",
+            "text": "defaults",
+            "why": "El marcador debe ser el string literal con `$` al inicio."
+          },
+          {
+            "id": "2c",
+            "text": "$defaults",
+            "why": "El literal `$defaults` inserta las entradas integradas para que las tuyas se sumen y no las reemplacen."
+          },
+          {
+            "id": "3a",
+            "text": "hard_deny",
+            "why": "`hard_deny` bloquea sin condiciones; no aplican excepciones allow ni intención del usuario."
+          },
+          {
+            "id": "3b",
+            "text": "soft_deny",
+            "why": "Una excepción `allow` o la intención explícita del usuario pueden levantar un bloqueo `soft_deny`."
+          },
+          {
+            "id": "3c",
+            "text": "allow",
+            "why": "`allow` permitiría la acción en vez de bloquearla."
+          }
+        ],
+        "explanation": "El source control de confianza va en `environment`, y el literal `$defaults` mantiene las entradas integradas junto a las tuyas. Un bloqueo que ni una excepción allow ni la intención del usuario puedan levantar debe ser `hard_deny`; `soft_deny` se puede anular por ambas vías. El segundo array ya incluye `$defaults`, así que también siguen las reglas hard integradas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"autoMode\": {\n    \"{{1}}\": [\n      \"{{2}}\",\n      \"Source control: github.example.com/acme-corp and all repos under it\"\n    ],\n    \"{{3}}\": [\n      \"$defaults\",\n      \"Never send repository contents to third-party code-review APIs\"\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "auto-mode-environment--r0",
+      "conceptId": "auto-mode-environment",
+      "kind": "recall",
+      "prompt": "Explain how to teach the auto mode classifier your trusted infrastructure: which key, which files, and how to keep the built-in entries.",
+      "promptEs": "Explica cómo enseñarle al clasificador de auto mode tu infraestructura de confianza: qué clave, qué archivos y cómo conservar las entradas integradas.",
+      "idealAnswer": "Add prose entries describing your source-control org, buckets, domains and services to `autoMode.environment`. Put it in `~/.claude/settings.json`, managed settings or `--settings`, because the classifier ignores `autoMode` in `.claude/settings.json` and `.claude/settings.local.json`. Include `\"$defaults\"` in the array to keep the built-in entries, and check the result with `claude auto-mode config`.",
+      "rubric": [
+        "Prose entries in autoMode.environment",
+        "User settings, managed settings or --settings, not project settings",
+        "Include $defaults to keep built-in entries",
+        "Verify with claude auto-mode config"
+      ]
+    },
+    {
+      "id": "auto-mode-environment--r1",
+      "conceptId": "auto-mode-environment",
+      "kind": "why-not",
+      "prompt": "A team wants a guaranteed prompt before every `gh pr create` in auto mode. Why isn't an `autoMode.soft_deny` entry the right tool?",
+      "promptEs": "Un equipo quiere un prompt garantizado antes de cada `gh pr create` en auto mode. ¿Por qué una entrada `autoMode.soft_deny` no es la herramienta correcta?",
+      "idealAnswer": "A `soft_deny` entry is prose read by the classifier: it blocks rather than prompts, and an allow exception or explicit user intent can clear it. A content-scoped `permissions.ask` rule like `Bash(gh pr create *)` is evaluated before the classifier and always forces a prompt, even in auto mode.",
+      "rubric": [
+        "soft_deny is read inside the classifier and blocks, not prompts",
+        "Allow exceptions or user intent can clear soft_deny",
+        "Use a permissions.ask rule, which runs before the classifier and always prompts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,600 @@
+{
+  "conceptId": "checkpoint-rewind-options",
+  "card": {
+    "en": {
+      "tldr": "Every prompt that starts a turn creates a checkpoint of Claude's file edits. Open the rewind menu with /rewind or Esc twice on an empty input, pick a prompt, and choose to restore code, conversation, both, or to summarize. The decision is which of code and conversation you want back, and whether you only need to free context.",
+      "whenToUse": [
+        "Claude's recent edits broke something and you want the files back as they were",
+        "You want to retry a prompt differently but keep the current code",
+        "A long debugging stretch is filling the context window and you want to compress it",
+        "You resumed a session and still need to go back to an earlier point"
+      ],
+      "keyFacts": [
+        "Actions: Restore code and conversation, Restore conversation, Restore code, Summarize from here, Summarize up to here, Never mind.",
+        "Open it with `/rewind`, or press `Esc` twice when the prompt input is empty.",
+        "File snapshots are kept for the 100 most recent checkpoints in a session, and checkpoints are saved with the conversation, so `/rewind` works after you resume.",
+        "The retention sweep deletes a session's snapshots, by default about 30 days after the last one was saved; set `cleanupPeriodDays` to keep them longer.",
+        "Summarizing doesn't change files on disk, and the original messages stay in the session transcript.",
+        "The code restore options appear only if the selected checkpoint has tracked file changes to revert."
+      ],
+      "gotchas": [
+        "With text in the input, double `Esc` clears it (saved to input history) instead of opening the menu.",
+        "Summarize from here compresses from the selected point forward; Summarize up to here compresses what came before it and keeps later messages.",
+        "Summarize stays in the same session; to preserve the original session and try another approach, use `/branch` or `claude --continue --fork-session`.",
+        "Rewinding to a checkpoint whose snapshots were swept can fail with `No files were restored`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/branch",
+          "difference": "Creates a separate session copy and leaves the original intact; rewind acts on the current session."
+        },
+        {
+          "concept": "/compact",
+          "difference": "Compacts the whole conversation; the Summarize options compress from or up to a prompt you pick."
+        }
+      ],
+      "examCues": [
+        "undo the file changes but keep the discussion",
+        "free up context without touching files",
+        "go back to how things were before that prompt",
+        "keep my initial instructions intact",
+        "after resuming the session"
+      ]
+    },
+    "es": {
+      "tldr": "Cada prompt que inicia un turno crea un checkpoint de las ediciones de Claude. Abres el menú de rewind con /rewind o Esc dos veces con la entrada vacía, eliges un prompt y decides restaurar código, conversación, ambos, o resumir. La decisión es qué quieres recuperar, el código o la conversación, y si solo necesitas liberar contexto.",
+      "whenToUse": [
+        "Las ediciones recientes de Claude rompieron algo y quieres los archivos como estaban",
+        "Quieres reintentar un prompt de otra forma pero conservar el código actual",
+        "Un tramo largo de debugging está llenando la ventana de contexto y quieres comprimirlo",
+        "Retomaste una sesión y necesitas volver a un punto anterior"
+      ],
+      "keyFacts": [
+        "Acciones: Restore code and conversation, Restore conversation, Restore code, Summarize from here, Summarize up to here, Never mind.",
+        "Se abre con `/rewind`, o pulsando `Esc` dos veces cuando la entrada está vacía.",
+        "Se guardan snapshots de archivos para los 100 checkpoints más recientes de la sesión, y los checkpoints se guardan con la conversación, así que `/rewind` funciona después de retomarla.",
+        "El barrido de retención borra los snapshots de una sesión, por defecto unos 30 días después del último guardado; configura `cleanupPeriodDays` para conservarlos más tiempo.",
+        "Resumir no cambia archivos en disco, y los mensajes originales siguen en el transcript de la sesión.",
+        "Las opciones de restaurar código solo aparecen si el checkpoint elegido tiene cambios de archivos rastreados que revertir."
+      ],
+      "gotchas": [
+        "Con texto en la entrada, doble `Esc` lo borra (queda en el historial) en lugar de abrir el menú.",
+        "Summarize from here comprime desde el punto elegido hacia adelante; Summarize up to here comprime lo anterior y conserva los mensajes posteriores.",
+        "Resumir te deja en la misma sesión; para conservar la sesión original y probar otro enfoque, usa `/branch` o `claude --continue --fork-session`.",
+        "Rebobinar a un checkpoint cuyos snapshots ya se borraron puede fallar con `No files were restored`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/branch",
+          "difference": "Crea una copia separada de la sesión y deja la original intacta; el rewind actúa sobre la sesión actual."
+        },
+        {
+          "concept": "/compact",
+          "difference": "Compacta toda la conversación; las opciones Summarize comprimen desde o hasta un prompt que eliges."
+        }
+      ],
+      "examCues": [
+        "undo the file changes but keep the discussion",
+        "free up context without touching files",
+        "go back to how things were before that prompt",
+        "keep my initial instructions intact",
+        "after resuming the session"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/checkpointing.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "checkpoint-rewind-options--2b1c23a1",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Over the last three prompts, Claude refactored several modules with its file-editing tools, and the tests now fail. The developer wants the files back exactly as they were before the refactor, but wants Claude to keep the discussion of what went wrong so it avoids the same mistake. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open /rewind, select the prompt that started the refactor, and choose Restore code and conversation.",
+          "correct": false,
+          "why": "This also rewinds the conversation, so Claude loses the discussion of what went wrong."
+        },
+        {
+          "id": "B",
+          "text": "Open /rewind, select the prompt that started the refactor, and choose Restore code.",
+          "correct": true,
+          "why": "Restore code reverts the tracked file changes while keeping the conversation."
+        },
+        {
+          "id": "C",
+          "text": "Open /rewind, select the prompt that started the refactor, and choose Restore conversation.",
+          "correct": false,
+          "why": "This rewinds the conversation but keeps the current, broken code."
+        },
+        {
+          "id": "D",
+          "text": "Run /branch and continue the work in the new branch.",
+          "correct": false,
+          "why": "/branch copies the session but does not revert any file; the broken code stays on disk."
+        }
+      ],
+      "explanation": "The requirement is two-sided: files back to the earlier state, conversation kept. Restore code reverts the file changes tracked since the selected checkpoint while leaving the conversation intact. Restore code and conversation is tempting because it fixes the files, but it also discards the discussion Claude needs. Restore conversation does the opposite of what is needed.",
+      "keywordCues": [
+        "files back exactly as they were",
+        "keep the discussion of what went wrong"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "En los últimos tres prompts, Claude refactorizó varios módulos con sus herramientas de edición y ahora fallan los tests. El desarrollador quiere los archivos exactamente como estaban antes del refactor, pero quiere que Claude conserve la discusión sobre qué salió mal para no repetir el error. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir /rewind, elegir el prompt que inició el refactor y escoger Restore code and conversation.",
+            "why": "También rebobina la conversación, así que Claude pierde la discusión sobre qué salió mal."
+          },
+          {
+            "id": "B",
+            "text": "Abrir /rewind, elegir el prompt que inició el refactor y escoger Restore code.",
+            "why": "Restore code revierte los cambios de archivos rastreados y mantiene la conversación."
+          },
+          {
+            "id": "C",
+            "text": "Abrir /rewind, elegir el prompt que inició el refactor y escoger Restore conversation.",
+            "why": "Rebobina la conversación pero deja el código actual, que está roto."
+          },
+          {
+            "id": "D",
+            "text": "Correr /branch y seguir el trabajo en la nueva rama.",
+            "why": "/branch copia la sesión pero no revierte ningún archivo; el código roto sigue en disco."
+          }
+        ],
+        "explanation": "El requisito tiene dos lados: archivos al estado anterior y conversación conservada. Restore code revierte los cambios de archivos rastreados desde el checkpoint elegido y deja la conversación intacta. Restore code and conversation tienta porque arregla los archivos, pero también descarta la discusión que Claude necesita. Restore conversation hace lo contrario de lo que se pide."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-rewind-options--34bf4abb",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer gave Claude detailed task instructions in the first prompt, then spent many turns debugging a flaky test, and the context window is nearly full. They want to free context space while keeping those initial instructions word for word, without changing any file on disk. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open /rewind, select the first debugging prompt, and choose Summarize up to here.",
+          "correct": false,
+          "why": "This compresses the messages before that point, which are exactly the initial instructions they want to keep intact."
+        },
+        {
+          "id": "B",
+          "text": "Run /clear and paste the instructions again.",
+          "correct": false,
+          "why": "This starts over without the debugging findings; it is not a way to compress a stretch of the conversation."
+        },
+        {
+          "id": "C",
+          "text": "Open /rewind, select the first debugging prompt, and choose Restore code and conversation.",
+          "correct": false,
+          "why": "This also reverts tracked file changes, breaking the no-file-changes requirement, and drops the debugging work."
+        },
+        {
+          "id": "D",
+          "text": "Open /rewind, select the first debugging prompt, and choose Summarize from here.",
+          "correct": true,
+          "why": "It compresses the debugging stretch into a summary, keeps earlier messages intact, and does not touch files."
+        }
+      ],
+      "explanation": "The deciding requirements are: free context, keep the earlier messages intact, touch no files. Summarize from here compresses the conversation from the selected point forward and never changes files on disk. Summarize up to here is the tempting look-alike, but it compresses the part before the selected point, which is where the initial instructions live. Restore options act on files or discard messages instead of summarizing them.",
+      "keywordCues": [
+        "free context space",
+        "keeping those initial instructions word for word",
+        "without changing any file on disk"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador dio a Claude instrucciones detalladas en el primer prompt, luego pasó muchos turnos depurando un test inestable, y la ventana de contexto está casi llena. Quiere liberar contexto conservando esas instrucciones iniciales al pie de la letra, sin cambiar ningún archivo en disco. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir /rewind, elegir el primer prompt de debugging y escoger Summarize up to here.",
+            "why": "Comprime los mensajes anteriores a ese punto, que son justo las instrucciones iniciales que quiere conservar."
+          },
+          {
+            "id": "B",
+            "text": "Correr /clear y pegar otra vez las instrucciones.",
+            "why": "Empieza de cero sin lo aprendido en el debugging; no comprime un tramo de la conversación."
+          },
+          {
+            "id": "C",
+            "text": "Abrir /rewind, elegir el primer prompt de debugging y escoger Restore code and conversation.",
+            "why": "También revierte cambios de archivos rastreados, lo que rompe el requisito, y descarta el trabajo de debugging."
+          },
+          {
+            "id": "D",
+            "text": "Abrir /rewind, elegir el primer prompt de debugging y escoger Summarize from here.",
+            "why": "Comprime el tramo de debugging en un resumen, conserva los mensajes anteriores y no toca archivos."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son: liberar contexto, conservar intactos los mensajes anteriores y no tocar archivos. Summarize from here comprime la conversación desde el punto elegido hacia adelante y nunca cambia archivos en disco. Summarize up to here es el parecido tentador, pero comprime lo anterior al punto elegido, que es donde están las instrucciones iniciales. Las opciones Restore actúan sobre archivos o descartan mensajes en vez de resumirlos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-rewind-options--13a10fd9",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Yesterday Claude made several edits with its file-editing tools. Today the developer resumed that session with `claude --resume`, and the prompt input is empty. They want both the code and the conversation back to how they were before yesterday's fourth prompt. Which two actions achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /rewind, select the fourth prompt, and choose Restore code and conversation.",
+          "correct": true,
+          "why": "Checkpoints are saved with the conversation, so /rewind still works after resuming."
+        },
+        {
+          "id": "B",
+          "text": "Press Esc twice, select the fourth prompt, and choose Restore code and conversation.",
+          "correct": true,
+          "why": "With an empty input, double Esc opens the same rewind menu."
+        },
+        {
+          "id": "C",
+          "text": "Run /compact, since checkpoints are discarded when a session is resumed.",
+          "correct": false,
+          "why": "Checkpoints are not discarded on resume, and /compact only compresses the conversation; it never restores files."
+        },
+        {
+          "id": "D",
+          "text": "Run /rewind, select the fourth prompt, and choose Summarize from here.",
+          "correct": false,
+          "why": "Summarizing compresses the conversation and does not change files, so the code stays as it is."
+        },
+        {
+          "id": "E",
+          "text": "Run /rewind, select the fourth prompt, and choose Restore conversation.",
+          "correct": false,
+          "why": "This rewinds only the conversation and keeps the current code."
+        }
+      ],
+      "explanation": "Claude Code saves checkpoints with the conversation, so the rewind menu is available after resuming a session. The menu opens either with /rewind or with Esc pressed twice while the input is empty, and Restore code and conversation reverts both. The distractor claiming checkpoints are discarded on resume is false, and Summarize or Restore conversation each leave the code unchanged.",
+      "keywordCues": [
+        "resumed that session",
+        "the prompt input is empty",
+        "both the code and the conversation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "Ayer Claude hizo varias ediciones con sus herramientas de edición. Hoy el desarrollador retomó esa sesión con `claude --resume` y la entrada está vacía. Quiere el código y la conversación como estaban antes del cuarto prompt de ayer. ¿Qué dos acciones lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr /rewind, elegir el cuarto prompt y escoger Restore code and conversation.",
+            "why": "Los checkpoints se guardan con la conversación, así que /rewind sigue funcionando al retomar."
+          },
+          {
+            "id": "B",
+            "text": "Pulsar Esc dos veces, elegir el cuarto prompt y escoger Restore code and conversation.",
+            "why": "Con la entrada vacía, doble Esc abre el mismo menú de rewind."
+          },
+          {
+            "id": "C",
+            "text": "Correr /compact, porque los checkpoints se descartan al retomar una sesión.",
+            "why": "Los checkpoints no se descartan al retomar, y /compact solo comprime la conversación; nunca restaura archivos."
+          },
+          {
+            "id": "D",
+            "text": "Correr /rewind, elegir el cuarto prompt y escoger Summarize from here.",
+            "why": "Resumir comprime la conversación y no cambia archivos, así que el código queda igual."
+          },
+          {
+            "id": "E",
+            "text": "Correr /rewind, elegir el cuarto prompt y escoger Restore conversation.",
+            "why": "Solo rebobina la conversación y conserva el código actual."
+          }
+        ],
+        "explanation": "Claude Code guarda los checkpoints con la conversación, así que el menú de rewind está disponible después de retomar una sesión. El menú se abre con /rewind o con Esc dos veces cuando la entrada está vacía, y Restore code and conversation revierte ambos. La opción que dice que los checkpoints se descartan al retomar es falsa, y Summarize o Restore conversation dejan el código sin cambios."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-rewind-options--7a7871f4",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Midway through a session, a developer wants to try a completely different implementation approach. They need the original session preserved intact so they can return to it later exactly as it is now. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open /rewind, select the current prompt, and choose Summarize up to here.",
+          "correct": false,
+          "why": "Summarize compresses context inside the same session; it does not preserve a separate original."
+        },
+        {
+          "id": "B",
+          "text": "Run /branch and try the new approach in the branch.",
+          "correct": true,
+          "why": "/branch creates a new session and leaves the original unchanged and resumable."
+        },
+        {
+          "id": "C",
+          "text": "Open /rewind, select an earlier prompt, and choose Restore conversation.",
+          "correct": false,
+          "why": "This rewinds the current session itself, so it is no longer preserved as it is now."
+        },
+        {
+          "id": "D",
+          "text": "Open /rewind, select an earlier prompt, and choose Restore code and conversation.",
+          "correct": false,
+          "why": "This rewinds both code and conversation of the current session instead of keeping it intact."
+        }
+      ],
+      "explanation": "The requirement is to keep the original session intact while exploring. The rewind menu and its Summarize options act on the current session, so they change the very session the developer wants to keep. The docs point to /branch, or claude --continue --fork-session, to branch off while preserving the original. Restore options are tempting for exploring alternatives, but they modify the session in place.",
+      "keywordCues": [
+        "original session preserved intact",
+        "return to it later exactly as it is now"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "A mitad de una sesión, un desarrollador quiere probar un enfoque de implementación totalmente distinto. Necesita que la sesión original quede intacta para volver a ella después exactamente como está ahora. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir /rewind, elegir el prompt actual y escoger Summarize up to here.",
+            "why": "Resumir comprime contexto dentro de la misma sesión; no preserva una original separada."
+          },
+          {
+            "id": "B",
+            "text": "Correr /branch y probar el nuevo enfoque en la rama.",
+            "why": "/branch crea una sesión nueva y deja la original sin cambios y retomable."
+          },
+          {
+            "id": "C",
+            "text": "Abrir /rewind, elegir un prompt anterior y escoger Restore conversation.",
+            "why": "Rebobina la propia sesión actual, así que ya no queda preservada como está."
+          },
+          {
+            "id": "D",
+            "text": "Abrir /rewind, elegir un prompt anterior y escoger Restore code and conversation.",
+            "why": "Rebobina código y conversación de la sesión actual en vez de mantenerla intacta."
+          }
+        ],
+        "explanation": "El requisito es mantener intacta la sesión original mientras exploras. El menú de rewind y sus opciones Summarize actúan sobre la sesión actual, así que cambian justo la sesión que se quiere conservar. La documentación recomienda /branch, o claude --continue --fork-session, para bifurcar preservando la original. Las opciones Restore tientan para explorar alternativas, pero modifican la sesión en el lugar."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-rewind-options--b9442398",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command opens the menu that lists your prompts so you can restore code, restore the conversation, or summarize?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/rewind",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/checkpoint",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "/undo",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/rewind` opens the rewind menu, which lists each prompt you sent in the session. Pressing Esc twice on an empty input opens the same menu. From there you pick a prompt and choose a restore or summarize action.",
+      "keywordCues": [
+        "restore code, restore the conversation, or summarize"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando de barra abre el menú que lista tus prompts para restaurar código, restaurar la conversación o resumir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/rewind",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/checkpoint",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "/undo",
+            "why": ""
+          }
+        ],
+        "explanation": "`/rewind` abre el menú de rewind, que lista cada prompt que enviaste en la sesión. Pulsar Esc dos veces con la entrada vacía abre el mismo menú. Desde ahí eliges un prompt y una acción de restaurar o resumir."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-rewind-options--0ccfb97b",
+      "conceptId": "checkpoint-rewind-options",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this settings.json so Claude Code keeps session file snapshots for checkpoint restore about 90 days instead of the default.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "cleanupPeriodDays",
+          "correct": true,
+          "why": "The retention sweep deletes a session's file snapshots based on this key."
+        },
+        {
+          "id": "1b",
+          "text": "desktopSessionCleanupPeriodDays",
+          "correct": false,
+          "why": "This only sets an age limit for transcripts of sessions started or continued in Claude Desktop or Cowork."
+        },
+        {
+          "id": "2a",
+          "text": "90",
+          "correct": true,
+          "why": "The value is a whole number of days."
+        },
+        {
+          "id": "2b",
+          "text": "0",
+          "correct": false,
+          "why": "0 fails validation; the minimum is 1."
+        },
+        {
+          "id": "2c",
+          "text": "\"90d\"",
+          "correct": false,
+          "why": "The type is a whole number of days, not a string with a unit."
+        }
+      ],
+      "explanation": "Checkpoint snapshots are removed by the retention sweep, by default about 30 days after the session last saved one. `cleanupPeriodDays` sets that period as a whole number of days with a minimum of 1, so `90` keeps them longer. `0` fails validation, and `desktopSessionCleanupPeriodDays` governs only Desktop and Cowork transcripts.",
+      "keywordCues": [
+        "keeps session file snapshots",
+        "about 90 days"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md"
+      ],
+      "es": {
+        "stem": "Completa este settings.json para que Claude Code conserve los snapshots de archivos para restaurar checkpoints unos 90 días en lugar del valor por defecto.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "cleanupPeriodDays",
+            "why": "El barrido de retención borra los snapshots de una sesión según esta clave."
+          },
+          {
+            "id": "1b",
+            "text": "desktopSessionCleanupPeriodDays",
+            "why": "Solo limita la edad de los transcripts de sesiones iniciadas o continuadas en Claude Desktop o Cowork."
+          },
+          {
+            "id": "2a",
+            "text": "90",
+            "why": "El valor es un número entero de días."
+          },
+          {
+            "id": "2b",
+            "text": "0",
+            "why": "0 falla la validación; el mínimo es 1."
+          },
+          {
+            "id": "2c",
+            "text": "\"90d\"",
+            "why": "El tipo es un número entero de días, no un string con unidad."
+          }
+        ],
+        "explanation": "El barrido de retención elimina los snapshots de checkpoints, por defecto unos 30 días después del último que guardó la sesión. `cleanupPeriodDays` fija ese período como un número entero de días con mínimo 1, así que `90` los conserva más tiempo. `0` falla la validación y `desktopSessionCleanupPeriodDays` solo rige los transcripts de Desktop y Cowork."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": {{2}}\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "checkpoint-rewind-options--r0",
+      "conceptId": "checkpoint-rewind-options",
+      "kind": "recall",
+      "prompt": "Explain how to open the rewind menu and what each of its actions does to code and conversation.",
+      "promptEs": "Explica cómo abrir el menú de rewind y qué hace cada acción con el código y la conversación.",
+      "idealAnswer": "Run /rewind, or press Esc twice with an empty input, then pick a prompt. Restore code and conversation reverts both, Restore conversation keeps the current code, and Restore code keeps the conversation. Summarize from here or up to here compresses the conversation without touching files, and Never mind makes no changes.",
+      "rubric": [
+        "/rewind or Esc twice on an empty input",
+        "The three restore variants and what each keeps",
+        "Summarize from here vs up to here frees context without changing files"
+      ]
+    },
+    {
+      "id": "checkpoint-rewind-options--r1",
+      "conceptId": "checkpoint-rewind-options",
+      "kind": "why-not",
+      "prompt": "Claude's last edits broke the build. Why doesn't choosing Summarize from here at that prompt fix it?",
+      "promptEs": "Las últimas ediciones de Claude rompieron el build. ¿Por qué elegir Summarize from here en ese prompt no lo arregla?",
+      "idealAnswer": "Summarizing only compresses the conversation to free context; it doesn't change files on disk. To revert the broken edits you need Restore code, or Restore code and conversation, at the prompt before the edits.",
+      "rubric": [
+        "Summarize compresses conversation only",
+        "It does not change files on disk",
+        "Use Restore code (or code and conversation) instead"
+      ]
+    }
+  ]
+}

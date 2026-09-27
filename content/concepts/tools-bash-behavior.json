@@ -1,0 +1,451 @@
+{
+  "conceptId": "tools-bash-behavior",
+  "card": {
+    "en": {
+      "tldr": "Each Bash command runs in a separate process. A `cd` inside the project carries over, but exported environment variables don't. That decides how you set up virtualenvs, persistent variables and long-running processes.",
+      "whenToUse": [
+        "A virtualenv or exported variable seems to vanish between commands",
+        "Running dev servers or watch builds that never exit",
+        "Tests that take longer than the default timeout",
+        "Predicting which directory the next command starts in"
+      ],
+      "keyFacts": [
+        "A `cd` in the main session carries over while it stays inside the project or an `--add-dir` directory; `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` disables that.",
+        "Persist variables with `CLAUDE_ENV_FILE` (a script run before each Bash command) or a SessionStart hook; activate virtualenvs before launching Claude Code.",
+        "`BASH_DEFAULT_TIMEOUT_MS` defaults to two minutes; `BASH_MAX_TIMEOUT_MS` caps what Claude may request, ten minutes by default.",
+        "`run_in_background: true` starts a background task; `/tasks` lists and stops them.",
+        "A command that reaches its timeout moves to the background instead of stopping, unless it starts with `sleep`."
+      ],
+      "gotchas": [
+        "An `export` in one command isn't visible in the next.",
+        "You never set a per-command timeout; Claude passes the `timeout` parameter.",
+        "A `cd` inside a command that moved to the background never carries over.",
+        "Subagent sessions never carry over working directory changes."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Monitor",
+          "difference": "Also runs in the background, but feeds each output line back to Claude as it arrives."
+        },
+        {
+          "concept": "Edit and Write",
+          "difference": "Claude's file tools with exact checks; a shell command changes files without them."
+        }
+      ],
+      "examCues": [
+        "the variable is gone in the next command",
+        "activate the virtualenv",
+        "keep the dev server running",
+        "the test suite takes longer than two minutes",
+        "list and stop background tasks"
+      ]
+    },
+    "es": {
+      "tldr": "Cada comando Bash corre en un proceso aparte. Un `cd` dentro del proyecto se mantiene, pero las variables exportadas no. Eso decide cómo configuras virtualenvs, variables persistentes y procesos largos.",
+      "whenToUse": [
+        "Un virtualenv o variable exportada parece desaparecer entre comandos",
+        "Correr dev servers o watch builds que nunca terminan",
+        "Tests que tardan más que el timeout por defecto",
+        "Predecir en qué directorio empieza el siguiente comando"
+      ],
+      "keyFacts": [
+        "Un `cd` en la sesión principal se mantiene mientras quede dentro del proyecto o de un directorio `--add-dir`; `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` lo desactiva.",
+        "Persiste variables con `CLAUDE_ENV_FILE` (un script que corre antes de cada comando Bash) o con un hook SessionStart; activa los virtualenvs antes de lanzar Claude Code.",
+        "`BASH_DEFAULT_TIMEOUT_MS` vale dos minutos por defecto; `BASH_MAX_TIMEOUT_MS` limita lo que Claude puede pedir, diez minutos por defecto.",
+        "`run_in_background: true` inicia una tarea en segundo plano; `/tasks` las lista y detiene.",
+        "Un comando que llega a su timeout pasa a segundo plano en vez de detenerse, salvo que empiece con `sleep`."
+      ],
+      "gotchas": [
+        "Un `export` en un comando no se ve en el siguiente.",
+        "Tú nunca fijas un timeout por comando; Claude pasa el parámetro `timeout`.",
+        "Un `cd` dentro de un comando que pasó a segundo plano nunca se mantiene.",
+        "Las sesiones de subagentes nunca mantienen cambios de directorio."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Monitor",
+          "difference": "También corre en segundo plano, pero envía cada línea de salida a Claude cuando llega."
+        },
+        {
+          "concept": "Edit y Write",
+          "difference": "Herramientas de archivos de Claude con chequeos exactos; un comando de shell cambia archivos sin ellos."
+        }
+      ],
+      "examCues": [
+        "the variable is gone in the next command",
+        "activate the virtualenv",
+        "keep the dev server running",
+        "the test suite takes longer than two minutes",
+        "list and stop background tasks"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/tools-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "tools-bash-behavior--54287fc6",
+      "conceptId": "tools-bash-behavior",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "In a Python project, Claude ran `source .venv/bin/activate` in one Bash command, but its next `pytest` call fails with missing modules. The developer wants every Bash command in the session to use the virtualenv, with the least setup. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Activate the virtualenv before launching Claude Code",
+          "correct": true,
+          "why": "The docs recommend activating it before launch so every command inherits it."
+        },
+        {
+          "id": "B",
+          "text": "Add \"always activate .venv\" to CLAUDE.md",
+          "correct": false,
+          "why": "It's guidance only; each command still runs in its own process."
+        },
+        {
+          "id": "C",
+          "text": "Set `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1`",
+          "correct": false,
+          "why": "It controls directory carry-over, not environment variables."
+        },
+        {
+          "id": "D",
+          "text": "Raise `BASH_DEFAULT_TIMEOUT_MS`",
+          "correct": false,
+          "why": "The failure is a missing environment, not a timeout."
+        }
+      ],
+      "explanation": "Each Bash command runs in a separate process, so an activation in one command is gone in the next. Activating the virtualenv before launching Claude Code is the documented, zero-config fix. Writing the rule in CLAUDE.md is tempting, but it only guides Claude and still depends on it activating in every command.",
+      "keywordCues": [
+        "next `pytest` call fails",
+        "every Bash command in the session",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "En un proyecto Python, Claude corrió `source .venv/bin/activate` en un comando Bash, pero su siguiente `pytest` falla por módulos faltantes. El desarrollador quiere que todo comando Bash de la sesión use el virtualenv, con la menor configuración. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Activar el virtualenv antes de lanzar Claude Code",
+            "why": "La documentación recomienda activarlo antes de lanzar para que todo comando lo herede."
+          },
+          {
+            "id": "B",
+            "text": "Agregar \"siempre activa .venv\" a CLAUDE.md",
+            "why": "Es solo guía; cada comando sigue corriendo en su propio proceso."
+          },
+          {
+            "id": "C",
+            "text": "Poner `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1`",
+            "why": "Controla si se mantiene el directorio, no las variables de entorno."
+          },
+          {
+            "id": "D",
+            "text": "Subir `BASH_DEFAULT_TIMEOUT_MS`",
+            "why": "La falla es un entorno faltante, no un timeout."
+          }
+        ],
+        "explanation": "Cada comando Bash corre en un proceso aparte, así que una activación en un comando desaparece en el siguiente. Activar el virtualenv antes de lanzar Claude Code es la solución documentada y sin configuración. Escribirlo en CLAUDE.md tienta, pero solo guía a Claude y depende de que active en cada comando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-bash-behavior--b6daa347",
+      "conceptId": "tools-bash-behavior",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team needs a short-lived token, computed when each session starts, available as an environment variable to every Bash command Claude runs. It must happen automatically in every session, not depend on Claude remembering. Which setup fits?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Have Claude `export` the token in its first command",
+          "correct": false,
+          "why": "Exported variables don't persist to the next Bash command."
+        },
+        {
+          "id": "B",
+          "text": "A SessionStart hook that populates `CLAUDE_ENV_FILE`",
+          "correct": true,
+          "why": "The hook runs at every session start, and the file's exports apply before each Bash command."
+        },
+        {
+          "id": "C",
+          "text": "Instructions in CLAUDE.md to fetch the token first",
+          "correct": false,
+          "why": "It depends on Claude following guidance, and exports still wouldn't persist."
+        },
+        {
+          "id": "D",
+          "text": "Run the token command with `run_in_background: true`",
+          "correct": false,
+          "why": "A background task doesn't share environment variables with later commands."
+        }
+      ],
+      "explanation": "Environment variables don't persist between Bash commands because each runs in a separate process. `CLAUDE_ENV_FILE` points to a script whose exports run before each Bash command, and a SessionStart hook can populate it dynamically when the session starts. Exporting in the first command is the tempting shortcut, but the variable is gone by the next call.",
+      "keywordCues": [
+        "computed when each session starts",
+        "every Bash command",
+        "automatically in every session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "Un equipo necesita un token de corta vida, calculado al iniciar cada sesión, disponible como variable de entorno para todo comando Bash que corra Claude. Debe ocurrir automáticamente en cada sesión, sin depender de que Claude lo recuerde. ¿Qué configuración sirve?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Que Claude haga `export` del token en su primer comando",
+            "why": "Las variables exportadas no persisten al siguiente comando Bash."
+          },
+          {
+            "id": "B",
+            "text": "Un hook SessionStart que llene `CLAUDE_ENV_FILE`",
+            "why": "El hook corre al iniciar cada sesión, y los exports del archivo aplican antes de cada comando Bash."
+          },
+          {
+            "id": "C",
+            "text": "Instrucciones en CLAUDE.md para traer el token primero",
+            "why": "Depende de que Claude siga la guía, y los exports igual no persistirían."
+          },
+          {
+            "id": "D",
+            "text": "Correr el comando del token con `run_in_background: true`",
+            "why": "Una tarea en segundo plano no comparte variables de entorno con comandos posteriores."
+          }
+        ],
+        "explanation": "Las variables de entorno no persisten entre comandos Bash porque cada uno corre en un proceso aparte. `CLAUDE_ENV_FILE` apunta a un script cuyos exports corren antes de cada comando Bash, y un hook SessionStart puede llenarlo dinámicamente al iniciar la sesión. Exportar en el primer comando es el atajo tentador, pero la variable desaparece en la siguiente llamada."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-bash-behavior--c57bc6df",
+      "conceptId": "tools-bash-behavior",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A project's full test suite takes about six minutes, and no timeout variables have been changed. The developer asks Claude to run it and wants to know what to expect. Which two statements are accurate? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude can pass a `timeout` longer than two minutes, up to ten",
+          "correct": true,
+          "why": "Claude sets the timeout parameter; the default ceiling is ten minutes."
+        },
+        {
+          "id": "B",
+          "text": "If the timeout is reached, the command moves to the background",
+          "correct": true,
+          "why": "Claude Code backgrounds a timed-out command instead of stopping it, unless it starts with sleep."
+        },
+        {
+          "id": "C",
+          "text": "The developer must set a per-command timeout in the prompt",
+          "correct": false,
+          "why": "You never set a per-command timeout; Claude manages it."
+        },
+        {
+          "id": "D",
+          "text": "The default timeout is already ten minutes",
+          "correct": false,
+          "why": "The default is two minutes; ten is the default ceiling."
+        },
+        {
+          "id": "E",
+          "text": "Any command over two minutes is killed",
+          "correct": false,
+          "why": "Claude can request more, and a timed-out command moves to the background."
+        }
+      ],
+      "explanation": "`BASH_DEFAULT_TIMEOUT_MS` applies when Claude passes no timeout and is two minutes out of the box, while `BASH_MAX_TIMEOUT_MS` caps what Claude may request at ten minutes. Claude passes the `timeout` parameter itself, so a six-minute suite fits under the ceiling. If a command still reaches its timeout, Claude Code moves it to the background rather than stopping it.",
+      "keywordCues": [
+        "about six minutes",
+        "no timeout variables have been changed"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "La suite completa de tests de un proyecto tarda unos seis minutos, y no se cambió ninguna variable de timeout. El desarrollador pide a Claude correrla y quiere saber qué esperar. ¿Qué dos afirmaciones son correctas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Claude puede pasar un `timeout` mayor a dos minutos, hasta diez",
+            "why": "Claude fija el parámetro timeout; el techo por defecto es diez minutos."
+          },
+          {
+            "id": "B",
+            "text": "Si se alcanza el timeout, el comando pasa a segundo plano",
+            "why": "Claude Code pasa a segundo plano un comando vencido en vez de detenerlo, salvo que empiece con sleep."
+          },
+          {
+            "id": "C",
+            "text": "El desarrollador debe fijar un timeout por comando en el prompt",
+            "why": "Tú nunca fijas un timeout por comando; Claude lo gestiona."
+          },
+          {
+            "id": "D",
+            "text": "El timeout por defecto ya es diez minutos",
+            "why": "El valor por defecto es dos minutos; diez es el techo por defecto."
+          },
+          {
+            "id": "E",
+            "text": "Todo comando de más de dos minutos se mata",
+            "why": "Claude puede pedir más, y un comando vencido pasa a segundo plano."
+          }
+        ],
+        "explanation": "`BASH_DEFAULT_TIMEOUT_MS` aplica cuando Claude no pasa timeout y vale dos minutos por defecto, mientras que `BASH_MAX_TIMEOUT_MS` limita lo que Claude puede pedir a diez minutos. Claude pasa el parámetro `timeout` por sí mismo, así que una suite de seis minutos cabe bajo el techo. Si igual llega al timeout, Claude Code la pasa a segundo plano en vez de detenerla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-bash-behavior--a2749263",
+      "conceptId": "tools-bash-behavior",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable points to a shell script that Claude Code runs before each Bash command, so its exports persist?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_ENV_FILE",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`CLAUDE_ENV_FILE` is the path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so its exports are visible. Set it before launching Claude Code, or let a SessionStart hook populate it dynamically.",
+      "keywordCues": [
+        "runs before each Bash command",
+        "its exports persist"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno apunta a un script de shell que Claude Code corre antes de cada comando Bash, para que sus exports persistan?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_ENV_FILE",
+            "why": ""
+          }
+        ],
+        "explanation": "`CLAUDE_ENV_FILE` es la ruta a un script de shell cuyo contenido Claude Code corre antes de cada comando Bash en el mismo proceso, así que sus exports se ven. Fíjala antes de lanzar Claude Code o deja que un hook SessionStart la llene dinámicamente."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-bash-behavior--ac043058",
+      "conceptId": "tools-bash-behavior",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Claude started a dev server with `run_in_background: true`. Which slash command lists and stops background tasks?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/tasks",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/bashes",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Background commands keep running while Claude works. `/tasks` lists them and lets you stop one, after which Claude moves on instead of waiting for it.",
+      "keywordCues": [
+        "lists and stops background tasks"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "Claude levantó un dev server con `run_in_background: true`. ¿Qué comando de barra lista y detiene las tareas en segundo plano?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/tasks",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/bashes",
+            "why": ""
+          }
+        ],
+        "explanation": "Los comandos en segundo plano siguen corriendo mientras Claude trabaja. `/tasks` los lista y te deja detener uno, tras lo cual Claude sigue en vez de esperarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "tools-bash-behavior--r0",
+      "conceptId": "tools-bash-behavior",
+      "kind": "recall",
+      "prompt": "Explain what carries over between Claude's Bash commands and what doesn't, and how to make environment variables persist.",
+      "promptEs": "Explica qué se mantiene entre los comandos Bash de Claude y qué no, y cómo hacer que las variables de entorno persistan.",
+      "idealAnswer": "Each Bash command runs in a separate process. A cd carries over while it stays inside the project or an added directory, but exported variables don't. To persist variables, set CLAUDE_ENV_FILE to a script before launching, use a SessionStart hook to populate it, or activate the virtualenv before starting Claude Code.",
+      "rubric": [
+        "Each command is a separate process",
+        "cd inside the project carries over",
+        "export does not persist",
+        "CLAUDE_ENV_FILE or SessionStart hook"
+      ]
+    },
+    {
+      "id": "tools-bash-behavior--r1",
+      "conceptId": "tools-bash-behavior",
+      "kind": "why-not",
+      "prompt": "A teammate suggests having Claude run `export AWS_PROFILE=dev` as its first Bash step each session. Why won't later commands see it, and what fits instead?",
+      "promptEs": "Un compañero sugiere que Claude corra `export AWS_PROFILE=dev` como primer paso Bash de cada sesión. ¿Por qué no lo verán los comandos siguientes y qué sirve en su lugar?",
+      "idealAnswer": "Each Bash command runs in its own process, so an export in one command is not available in the next. Put the export in a script referenced by CLAUDE_ENV_FILE, which runs before each Bash command, or populate that file from a SessionStart hook.",
+      "rubric": [
+        "Separate process per command",
+        "export does not carry over",
+        "Use CLAUDE_ENV_FILE or a SessionStart hook"
+      ]
+    }
+  ]
+}

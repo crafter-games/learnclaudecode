@@ -1,0 +1,350 @@
+{
+  "unitId": "u-builtin-commands",
+  "audited": true,
+  "overview": {
+    "title": "Comandos integrados esenciales",
+    "hook": "Un comando para cada gesto diario, sin gastar un prompt.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "project",
+          "label": "Proyecto (git)",
+          "kind": "zone",
+          "x": 40,
+          "y": 50
+        },
+        {
+          "id": "claudemd",
+          "label": "CLAUDE.md",
+          "kind": "data",
+          "x": 40,
+          "y": 15
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "kind": "service",
+          "x": 40,
+          "y": 85
+        },
+        {
+          "id": "otherdir",
+          "label": "Otro directorio",
+          "kind": "zone",
+          "x": 75,
+          "y": 20
+        },
+        {
+          "id": "btw",
+          "label": "Overlay /btw",
+          "kind": "service",
+          "x": 75,
+          "y": 55
+        },
+        {
+          "id": "export",
+          "label": "Conversación .txt",
+          "kind": "data",
+          "x": 75,
+          "y": 85
+        }
+      ],
+      "edges": [
+        {
+          "from": "project",
+          "to": "claudemd",
+          "label": "/init"
+        },
+        {
+          "from": "you",
+          "to": "settings",
+          "label": "/config"
+        },
+        {
+          "from": "project",
+          "to": "you",
+          "label": "/diff"
+        },
+        {
+          "from": "project",
+          "to": "otherdir",
+          "label": "/add-dir"
+        },
+        {
+          "from": "you",
+          "to": "btw",
+          "label": "/btw"
+        },
+        {
+          "from": "you",
+          "to": "export",
+          "label": "/export"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Tu día con Claude Code repite los mismos gestos: preparar un repo, ajustar preferencias, revisar cambios y guardar la conversación. Para cada uno hay un comando integrado, así no gastas un prompt pidiéndoselo a Claude.",
+        "show": [
+          "you",
+          "project"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "En la primera sesión en un repo, el comando init genera un CLAUDE.md inicial con la guía del proyecto. Después lo refinas con el comando memory.",
+        "show": [
+          "you",
+          "project",
+          "claudemd"
+        ],
+        "focus": "claudemd"
+      },
+      {
+        "narration": "El comando config abre la interfaz de Settings, o fija una clave directamente, como theme igual dark, incluso en modo no interactivo. Antes de publicar, diff te muestra los cambios del working tree, incluidas las ediciones de Claude.",
+        "show": [
+          "you",
+          "project",
+          "claudemd",
+          "settings"
+        ],
+        "focus": "settings"
+      },
+      {
+        "narration": "Si Claude necesita archivos de otra carpeta, add-dir le da acceso a ese directorio durante la sesión. Ojo: da acceso a archivos, no a configuración; la mayor parte de su carpeta punto claude no se descubre.",
+        "show": [
+          "you",
+          "project",
+          "claudemd",
+          "settings",
+          "otherdir"
+        ],
+        "focus": "otherdir"
+      },
+      {
+        "narration": "Para una duda rápida mientras Claude trabaja, btw responde con lo que ya está en contexto: sin herramientas, sin interrumpir el turno y sin entrar al historial. Si hace falta investigar, pulsa f para pasarla a un subagente.",
+        "show": [
+          "you",
+          "project",
+          "claudemd",
+          "settings",
+          "otherdir",
+          "btw"
+        ],
+        "focus": "btw"
+      },
+      {
+        "narration": "Al final, export guarda la conversación como texto plano, en un archivo o en el portapapeles. No confundas estos comandos con los de inspección, como context o status: aquellos muestran qué está cargado, estos crean o cambian algo.",
+        "show": [
+          "you",
+          "project",
+          "claudemd",
+          "settings",
+          "otherdir",
+          "btw",
+          "export"
+        ],
+        "focus": "export"
+      }
+    ],
+    "keyPoints": [
+      "/init genera un CLAUDE.md inicial para el proyecto.",
+      "/config abre Settings o fija claves: /config theme=dark.",
+      "/diff muestra el working tree, incluidas las ediciones de Claude.",
+      "/add-dir da acceso a archivos, no a configuración.",
+      "/btw responde del contexto, sin herramientas ni historial."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/context y /status",
+        "difference": "Muestran qué está cargado o activo; no crean ni cambian nada."
+      },
+      {
+        "unitOrService": "/cd",
+        "difference": "Mueve la sesión a otro directorio principal; /add-dir suma uno sin moverte."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-builtin-commands--l1",
+      "conceptId": "cmd-everyday-commands",
+      "format": "lightning",
+      "prompt": "Generate a starter CLAUDE.md for a repo that has none → ?",
+      "promptEs": "Generar un CLAUDE.md inicial para un repo que no tiene → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory"
+        },
+        {
+          "id": "B",
+          "text": "/config"
+        },
+        {
+          "id": "C",
+          "text": "/init"
+        },
+        {
+          "id": "D",
+          "text": "/context"
+        }
+      ],
+      "answer": "C",
+      "why": "/init inicializa el proyecto con una guía CLAUDE.md. /memory es tentador, pero sirve para editar archivos CLAUDE.md que ya existen, no para generar el inicial."
+    },
+    {
+      "id": "u-builtin-commands--l2",
+      "conceptId": "cmd-everyday-commands",
+      "format": "lightning",
+      "prompt": "Let Claude read files in a sibling folder, keeping the current working directory → ?",
+      "promptEs": "Dejar que Claude lea archivos de una carpeta vecina, manteniendo el directorio de trabajo actual → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/cd <path>"
+        },
+        {
+          "id": "B",
+          "text": "/add-dir <path>"
+        },
+        {
+          "id": "C",
+          "text": "/resume"
+        },
+        {
+          "id": "D",
+          "text": "/export"
+        }
+      ],
+      "answer": "B",
+      "why": "/add-dir agrega un directorio de trabajo con acceso a archivos para la sesión actual. /cd también conserva la conversación, pero mueve la sesión a otro directorio principal."
+    },
+    {
+      "id": "u-builtin-commands--l3",
+      "conceptId": "cmd-everyday-commands",
+      "format": "thisorthat",
+      "prompt": "Save the entire conversation as plain text to a file → ?",
+      "promptEs": "Guardar toda la conversación como texto plano en un archivo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/copy"
+        },
+        {
+          "id": "B",
+          "text": "/export"
+        }
+      ],
+      "answer": "B",
+      "why": "/export exporta la conversación completa como texto plano; con un nombre de archivo lo escribe directo. /copy solo copia la última respuesta de Claude, o la N-ésima, al portapapeles."
+    },
+    {
+      "id": "u-builtin-commands--l4",
+      "conceptId": "cmd-everyday-commands",
+      "format": "lightning",
+      "prompt": "Set a setting with key=value without opening any panel, even under -p → ?",
+      "promptEs": "Fijar un ajuste con key=value sin abrir ningún panel, incluso con -p → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/update-config"
+        },
+        {
+          "id": "B",
+          "text": "/status"
+        },
+        {
+          "id": "C",
+          "text": "/doctor"
+        },
+        {
+          "id": "D",
+          "text": "/config"
+        }
+      ],
+      "answer": "D",
+      "why": "/config key=value fija la clave directamente y funciona también en modo -p. /update-config recibe una descripción en lenguaje natural y Claude edita settings.json; no es la forma key=value."
+    },
+    {
+      "id": "u-builtin-commands--l5",
+      "conceptId": "cmd-btw",
+      "format": "lightning",
+      "prompt": "Ask what Claude already read, mid-task, without adding to history → ?",
+      "promptEs": "Preguntar algo que Claude ya leyó, a mitad de tarea, sin sumar al historial → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type it and press Enter"
+        },
+        {
+          "id": "B",
+          "text": "! shell mode"
+        },
+        {
+          "id": "C",
+          "text": "/btw"
+        },
+        {
+          "id": "D",
+          "text": "/compact"
+        }
+      ],
+      "answer": "C",
+      "why": "/btw responde desde el contexto sin interrumpir el turno y nunca entra al historial. Escribir y pulsar Enter encola un mensaje que sí queda en la conversación."
+    },
+    {
+      "id": "u-builtin-commands--l6",
+      "conceptId": "cmd-btw",
+      "format": "thisorthat",
+      "prompt": "Answer needs a file nobody has opened this session → ?",
+      "promptEs": "La respuesta necesita un archivo que nadie abrió en esta sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A subagent"
+        },
+        {
+          "id": "B",
+          "text": "/btw"
+        }
+      ],
+      "answer": "A",
+      "why": "/btw no tiene herramientas: no puede leer archivos, correr comandos ni buscar. Para averiguar algo nuevo sirve un subagente, que sí tiene herramientas."
+    },
+    {
+      "id": "u-builtin-commands--l7",
+      "conceptId": "cmd-btw",
+      "format": "lightning",
+      "prompt": "In the /btw overlay, continue this question with full tool access → ?",
+      "promptEs": "En el overlay de /btw, continuar esta pregunta con acceso completo a herramientas → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask another /btw question"
+        },
+        {
+          "id": "B",
+          "text": "Press x in the overlay"
+        },
+        {
+          "id": "C",
+          "text": "Press c in the overlay"
+        },
+        {
+          "id": "D",
+          "text": "Press f to fork it"
+        }
+      ],
+      "answer": "D",
+      "why": "f bifurca la pregunta y su respuesta a un subagente en segundo plano con todas las herramientas. Otra /btw sigue sin herramientas; x limpia intercambios previos y c copia la respuesta."
+    }
+  ]
+}

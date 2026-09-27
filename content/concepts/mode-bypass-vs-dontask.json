@@ -1,0 +1,573 @@
+{
+  "conceptId": "mode-bypass-vs-dontask",
+  "card": {
+    "en": {
+      "tldr": "Both modes run without waiting for a human, but in opposite ways. `dontAsk` denies every call that would prompt, so only reads and pre-approved tools run; `bypassPermissions` skips prompts and runs almost everything. Pick `dontAsk` for CI with an exact allowlist and `bypassPermissions` only inside a container or VM.",
+      "whenToUse": [
+        "A CI job that must run only a known set of tools and never hang",
+        "A fully unattended run inside a disposable container or VM",
+        "Blocking bypass mode for a whole organization",
+        "Deciding what still prompts or gets denied in an unattended run"
+      ],
+      "keyFacts": [
+        "CI pattern: `claude -p \"...\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"`; `dontAsk` never appears in the `Shift+Tab` cycle.",
+        "`dontAsk` still runs `permissions.allow` matches and calls approved by a PreToolUse hook; it denies matches of explicit ask rules and writes to protected paths.",
+        "`--dangerously-skip-permissions` is equivalent to `--permission-mode bypassPermissions`; it allows writes to protected paths such as `.git`, `.claude` and `.mcp.json`.",
+        "Deny rules still block in `bypassPermissions`, and explicit ask rules and `rm` of critical paths still prompt.",
+        "On Linux and macOS, Claude Code refuses to start in bypass mode as root or under `sudo`, except inside a recognized sandbox.",
+        "Admins block bypass with `permissions.disableBypassPermissionsMode: \"disable\"`, usually in managed settings."
+      ],
+      "gotchas": [
+        "You can't switch into `bypassPermissions` from a session you started without enabling it.",
+        "`bypassPermissions` offers no protection against prompt injection; for fewer prompts with safety checks, use `auto`.",
+        "Cloud sessions ignore `defaultMode: \"bypassPermissions\"` and `\"dontAsk\"` from settings files.",
+        "Neither mode limits what an allowed command can reach once it runs; that's the sandbox or an isolation boundary."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox environments",
+          "difference": "Modes decide whether a call runs without a prompt; the sandbox, container or VM limits what it can reach."
+        },
+        {
+          "concept": "Auto mode",
+          "difference": "`auto` runs without routine prompts but a classifier blocks risky actions; bypass has no such check."
+        }
+      ],
+      "examCues": [
+        "CI with an exact allowlist",
+        "never wait for input",
+        "fully unattended inside a container",
+        "skip every permission prompt",
+        "prevent anyone from using bypass"
+      ]
+    },
+    "es": {
+      "tldr": "Ambos modos corren sin esperar a una persona, pero de formas opuestas. `dontAsk` niega toda llamada que preguntaría, así que solo corren lecturas y herramientas preaprobadas; `bypassPermissions` salta los prompts y corre casi todo. Elige `dontAsk` para CI con una allowlist exacta y `bypassPermissions` solo dentro de un contenedor o VM.",
+      "whenToUse": [
+        "Un job de CI que solo debe correr un conjunto conocido de herramientas y nunca quedarse esperando",
+        "Una ejecución totalmente desatendida dentro de un contenedor o VM desechable",
+        "Bloquear el modo bypass para toda una organización",
+        "Decidir qué sigue preguntando o se niega en una ejecución desatendida"
+      ],
+      "keyFacts": [
+        "Patrón de CI: `claude -p \"...\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"`; `dontAsk` nunca aparece en el ciclo de `Shift+Tab`.",
+        "`dontAsk` igual corre lo que coincide con `permissions.allow` y lo aprobado por un hook PreToolUse; niega lo que coincide con reglas ask explícitas y las escrituras en rutas protegidas.",
+        "`--dangerously-skip-permissions` equivale a `--permission-mode bypassPermissions`; permite escribir en rutas protegidas como `.git`, `.claude` y `.mcp.json`.",
+        "Las reglas deny siguen bloqueando en `bypassPermissions`, y las reglas ask explícitas y el `rm` de rutas críticas siguen preguntando.",
+        "En Linux y macOS, Claude Code se niega a arrancar en bypass como root o con `sudo`, salvo dentro de un sandbox reconocido.",
+        "Los admins bloquean bypass con `permissions.disableBypassPermissionsMode: \"disable\"`, normalmente en managed settings."
+      ],
+      "gotchas": [
+        "No puedes pasar a `bypassPermissions` desde una sesión que iniciaste sin habilitarlo.",
+        "`bypassPermissions` no protege contra prompt injection; para menos prompts con chequeos de seguridad, usa `auto`.",
+        "Las sesiones en la nube ignoran `defaultMode: \"bypassPermissions\"` y `\"dontAsk\"` de los archivos de settings.",
+        "Ningún modo limita a qué llega un comando permitido al correr; eso lo hace el sandbox o un límite de aislamiento."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Entornos de sandbox",
+          "difference": "Los modos deciden si una llamada corre sin preguntar; el sandbox, contenedor o VM limita a qué llega."
+        },
+        {
+          "concept": "Auto mode",
+          "difference": "`auto` corre sin prompts rutinarios pero un clasificador bloquea acciones riesgosas; bypass no tiene ese chequeo."
+        }
+      ],
+      "examCues": [
+        "CI with an exact allowlist",
+        "never wait for input",
+        "fully unattended inside a container",
+        "skip every permission prompt",
+        "prevent anyone from using bypass"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permission-modes.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mode-bypass-vs-dontask--7656371f",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team runs `claude -p` in a CI job on a shared runner to execute the test suite and read the code. The job must never hang waiting for input, and Claude must not run anything except `npm test` and file reads, even if it decides another command would help. Which invocation fits?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude -p \"run the tests\" --dangerously-skip-permissions`",
+          "correct": false,
+          "why": "It would run any command Claude chooses, not only the allowlist."
+        },
+        {
+          "id": "B",
+          "text": "`claude -p \"run the tests\" --permission-mode auto`",
+          "correct": false,
+          "why": "The classifier could approve other commands it judges safe."
+        },
+        {
+          "id": "C",
+          "text": "`claude -p \"run the tests\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"`",
+          "correct": true,
+          "why": "Only reads and the pre-approved tools run; anything that would prompt is denied, so the job never waits."
+        },
+        {
+          "id": "D",
+          "text": "`claude -p \"run the tests\" --permission-mode acceptEdits`",
+          "correct": false,
+          "why": "It auto-approves file edits and filesystem commands the job doesn't allow."
+        }
+      ],
+      "explanation": "The requirements are no waiting and nothing beyond an exact allowlist. `dontAsk` auto-denies every call that would otherwise prompt, while reads and tools pre-approved with `--allowedTools` still run, which is the documented CI pattern. `--dangerously-skip-permissions` runs everything, and `auto` lets a classifier approve other commands. `acceptEdits` would allow edits the job forbids.",
+      "keywordCues": [
+        "must never hang waiting for input",
+        "must not run anything except `npm test` and file reads"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un equipo corre `claude -p` en un job de CI en un runner compartido para ejecutar la suite de tests y leer el código. El job nunca debe quedarse esperando input, y Claude no debe correr nada salvo `npm test` y lecturas de archivos, aunque decida que otro comando ayudaría. ¿Qué invocación encaja?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude -p \"run the tests\" --dangerously-skip-permissions`",
+            "why": "Correría cualquier comando que Claude elija, no solo la allowlist."
+          },
+          {
+            "id": "B",
+            "text": "`claude -p \"run the tests\" --permission-mode auto`",
+            "why": "El clasificador podría aprobar otros comandos que considere seguros."
+          },
+          {
+            "id": "C",
+            "text": "`claude -p \"run the tests\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"`",
+            "why": "Solo corren las lecturas y las herramientas preaprobadas; todo lo que preguntaría se niega, así que el job nunca espera."
+          },
+          {
+            "id": "D",
+            "text": "`claude -p \"run the tests\" --permission-mode acceptEdits`",
+            "why": "Autoaprueba ediciones y comandos de archivos que el job no permite."
+          }
+        ],
+        "explanation": "Los requisitos son no esperar y nada fuera de una allowlist exacta. `dontAsk` niega automáticamente toda llamada que preguntaría, mientras las lecturas y las herramientas preaprobadas con `--allowedTools` siguen corriendo, que es el patrón de CI documentado. `--dangerously-skip-permissions` corre todo y `auto` deja que un clasificador apruebe otros comandos. `acceptEdits` permitiría ediciones que el job prohíbe."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-bypass-vs-dontask--3beed416",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "An engineer runs a fully unattended refactoring job inside a disposable dev container that runs Claude Code as a non-root user. The job needs every tool, including writes to `.git` and `.husky`, and no allowlist can predict the commands in advance. Which mode fits?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`dontAsk`",
+          "correct": false,
+          "why": "It denies anything not pre-approved and denies protected-path writes such as `.git`."
+        },
+        {
+          "id": "B",
+          "text": "`acceptEdits`",
+          "correct": false,
+          "why": "Protected-path writes and most Bash commands would still prompt, and nobody is there to answer."
+        },
+        {
+          "id": "C",
+          "text": "`bypassPermissions`",
+          "correct": true,
+          "why": "It skips permission prompts, including writes to protected paths, and the isolated container is where it belongs."
+        },
+        {
+          "id": "D",
+          "text": "`plan`",
+          "correct": false,
+          "why": "Plan mode blocks edits until a plan is approved."
+        }
+      ],
+      "explanation": "The requirements are no human, every tool, protected-path writes allowed, and no predictable allowlist, all inside an isolated container. `bypassPermissions` skips prompts, including writes to protected paths like `.git`, and the docs limit it to containers or VMs, run as a non-root user. `dontAsk` needs an allowlist and denies protected-path writes, and `acceptEdits` would leave prompts nobody answers.",
+      "keywordCues": [
+        "fully unattended",
+        "disposable dev container",
+        "writes to `.git` and `.husky`",
+        "no allowlist can predict"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un ingeniero corre un job de refactor totalmente desatendido dentro de un dev container desechable que ejecuta Claude Code como usuario no root. El job necesita todas las herramientas, incluidas escrituras en `.git` y `.husky`, y ninguna allowlist puede predecir los comandos por adelantado. ¿Qué modo encaja?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`dontAsk`",
+            "why": "Niega todo lo no preaprobado y niega las escrituras en rutas protegidas como `.git`."
+          },
+          {
+            "id": "B",
+            "text": "`acceptEdits`",
+            "why": "Las escrituras en rutas protegidas y la mayoría de los comandos Bash seguirían preguntando, y nadie está para responder."
+          },
+          {
+            "id": "C",
+            "text": "`bypassPermissions`",
+            "why": "Salta los prompts de permisos, incluidas las escrituras en rutas protegidas, y el contenedor aislado es donde corresponde usarlo."
+          },
+          {
+            "id": "D",
+            "text": "`plan`",
+            "why": "Plan mode bloquea las ediciones hasta aprobar un plan."
+          }
+        ],
+        "explanation": "Los requisitos son sin persona, todas las herramientas, escrituras en rutas protegidas permitidas y ninguna allowlist predecible, todo dentro de un contenedor aislado. `bypassPermissions` salta los prompts, incluidas las escrituras en rutas protegidas como `.git`, y la documentación lo limita a contenedores o VMs, con un usuario no root. `dontAsk` necesita una allowlist y niega las escrituras protegidas, y `acceptEdits` dejaría prompts que nadie responde."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-bypass-vs-dontask--e01a322c",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [
+        "mode-catalog"
+      ],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Inside a VM, a developer starts an interactive session with `--dangerously-skip-permissions`. Their settings contain a deny rule `Bash(curl *)` and an ask rule `Bash(git push *)`. Which two outcomes will they see? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`curl https://example.com` is blocked.",
+          "correct": true,
+          "why": "Deny rules block in every mode, including `bypassPermissions`."
+        },
+        {
+          "id": "B",
+          "text": "`git push origin main` prompts for approval.",
+          "correct": true,
+          "why": "Explicit ask rules are never auto-approved, even in `bypassPermissions`."
+        },
+        {
+          "id": "C",
+          "text": "`curl` runs, because bypass mode skips all permission checks.",
+          "correct": false,
+          "why": "Bypass skips prompts, but deny rules still block."
+        },
+        {
+          "id": "D",
+          "text": "`git push` runs without a prompt, because ask rules are ignored in bypass mode.",
+          "correct": false,
+          "why": "Tools matched by an explicit ask rule still prompt in every mode."
+        },
+        {
+          "id": "E",
+          "text": "Writes to `.claude/settings.json` prompt, because `.claude` is a protected path.",
+          "correct": false,
+          "why": "`bypassPermissions` allows writes to protected paths without a prompt."
+        }
+      ],
+      "explanation": "`bypassPermissions` skips permission prompts, including for protected paths like `.claude`, but it is not a blank check. Deny rules block in every mode, so the `curl` call is blocked. Tools matched by an explicit ask rule are never auto-approved in any mode, so `git push` still prompts.",
+      "keywordCues": [
+        "`--dangerously-skip-permissions`",
+        "deny rule `Bash(curl *)`",
+        "ask rule `Bash(git push *)`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Dentro de una VM, un desarrollador inicia una sesión interactiva con `--dangerously-skip-permissions`. Sus settings tienen un deny `Bash(curl *)` y un ask `Bash(git push *)`. ¿Qué dos resultados verá? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`curl https://example.com` se bloquea.",
+            "why": "Las reglas deny bloquean en todos los modos, incluido `bypassPermissions`."
+          },
+          {
+            "id": "B",
+            "text": "`git push origin main` pide aprobación.",
+            "why": "Las reglas ask explícitas nunca se autoaprueban, ni siquiera en `bypassPermissions`."
+          },
+          {
+            "id": "C",
+            "text": "`curl` corre, porque el modo bypass salta todos los chequeos de permisos.",
+            "why": "Bypass salta los prompts, pero las reglas deny siguen bloqueando."
+          },
+          {
+            "id": "D",
+            "text": "`git push` corre sin preguntar, porque en bypass se ignoran las reglas ask.",
+            "why": "Las herramientas que coinciden con una regla ask explícita siguen preguntando en todos los modos."
+          },
+          {
+            "id": "E",
+            "text": "Las escrituras en `.claude/settings.json` preguntan, porque `.claude` es una ruta protegida.",
+            "why": "`bypassPermissions` permite escribir en rutas protegidas sin preguntar."
+          }
+        ],
+        "explanation": "`bypassPermissions` salta los prompts de permisos, incluso en rutas protegidas como `.claude`, pero no es un cheque en blanco. Las reglas deny bloquean en todos los modos, así que la llamada a `curl` se bloquea. Las herramientas que coinciden con una regla ask explícita nunca se autoaprueban en ningún modo, así que `git push` sigue preguntando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-bypass-vs-dontask--b84deaf4",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which flag, taking no value, is equivalent to `--permission-mode bypassPermissions`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--dangerously-skip-permissions",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--dangerously-skip-permissions` is equivalent to `--permission-mode bypassPermissions`. Use it only in isolated environments such as containers or VMs, and not as root or under sudo on Linux and macOS.",
+      "keywordCues": [
+        "taking no value",
+        "equivalent to `--permission-mode bypassPermissions`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag, sin valor, equivale a `--permission-mode bypassPermissions`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--dangerously-skip-permissions",
+            "why": ""
+          }
+        ],
+        "explanation": "`--dangerously-skip-permissions` equivale a `--permission-mode bypassPermissions`. Úsalo solo en entornos aislados como contenedores o VMs, y no como root ni con sudo en Linux y macOS."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-bypass-vs-dontask--de826a5c",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which flag and value start a session that auto-denies every tool call that would otherwise prompt?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--permission-mode dontAsk",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "claude --permission-mode dontAsk",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--permission-mode dontAsk` starts the session in `dontAsk`, which denies every call that would prompt while reads and pre-approved tools still run. `dontAsk` never appears in the `Shift+Tab` cycle, so the flag is how you set it.",
+      "keywordCues": [
+        "auto-denies every tool call that would otherwise prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag y valor inician una sesión que niega automáticamente toda llamada a herramienta que preguntaría?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--permission-mode dontAsk",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "claude --permission-mode dontAsk",
+            "why": ""
+          }
+        ],
+        "explanation": "`--permission-mode dontAsk` inicia la sesión en `dontAsk`, que niega toda llamada que preguntaría mientras las lecturas y las herramientas preaprobadas siguen corriendo. `dontAsk` nunca aparece en el ciclo de `Shift+Tab`, así que el flag es la forma de activarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-bypass-vs-dontask--6e8b6a99",
+      "conceptId": "mode-bypass-vs-dontask",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this managed settings file so nobody in the organization can use `bypassPermissions` mode.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "disableAutoMode",
+          "correct": false,
+          "why": "It removes auto mode, not bypass mode."
+        },
+        {
+          "id": "1b",
+          "text": "defaultMode",
+          "correct": false,
+          "why": "It only sets the starting mode; a flag can still enable bypass."
+        },
+        {
+          "id": "1c",
+          "text": "disableBypassPermissionsMode",
+          "correct": true,
+          "why": "This key prevents `bypassPermissions` from being used."
+        },
+        {
+          "id": "2a",
+          "text": "disable",
+          "correct": true,
+          "why": "The documented value that turns the mode off is `\"disable\"`."
+        },
+        {
+          "id": "2b",
+          "text": "deny",
+          "correct": false,
+          "why": "`deny` is a rule list name, not a value for this key."
+        },
+        {
+          "id": "2c",
+          "text": "dontAsk",
+          "correct": false,
+          "why": "`dontAsk` is a mode value, not a value for this key."
+        }
+      ],
+      "explanation": "Setting `permissions.disableBypassPermissionsMode` to `\"disable\"` prevents `bypassPermissions` from being used. It works from any settings file, but in managed settings users and projects can't override it. `disableAutoMode` targets auto mode instead, and `defaultMode` only picks the starting mode.",
+      "keywordCues": [
+        "managed settings",
+        "nobody in the organization can use `bypassPermissions`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Completa este archivo de managed settings para que nadie en la organización pueda usar el modo `bypassPermissions`.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "disableAutoMode",
+            "why": "Quita auto mode, no el modo bypass."
+          },
+          {
+            "id": "1b",
+            "text": "defaultMode",
+            "why": "Solo fija el modo inicial; un flag igual podría habilitar bypass."
+          },
+          {
+            "id": "1c",
+            "text": "disableBypassPermissionsMode",
+            "why": "Esta clave impide usar `bypassPermissions`."
+          },
+          {
+            "id": "2a",
+            "text": "disable",
+            "why": "El valor documentado que apaga el modo es `\"disable\"`."
+          },
+          {
+            "id": "2b",
+            "text": "deny",
+            "why": "`deny` es el nombre de una lista de reglas, no un valor para esta clave."
+          },
+          {
+            "id": "2c",
+            "text": "dontAsk",
+            "why": "`dontAsk` es un valor de modo, no un valor para esta clave."
+          }
+        ],
+        "explanation": "Poner `permissions.disableBypassPermissionsMode` en `\"disable\"` impide usar `bypassPermissions`. Funciona desde cualquier archivo de settings, pero en managed settings los usuarios y proyectos no pueden anularlo. `disableAutoMode` apunta a auto mode y `defaultMode` solo elige el modo inicial."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": \"{{2}}\"\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mode-bypass-vs-dontask--r0",
+      "conceptId": "mode-bypass-vs-dontask",
+      "kind": "recall",
+      "prompt": "Contrast `dontAsk` and `bypassPermissions` for unattended runs: what each does with a call that would prompt, and where each belongs.",
+      "promptEs": "Contrasta `dontAsk` y `bypassPermissions` para ejecuciones desatendidas: qué hace cada uno con una llamada que preguntaría y dónde corresponde cada uno.",
+      "idealAnswer": "`dontAsk` denies any call that would prompt, so only reads and pre-approved tools run; it fits CI with an exact `--allowedTools` allowlist. `bypassPermissions` skips prompts and runs almost everything, including protected-path writes, so it belongs only in a container or VM, not as root. In both, deny rules still block and explicit ask rules and critical-path `rm` are never auto-approved.",
+      "rubric": [
+        "dontAsk denies what isn't pre-approved; fits CI allowlists",
+        "bypassPermissions skips prompts, including protected paths",
+        "bypass only in a container or VM, not as root",
+        "Deny rules and ask rules still apply in both"
+      ]
+    },
+    {
+      "id": "mode-bypass-vs-dontask--r1",
+      "conceptId": "mode-bypass-vs-dontask",
+      "kind": "why-not",
+      "prompt": "A CI job already runs with `--permission-mode dontAsk` and allows `Bash(npm test)`. Why doesn't that stop the test process from reaching the internet?",
+      "promptEs": "Un job de CI ya corre con `--permission-mode dontAsk` y permite `Bash(npm test)`. ¿Por qué eso no impide que el proceso de tests llegue a internet?",
+      "idealAnswer": "Permission modes only decide whether Claude asks before a call runs; once `npm test` is allowed, the mode doesn't limit what that process can reach. Limiting file and network access once it runs is the job of the Bash sandbox or an isolation boundary such as a container or VM.",
+      "rubric": [
+        "Modes decide whether a call runs without a prompt",
+        "An allowed command's reach isn't limited by the mode",
+        "Use the sandbox or a container/VM to limit what it can reach"
+      ]
+    }
+  ]
+}

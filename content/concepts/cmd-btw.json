@@ -1,0 +1,410 @@
+{
+  "conceptId": "cmd-btw",
+  "card": {
+    "en": {
+      "tldr": "/btw <question> asks a side question that is answered only from what is already in context, even while Claude is working. It doesn't interrupt the main turn, has no tools, and the question and answer never enter the conversation history.",
+      "whenToUse": [
+        "Recall something Claude already read or decided earlier in this session.",
+        "Ask while Claude is mid-task without interrupting the main turn.",
+        "Keep a quick aside out of the conversation history."
+      ],
+      "keyFacts": [
+        "It answers from your messages, Claude's replies and the tool results already gathered; it sees everything except the reply Claude is still writing.",
+        "No tool access: Claude can't read files, run commands or search when answering a side question.",
+        "Single response: there are no follow-up turns in the overlay; ask another /btw to continue.",
+        "Press f in the overlay to fork the question and answer into a background subagent with full tool access (local sessions only).",
+        "/btw with no question reopens the overlay on your most recent side question."
+      ],
+      "gotchas": [
+        "If the answer needs something not yet in context, such as an unread file, /btw can't get it: use a subagent.",
+        "The exchange never enters the conversation history, so it can't redirect the running task.",
+        "Later side questions do see earlier ones (the newest 20 exchanges) until you clear them with x."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Typing a message + Enter while Claude works",
+          "difference": "Queues a message Claude reads within the same turn to redirect it; /btw stays out of the conversation."
+        },
+        {
+          "concept": "! shell mode",
+          "difference": "You run a command yourself and its output enters context; /btw runs nothing."
+        },
+        {
+          "concept": "Subagent",
+          "difference": "Has tools and goes to find out something new; /btw only uses what the session already knows."
+        }
+      ],
+      "examCues": [
+        "quick question without interrupting",
+        "without adding to the conversation history",
+        "something Claude already read",
+        "while Claude is still working",
+        "no tools needed"
+      ]
+    },
+    "es": {
+      "tldr": "/btw <question> hace una pregunta lateral que se responde solo con lo que ya está en contexto, incluso mientras Claude trabaja. No interrumpe el turno principal, no tiene herramientas, y la pregunta y la respuesta nunca entran al historial de la conversación.",
+      "whenToUse": [
+        "Recordar algo que Claude ya leyó o decidió antes en esta sesión.",
+        "Preguntar mientras Claude está a mitad de tarea sin interrumpir el turno principal.",
+        "Mantener una consulta rápida fuera del historial de la conversación."
+      ],
+      "keyFacts": [
+        "Responde con tus mensajes, las respuestas de Claude y los resultados de herramientas ya reunidos; ve todo excepto la respuesta que Claude aún está escribiendo.",
+        "Sin acceso a herramientas: Claude no puede leer archivos, correr comandos ni buscar al responder una pregunta lateral.",
+        "Una sola respuesta: no hay turnos de seguimiento en el overlay; haz otra /btw para continuar.",
+        "Pulsa f en el overlay para bifurcar la pregunta y la respuesta a un subagente en segundo plano con acceso completo a herramientas (solo sesiones locales).",
+        "/btw sin pregunta reabre el overlay en tu pregunta lateral más reciente."
+      ],
+      "gotchas": [
+        "Si la respuesta necesita algo que aún no está en contexto, como un archivo no leído, /btw no puede obtenerlo: usa un subagente.",
+        "El intercambio nunca entra al historial de la conversación, así que no sirve para reorientar la tarea en curso.",
+        "Las preguntas laterales posteriores sí ven las anteriores (los 20 intercambios más recientes) hasta que las limpias con x."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Escribir un mensaje + Enter mientras Claude trabaja",
+          "difference": "Encola un mensaje que Claude lee en el mismo turno para reorientarlo; /btw queda fuera de la conversación."
+        },
+        {
+          "concept": "Modo shell con !",
+          "difference": "Tú ejecutas un comando y su salida entra al contexto; /btw no ejecuta nada."
+        },
+        {
+          "concept": "Subagente",
+          "difference": "Tiene herramientas y va a averiguar algo nuevo; /btw solo usa lo que la sesión ya sabe."
+        }
+      ],
+      "examCues": [
+        "quick question without interrupting",
+        "without adding to the conversation history",
+        "something Claude already read",
+        "while Claude is still working",
+        "no tools needed"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/interactive-mode.md",
+      "https://code.claude.com/docs/en/commands.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cmd-btw--e35725e7",
+      "conceptId": "cmd-btw",
+      "secondaryConcepts": [
+        "interactive-interrupt-queue",
+        "interactive-input-prefixes"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude is in the middle of a long refactor. You forgot the name of the config file it read twenty minutes ago and want to ask, but without interrupting the current turn and without adding the question to the conversation history. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type the question and press Enter while Claude works",
+          "correct": false,
+          "why": "The message is queued and read within the turn, so it becomes part of the conversation history."
+        },
+        {
+          "id": "B",
+          "text": "Press Esc, then ask the question",
+          "correct": false,
+          "why": "Esc stops Claude and cancels the running tool call, which interrupts the turn."
+        },
+        {
+          "id": "C",
+          "text": "Run /btw with the question",
+          "correct": true,
+          "why": "/btw answers from what is already in context, runs alongside the main turn and never enters the history."
+        },
+        {
+          "id": "D",
+          "text": "Use ! to list the config files yourself",
+          "correct": false,
+          "why": "Shell mode runs the command and its output is added to the conversation context."
+        }
+      ],
+      "explanation": "Two constraints decide it: don't interrupt the turn and keep the question out of history. The file was already read, so its name is in context, which is exactly what /btw answers from; it runs independently of the main turn and never enters the history. Queuing a message is tempting because it doesn't stop Claude, but that message becomes part of the conversation.",
+      "keywordCues": [
+        "it read twenty minutes ago",
+        "without interrupting the current turn",
+        "without adding the question to the conversation history"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Claude está a mitad de un refactor largo. Olvidaste el nombre del archivo de configuración que leyó hace veinte minutos y quieres preguntarlo, pero sin interrumpir el turno actual y sin agregar la pregunta al historial de la conversación. ¿Qué debes hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Escribir la pregunta y pulsar Enter mientras Claude trabaja",
+            "why": "El mensaje queda en cola y se lee dentro del turno, así que pasa a formar parte del historial."
+          },
+          {
+            "id": "B",
+            "text": "Pulsar Esc y luego hacer la pregunta",
+            "why": "Esc detiene a Claude y cancela la tool call en curso, lo que interrumpe el turno."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar /btw con la pregunta",
+            "why": "/btw responde con lo que ya está en contexto, corre en paralelo al turno principal y nunca entra al historial."
+          },
+          {
+            "id": "D",
+            "text": "Usar ! para listar tú mismo los archivos de configuración",
+            "why": "El modo shell ejecuta el comando y su salida se agrega al contexto de la conversación."
+          }
+        ],
+        "explanation": "Deciden dos restricciones: no interrumpir el turno y dejar la pregunta fuera del historial. El archivo ya se leyó, así que su nombre está en contexto, y de ahí responde /btw; corre independiente del turno principal y nunca entra al historial. Encolar un mensaje es tentador porque no detiene a Claude, pero ese mensaje pasa a la conversación."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-btw--67d37afb",
+      "conceptId": "cmd-btw",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a local session you asked a /btw question, and the answer says it can't tell without reading a file that isn't in context yet. You want to continue from that exact question and answer with full tool access, while staying in your current session. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask a follow-up /btw question telling Claude to read the file",
+          "correct": false,
+          "why": "Side questions have no tool access, so another /btw still can't read the file."
+        },
+        {
+          "id": "B",
+          "text": "Press f in the /btw overlay",
+          "correct": true,
+          "why": "f starts a forked subagent that inherits the conversation plus this question and answer, with full tool access, while you stay in the session."
+        },
+        {
+          "id": "C",
+          "text": "Press x in the /btw overlay",
+          "correct": false,
+          "why": "x only clears the list of earlier /btw exchanges; it doesn't give anything tool access."
+        },
+        {
+          "id": "D",
+          "text": "Run /clear and ask the question as a normal prompt",
+          "correct": false,
+          "why": "/clear starts a new conversation with empty context, losing the question, the answer and the session so far."
+        }
+      ],
+      "explanation": "The requirements are tool access, continuing from that exact side question, and staying in the current session. Pressing f forks the question and answer into a background subagent that inherits the parent conversation and has full tools. Asking another /btw is tempting, but side questions never have tools, so it would hit the same wall.",
+      "keywordCues": [
+        "continue from that exact question and answer",
+        "with full tool access",
+        "staying in your current session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "En una sesión local hiciste una pregunta con /btw y la respuesta dice que no puede saberlo sin leer un archivo que aún no está en contexto. Quieres continuar desde esa misma pregunta y respuesta con acceso completo a herramientas, sin salir de tu sesión actual. ¿Qué debes hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Hacer otra pregunta con /btw pidiéndole a Claude que lea el archivo",
+            "why": "Las preguntas laterales no tienen acceso a herramientas, así que otra /btw tampoco puede leer el archivo."
+          },
+          {
+            "id": "B",
+            "text": "Pulsar f en el overlay de /btw",
+            "why": "f inicia un subagente bifurcado que hereda la conversación más esta pregunta y respuesta, con todas las herramientas, mientras tú sigues en la sesión."
+          },
+          {
+            "id": "C",
+            "text": "Pulsar x en el overlay de /btw",
+            "why": "x solo limpia la lista de intercambios /btw anteriores; no da acceso a herramientas."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar /clear y hacer la pregunta como un prompt normal",
+            "why": "/clear empieza una conversación nueva con el contexto vacío y pierdes la pregunta, la respuesta y la sesión hasta ahora."
+          }
+        ],
+        "explanation": "Los requisitos son acceso a herramientas, continuar desde esa misma pregunta lateral y seguir en la sesión actual. Pulsar f bifurca la pregunta y la respuesta a un subagente en segundo plano que hereda la conversación y tiene todas las herramientas. Hacer otra /btw es tentador, pero las preguntas laterales nunca tienen herramientas y chocarías con el mismo límite."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-btw--7786cbb2",
+      "conceptId": "cmd-btw",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "While Claude is still writing a long answer about a migration, you run /btw to ask which database driver it found earlier in package.json. Which two statements describe what happens? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The side question can use the package.json contents Claude already read",
+          "correct": true,
+          "why": "Side questions answer from what is in context, including tool results Claude has already gathered."
+        },
+        {
+          "id": "B",
+          "text": "The question and its answer never enter the conversation history",
+          "correct": true,
+          "why": "They appear in a dismissible overlay and stay out of the conversation history."
+        },
+        {
+          "id": "C",
+          "text": "Claude can re-read package.json to double-check before answering",
+          "correct": false,
+          "why": "/btw has no tool access: it can't read files, run commands or search."
+        },
+        {
+          "id": "D",
+          "text": "The main answer pauses until the side question is answered",
+          "correct": false,
+          "why": "The side question runs independently and doesn't interrupt the main turn."
+        },
+        {
+          "id": "E",
+          "text": "The side question also sees the reply Claude is still writing",
+          "correct": false,
+          "why": "It sees everything in the conversation so far, except the reply Claude is still writing."
+        }
+      ],
+      "explanation": "/btw answers from what is already in context, so package.json contents that Claude read earlier are available, and the exchange stays out of the conversation history. It has no tools, so it can't re-read the file, and it runs alongside the main turn without pausing it. The one thing it can't see is the reply still being written.",
+      "keywordCues": [
+        "While Claude is still writing",
+        "found earlier in package.json"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Mientras Claude todavía escribe una respuesta larga sobre una migración, ejecutas /btw para preguntar qué driver de base de datos encontró antes en package.json. ¿Qué dos afirmaciones describen lo que ocurre? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "La pregunta lateral puede usar el contenido de package.json que Claude ya leyó",
+            "why": "Las preguntas laterales responden con lo que está en contexto, incluidos los resultados de herramientas que Claude ya reunió."
+          },
+          {
+            "id": "B",
+            "text": "La pregunta y su respuesta nunca entran al historial de la conversación",
+            "why": "Aparecen en un overlay que se puede cerrar y quedan fuera del historial."
+          },
+          {
+            "id": "C",
+            "text": "Claude puede volver a leer package.json para confirmar antes de responder",
+            "why": "/btw no tiene acceso a herramientas: no puede leer archivos, correr comandos ni buscar."
+          },
+          {
+            "id": "D",
+            "text": "La respuesta principal se pausa hasta que se responda la pregunta lateral",
+            "why": "La pregunta lateral corre de forma independiente y no interrumpe el turno principal."
+          },
+          {
+            "id": "E",
+            "text": "La pregunta lateral también ve la respuesta que Claude aún está escribiendo",
+            "why": "Ve todo lo que hay en la conversación hasta ahora, excepto la respuesta que Claude aún está escribiendo."
+          }
+        ],
+        "explanation": "/btw responde con lo que ya está en contexto, así que el contenido de package.json que Claude leyó antes está disponible, y el intercambio queda fuera del historial. No tiene herramientas, así que no puede releer el archivo, y corre junto al turno principal sin pausarlo. Lo único que no ve es la respuesta que aún se está escribiendo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-btw--cac44c5d",
+      "conceptId": "cmd-btw",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "You dismissed a side question's overlay. Which command, typed with no arguments, reopens the overlay on your most recent side question?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/btw",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Running /btw with no question reopens the overlay on your most recent side question, so you can browse earlier answers.",
+      "keywordCues": [
+        "reopens the overlay",
+        "most recent side question"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Cerraste el overlay de una pregunta lateral. ¿Qué comando, escrito sin argumentos, reabre el overlay en tu pregunta lateral más reciente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/btw",
+            "why": ""
+          }
+        ],
+        "explanation": "Ejecutar /btw sin pregunta reabre el overlay en tu pregunta lateral más reciente, para que puedas revisar respuestas anteriores."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cmd-btw--r0",
+      "conceptId": "cmd-btw",
+      "kind": "recall",
+      "prompt": "Explain what /btw can see, what it cannot do, how it affects the main turn and history, and how to continue with tools.",
+      "promptEs": "Explica qué ve /btw, qué no puede hacer, cómo afecta al turno principal y al historial, y cómo continuar con herramientas.",
+      "idealAnswer": "/btw answers from what is already in context, your messages, Claude's replies and gathered tool results, and works even while Claude is responding without interrupting the turn. It has no tools, so it can't read files, run commands or search, and the exchange never enters the conversation history. To continue with full tool access, press f to fork it into a background subagent.",
+      "rubric": [
+        "Answers only from what is already in context",
+        "No tool access: can't read files or run commands",
+        "Doesn't interrupt the turn and stays out of history",
+        "Press f to fork into a subagent with tools"
+      ]
+    },
+    {
+      "id": "cmd-btw--r1",
+      "conceptId": "cmd-btw",
+      "kind": "why-not",
+      "prompt": "Claude is heading toward the wrong module. Why doesn't /btw help you redirect it, and what should you use instead?",
+      "promptEs": "Claude va hacia el módulo equivocado. ¿Por qué /btw no te sirve para reorientarlo y qué debes usar en su lugar?",
+      "idealAnswer": "/btw runs independently of the main turn and its question and answer never enter the conversation history, so the running task never sees it. To redirect Claude, type a correction and press Enter so it is read within the turn, or press Esc to stop it.",
+      "rubric": [
+        "/btw doesn't interrupt the turn",
+        "The exchange never enters history, so Claude's task doesn't see it",
+        "Redirect with a queued message (Enter) or stop with Esc"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "conceptId": "workflow-failure-patterns",
+  "card": {
+    "en": {
+      "tldr": "Five common patterns derail sessions: the kitchen sink session, correcting over and over, the over-specified CLAUDE.md, the trust-then-verify gap, and the infinite exploration. Recognize the symptom and apply its fix early: /clear, reprompt, prune, verify, or scope and delegate.",
+      "whenToUse": [
+        "Claude seems distracted after a mix of unrelated tasks",
+        "You've corrected the same issue more than twice",
+        "Claude ignores rules that are in CLAUDE.md",
+        "An investigation is filling your context with file reads"
+      ],
+      "keyFacts": [
+        "Kitchen sink session: run `/clear` between unrelated tasks.",
+        "Correcting over and over: after two failed corrections, `/clear` and write a better initial prompt that includes what you learned.",
+        "Over-specified CLAUDE.md: ruthlessly prune; if Claude already does something correctly without the instruction, delete it or convert it to a hook.",
+        "Trust-then-verify gap: always provide verification (tests, scripts, screenshots); if you can't verify it, don't ship it.",
+        "Infinite exploration: scope investigations narrowly or use subagents so exploration doesn't consume your main context."
+      ],
+      "gotchas": [
+        "A long session with accumulated corrections almost always loses to a clean session with a better prompt.",
+        "Emphasizing many CLAUDE.md lines with \"IMPORTANT\" makes none of them stand out.",
+        "Sometimes letting context accumulate is right, when you're deep in one complex problem and the history is valuable."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/compact",
+          "difference": "/compact summarizes history and keeps key decisions; /clear resets the context entirely for a fresh start."
+        },
+        {
+          "concept": "Explore, plan, implement, commit",
+          "difference": "That prevents a wrong start; these fixes rescue a session that's already derailing."
+        }
+      ],
+      "examCues": [
+        "corrected it several times and it's still wrong",
+        "then asked something unrelated",
+        "ignores rules in CLAUDE.md",
+        "reads hundreds of files",
+        "context is full of"
+      ]
+    },
+    "es": {
+      "tldr": "Cinco patrones comunes descarrilan sesiones: la sesión cajón de sastre, corregir una y otra vez, el CLAUDE.md sobreespecificado, la brecha de confiar y luego verificar, y la exploración infinita. Reconoce el síntoma y aplica su arreglo temprano: /clear, mejor prompt, podar, verificar, o acotar y delegar.",
+      "whenToUse": [
+        "Claude parece distraído tras mezclar tareas sin relación",
+        "Corregiste lo mismo más de dos veces",
+        "Claude ignora reglas que están en CLAUDE.md",
+        "Una investigación está llenando tu contexto con lecturas de archivos"
+      ],
+      "keyFacts": [
+        "Sesión cajón de sastre: corre `/clear` entre tareas sin relación.",
+        "Corregir una y otra vez: tras dos correcciones fallidas, `/clear` y escribe un mejor prompt inicial con lo que aprendiste.",
+        "CLAUDE.md sobreespecificado: poda sin piedad; si Claude ya hace algo bien sin la instrucción, bórrala o conviértela en hook.",
+        "Brecha de confiar y luego verificar: da siempre verificación (tests, scripts, capturas); si no lo puedes verificar, no lo publiques.",
+        "Exploración infinita: acota las investigaciones o usa subagentes para que la exploración no consuma tu contexto principal."
+      ],
+      "gotchas": [
+        "Una sesión larga con correcciones acumuladas casi siempre pierde contra una sesión limpia con un mejor prompt.",
+        "Enfatizar muchas líneas de CLAUDE.md con \"IMPORTANT\" hace que ninguna destaque.",
+        "A veces dejar que el contexto se acumule es correcto, cuando estás metido en un problema complejo y el historial vale."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/compact",
+          "difference": "/compact resume el historial y conserva decisiones clave; /clear reinicia el contexto por completo para empezar limpio."
+        },
+        {
+          "concept": "Explorar, planificar, implementar, commitear",
+          "difference": "Eso evita un mal comienzo; estos arreglos rescatan una sesión que ya se está desviando."
+        }
+      ],
+      "examCues": [
+        "corrected it several times and it's still wrong",
+        "then asked something unrelated",
+        "ignores rules in CLAUDE.md",
+        "reads hundreds of files",
+        "context is full of"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/best-practices.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "workflow-failure-patterns--4485db05",
+      "conceptId": "workflow-failure-patterns",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "In one session you worked on a payments refactor, then asked Claude about an unrelated CSS bug, then a CI question, and now you're back on payments. Claude is making more mistakes and seems to forget earlier instructions. What should you do between unrelated tasks from now on?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/compact` at the end of each task.",
+          "correct": false,
+          "why": "Compaction keeps a summary of each task in context; the fix for unrelated tasks is resetting it entirely."
+        },
+        {
+          "id": "B",
+          "text": "Add \"IMPORTANT\" to the instructions Claude forgot in CLAUDE.md.",
+          "correct": false,
+          "why": "The problem is a context full of irrelevant information, not weak emphasis."
+        },
+        {
+          "id": "C",
+          "text": "Name the session with `/rename` so you can find it later.",
+          "correct": false,
+          "why": "Naming helps you resume sessions but doesn't remove irrelevant context."
+        },
+        {
+          "id": "D",
+          "text": "Run `/clear` between unrelated tasks.",
+          "correct": true,
+          "why": "/clear resets the context so each task starts without irrelevant history."
+        }
+      ],
+      "explanation": "This is the kitchen sink session: unrelated tasks mixed in one context fill it with irrelevant information and degrade performance. The documented fix is `/clear` between unrelated tasks, which resets the context window entirely. `/compact` is tempting, but it keeps summarized history in context rather than starting clean. Emphasis and session names don't address the cluttered context.",
+      "keywordCues": [
+        "unrelated CSS bug",
+        "now you're back on payments",
+        "between unrelated tasks"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "En una sesión trabajaste en un refactor de pagos, luego le preguntaste a Claude por un bug de CSS sin relación, luego algo de CI, y ahora vuelves a pagos. Claude comete más errores y parece olvidar instrucciones anteriores. ¿Qué deberías hacer entre tareas sin relación de ahora en adelante?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/compact` al final de cada tarea.",
+            "why": "Compactar deja un resumen de cada tarea en el contexto; el arreglo para tareas sin relación es reiniciarlo por completo."
+          },
+          {
+            "id": "B",
+            "text": "Agregar \"IMPORTANT\" a las instrucciones de CLAUDE.md que Claude olvidó.",
+            "why": "El problema es un contexto lleno de información irrelevante, no un énfasis débil."
+          },
+          {
+            "id": "C",
+            "text": "Nombrar la sesión con `/rename` para encontrarla después.",
+            "why": "Nombrar ayuda a retomar sesiones, pero no quita contexto irrelevante."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/clear` entre tareas sin relación.",
+            "why": "/clear reinicia el contexto para que cada tarea empiece sin historial irrelevante."
+          }
+        ],
+        "explanation": "Es la sesión cajón de sastre: mezclar tareas sin relación llena el contexto de información irrelevante y baja el rendimiento. El arreglo documentado es `/clear` entre tareas sin relación, que reinicia por completo la ventana de contexto. `/compact` tienta, pero mantiene historial resumido en vez de empezar limpio. El énfasis y los nombres de sesión no atacan el contexto saturado."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-failure-patterns--7cefa59b",
+      "conceptId": "workflow-failure-patterns",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Claude keeps producing the wrong fix for a flaky test. You've corrected it three times in this session and each attempt is still wrong. You want the next attempt to have the best chance of succeeding. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Keep correcting in the same session, adding more detail each time.",
+          "correct": false,
+          "why": "The context is already polluted with failed approaches; more corrections add to it."
+        },
+        {
+          "id": "B",
+          "text": "Run `/clear` to drop the failed attempts from context.",
+          "correct": true,
+          "why": "After two failed corrections, the guidance is to clear the cluttered context."
+        },
+        {
+          "id": "C",
+          "text": "Add each correction as a new rule in CLAUDE.md.",
+          "correct": false,
+          "why": "It bloats CLAUDE.md with task-specific rules that load every session."
+        },
+        {
+          "id": "D",
+          "text": "Write a more specific first prompt that includes what you learned.",
+          "correct": true,
+          "why": "A clean session with a better prompt almost always beats accumulated corrections."
+        },
+        {
+          "id": "E",
+          "text": "Run `/compact` and send the same prompt again.",
+          "correct": false,
+          "why": "Repeating the same prompt ignores what you learned, and the summary still carries the failed history."
+        }
+      ],
+      "explanation": "This is the correcting-over-and-over pattern: after two failed corrections, the context is cluttered with failed approaches. The fix has two parts: `/clear` to start fresh, and a more specific initial prompt that incorporates what you learned. Continuing to correct adds to the pollution, and `/compact` with the same prompt repeats the mistake. Moving corrections into CLAUDE.md bloats a file that loads every session.",
+      "keywordCues": [
+        "corrected it three times in this session",
+        "still wrong",
+        "best chance of succeeding"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Claude sigue proponiendo el arreglo equivocado para un test inestable. Lo corregiste tres veces en esta sesión y cada intento sigue mal. Quieres que el próximo intento tenga la mejor chance de funcionar. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Seguir corrigiendo en la misma sesión, con más detalle cada vez.",
+            "why": "El contexto ya está contaminado con enfoques fallidos; más correcciones lo agravan."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/clear` para sacar los intentos fallidos del contexto.",
+            "why": "Tras dos correcciones fallidas, la guía es limpiar el contexto saturado."
+          },
+          {
+            "id": "C",
+            "text": "Agregar cada corrección como una regla nueva en CLAUDE.md.",
+            "why": "Infla CLAUDE.md con reglas de una tarea que se cargan en cada sesión."
+          },
+          {
+            "id": "D",
+            "text": "Escribir un primer prompt más específico que incluya lo que aprendiste.",
+            "why": "Una sesión limpia con un mejor prompt casi siempre supera a las correcciones acumuladas."
+          },
+          {
+            "id": "E",
+            "text": "Correr `/compact` y volver a enviar el mismo prompt.",
+            "why": "Repetir el mismo prompt ignora lo aprendido, y el resumen sigue cargando la historia fallida."
+          }
+        ],
+        "explanation": "Es el patrón de corregir una y otra vez: tras dos correcciones fallidas, el contexto está lleno de enfoques fallidos. El arreglo tiene dos partes: `/clear` para empezar limpio y un prompt inicial más específico con lo que aprendiste. Seguir corrigiendo agrava la contaminación, y `/compact` con el mismo prompt repite el error. Pasar correcciones a CLAUDE.md infla un archivo que se carga en cada sesión."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-failure-patterns--551856f2",
+      "conceptId": "workflow-failure-patterns",
+      "secondaryConcepts": [
+        "workflow-explore-plan-code"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You ask Claude to \"investigate why the app is slow\" with no further scope. It starts reading hundreds of files, and your main context fills up before any fix begins. You want the exploration to happen without consuming your main conversation's context.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run the investigation in plan mode.",
+          "correct": false,
+          "why": "Plan mode prevents edits, but every file Claude reads still lands in your main context."
+        },
+        {
+          "id": "B",
+          "text": "Tell Claude to use subagents to investigate and report back.",
+          "correct": true,
+          "why": "Subagents explore in separate context windows and return summaries."
+        },
+        {
+          "id": "C",
+          "text": "Let it finish, then run `/compact` to reclaim space.",
+          "correct": false,
+          "why": "That cleans up after the fact; the exploration still consumed your main context."
+        },
+        {
+          "id": "D",
+          "text": "Add a file-by-file description of the codebase to CLAUDE.md.",
+          "correct": false,
+          "why": "File-by-file descriptions are something CLAUDE.md should exclude, and it loads every session."
+        }
+      ],
+      "explanation": "This is the infinite exploration pattern. The requirement is to explore without consuming the main context, and subagents do that: they read files in their own context windows and report back only summaries. Plan mode is tempting, but it only blocks edits; the reads still fill your context. `/compact` acts too late, and file-by-file descriptions don't belong in CLAUDE.md. Scoping the investigation narrowly is the other documented fix.",
+      "keywordCues": [
+        "with no further scope",
+        "reading hundreds of files",
+        "without consuming your main conversation's context"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Le pides a Claude \"investiga por qué la app está lenta\" sin más alcance. Empieza a leer cientos de archivos y tu contexto principal se llena antes de empezar cualquier arreglo. Quieres que la exploración ocurra sin consumir el contexto de tu conversación principal.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Hacer la investigación en plan mode.",
+            "why": "Plan mode evita ediciones, pero cada archivo que Claude lee sigue cayendo en tu contexto principal."
+          },
+          {
+            "id": "B",
+            "text": "Pedirle a Claude que use subagentes para investigar y reportar.",
+            "why": "Los subagentes exploran en ventanas de contexto separadas y devuelven resúmenes."
+          },
+          {
+            "id": "C",
+            "text": "Dejar que termine y luego correr `/compact` para recuperar espacio.",
+            "why": "Eso limpia después; la exploración igual consumió tu contexto principal."
+          },
+          {
+            "id": "D",
+            "text": "Agregar a CLAUDE.md una descripción archivo por archivo del codebase.",
+            "why": "Las descripciones archivo por archivo son algo que CLAUDE.md debe excluir, y se carga en cada sesión."
+          }
+        ],
+        "explanation": "Es el patrón de exploración infinita. El requisito es explorar sin consumir el contexto principal, y los subagentes lo logran: leen archivos en su propia ventana de contexto y devuelven solo resúmenes. Plan mode tienta, pero solo bloquea ediciones; las lecturas igual llenan tu contexto. `/compact` llega tarde, y las descripciones archivo por archivo no van en CLAUDE.md. Acotar la investigación es el otro arreglo documentado."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-failure-patterns--0e1b31f4",
+      "conceptId": "workflow-failure-patterns",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command resets the context window entirely between unrelated tasks?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/clear",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/clear` resets the context window entirely. Use it between unrelated tasks and after two failed corrections, followed by a better prompt.",
+      "keywordCues": [
+        "resets the context window entirely",
+        "between unrelated tasks"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "¿Qué slash command reinicia por completo la ventana de contexto entre tareas sin relación?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/clear",
+            "why": ""
+          }
+        ],
+        "explanation": "`/clear` reinicia por completo la ventana de contexto. Úsalo entre tareas sin relación y tras dos correcciones fallidas, seguido de un mejor prompt."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "workflow-failure-patterns--r0",
+      "conceptId": "workflow-failure-patterns",
+      "kind": "recall",
+      "prompt": "Name the common session failure patterns and the fix for each one.",
+      "promptEs": "Nombra los patrones de fallo comunes en una sesión y el arreglo de cada uno.",
+      "idealAnswer": "Kitchen sink session: /clear between unrelated tasks. Correcting over and over: after two failed corrections, /clear and write a better first prompt. Over-specified CLAUDE.md: prune it or convert rules to hooks. Trust-then-verify gap: always provide verification. Infinite exploration: scope it narrowly or delegate to subagents.",
+      "rubric": [
+        "Unrelated tasks: /clear between them",
+        "Two failed corrections: /clear plus a better prompt",
+        "Long CLAUDE.md: prune or move rules to hooks",
+        "Plausible but unverified code: provide verification; unscoped investigation: scope or use subagents"
+      ]
+    },
+    {
+      "id": "workflow-failure-patterns--r1",
+      "conceptId": "workflow-failure-patterns",
+      "kind": "why-not",
+      "prompt": "You've corrected Claude three times on the same bug. Why is running /compact and continuing not the recommended fix?",
+      "promptEs": "Corregiste a Claude tres veces en el mismo bug. ¿Por qué correr /compact y seguir no es el arreglo recomendado?",
+      "idealAnswer": "The context is cluttered with failed approaches, and compaction keeps a summary of that history instead of removing it. The guidance is to /clear and start fresh with a more specific prompt that incorporates what you learned, because a clean session with a better prompt almost always wins.",
+      "rubric": [
+        "Context is polluted with failed approaches",
+        "/compact keeps summarized history rather than starting clean",
+        "/clear plus a better, more specific prompt"
+      ]
+    }
+  ]
+}

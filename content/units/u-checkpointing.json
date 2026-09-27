@@ -1,0 +1,364 @@
+{
+  "unitId": "u-checkpointing",
+  "audited": true,
+  "overview": {
+    "title": "Checkpoints y rewind",
+    "hook": "Deshacer rápido lo que Claude editó sin perder lo que sí sirve.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "checkpoint",
+          "label": "Checkpoint",
+          "kind": "service",
+          "x": 30,
+          "y": 50
+        },
+        {
+          "id": "menu",
+          "label": "Menú /rewind",
+          "kind": "service",
+          "x": 52,
+          "y": 50
+        },
+        {
+          "id": "code",
+          "label": "Archivos",
+          "kind": "data",
+          "x": 76,
+          "y": 20
+        },
+        {
+          "id": "chat",
+          "label": "Conversación",
+          "kind": "data",
+          "x": 76,
+          "y": 80
+        },
+        {
+          "id": "git",
+          "label": "git y permisos",
+          "kind": "note",
+          "x": 96,
+          "y": 50
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "checkpoint",
+          "label": "prompt que inicia turno"
+        },
+        {
+          "from": "checkpoint",
+          "to": "menu",
+          "label": "/rewind o Esc Esc"
+        },
+        {
+          "from": "menu",
+          "to": "code",
+          "label": "Restore code"
+        },
+        {
+          "from": "menu",
+          "to": "chat",
+          "label": "Restore / Summarize"
+        },
+        {
+          "from": "git",
+          "to": "code",
+          "label": "lo que rewind no cubre"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Claude editó varios archivos y el resultado salió mal. Necesitas volver a un estado anterior rápido, sin perder lo que sí funcionaba.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Cada prompt que inicia un turno crea un checkpoint con el estado de tus archivos. Los checkpoints se guardan con la conversación, así que siguen disponibles cuando retomas la sesión.",
+        "show": [
+          "you",
+          "checkpoint"
+        ],
+        "focus": "checkpoint"
+      },
+      {
+        "narration": "Con el comando rewind, o pulsando Escape dos veces con la entrada vacía, abres el menú. Eliges uno de tus prompts y luego una acción.",
+        "show": [
+          "you",
+          "checkpoint",
+          "menu"
+        ],
+        "focus": "menu"
+      },
+      {
+        "narration": "Puedes restaurar el código, la conversación o ambos. Restaurar código revierte los archivos y mantiene el chat; restaurar conversación rebobina el chat y deja el código como está.",
+        "show": [
+          "you",
+          "checkpoint",
+          "menu",
+          "code",
+          "chat"
+        ],
+        "focus": "code"
+      },
+      {
+        "narration": "Las opciones de resumir comprimen la conversación desde ese punto o hasta ese punto. Liberan espacio de contexto y nunca tocan archivos.",
+        "show": [
+          "you",
+          "checkpoint",
+          "menu",
+          "code",
+          "chat"
+        ],
+        "focus": "chat"
+      },
+      {
+        "narration": "El rewind solo cubre ediciones de las herramientas de edición de Claude. Lo que cambió Bash, un subagente en segundo plano o un sistema remoto se recupera con git o se previene con permisos.",
+        "show": [
+          "you",
+          "checkpoint",
+          "menu",
+          "code",
+          "chat",
+          "git"
+        ],
+        "focus": "git"
+      }
+    ],
+    "keyPoints": [
+      "Cada prompt que inicia un turno crea un checkpoint",
+      "/rewind o Esc Esc con la entrada vacía",
+      "Restaurar código, conversación o ambos",
+      "Resumir libera contexto sin tocar archivos",
+      "Bash, subagentes en segundo plano y remotos: usa git"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "git",
+        "difference": "Historial permanente y colaborativo; los checkpoints son recuperación rápida dentro de la sesión."
+      },
+      {
+        "unitOrService": "/branch",
+        "difference": "Crea una sesión nueva y deja la original intacta; el rewind actúa sobre la sesión actual."
+      },
+      {
+        "unitOrService": "/compact",
+        "difference": "Resume toda la conversación; Summarize del rewind comprime desde o hasta un prompt elegido."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-checkpointing--l1",
+      "conceptId": "checkpoint-rewind-options",
+      "format": "lightning",
+      "prompt": "Undo Claude's file edits but keep the conversation → ?",
+      "promptEs": "Deshacer las ediciones de Claude pero mantener la conversación → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Restore conversation"
+        },
+        {
+          "id": "B",
+          "text": "Summarize from here"
+        },
+        {
+          "id": "C",
+          "text": "Restore code"
+        },
+        {
+          "id": "D",
+          "text": "Restore code and conversation"
+        }
+      ],
+      "answer": "C",
+      "why": "Restore code revierte los archivos y deja la conversación intacta. Restore code and conversation también rebobina el chat, y Restore conversation deja el código como está."
+    },
+    {
+      "id": "u-checkpointing--l2",
+      "conceptId": "checkpoint-rewind-options",
+      "format": "thisorthat",
+      "prompt": "Free context space from a noisy debugging stretch without touching files → ?",
+      "promptEs": "Liberar contexto de un tramo ruidoso de debugging sin tocar archivos → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Summarize from here"
+        },
+        {
+          "id": "B",
+          "text": "Restore code"
+        }
+      ],
+      "answer": "A",
+      "why": "Summarize from here comprime la conversación desde ese punto y no cambia archivos. Restore code revierte archivos y no libera contexto."
+    },
+    {
+      "id": "u-checkpointing--l3",
+      "conceptId": "checkpoint-rewind-options",
+      "format": "lightning",
+      "prompt": "Press Esc twice while the prompt input contains text → ?",
+      "promptEs": "Pulsar Esc dos veces con texto en la entrada → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Opens the rewind menu"
+        },
+        {
+          "id": "B",
+          "text": "Restores the last checkpoint"
+        },
+        {
+          "id": "C",
+          "text": "Summarizes the conversation"
+        },
+        {
+          "id": "D",
+          "text": "Clears the input, saved to history"
+        }
+      ],
+      "answer": "D",
+      "why": "Con texto en la entrada, doble Esc lo borra y lo guarda en el historial (lo recuperas con Up). Solo abre el menú de rewind cuando la entrada está vacía."
+    },
+    {
+      "id": "u-checkpointing--l4",
+      "conceptId": "checkpoint-rewind-options",
+      "format": "lightning",
+      "prompt": "Keep checkpoint file snapshots longer than the default ~30 days → ?",
+      "promptEs": "Conservar los snapshots de checkpoints más de los ~30 días por defecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "desktopSessionCleanupPeriodDays"
+        },
+        {
+          "id": "B",
+          "text": "cleanupPeriodDays"
+        },
+        {
+          "id": "C",
+          "text": "/branch"
+        },
+        {
+          "id": "D",
+          "text": "--fork-session"
+        }
+      ],
+      "answer": "B",
+      "why": "El barrido de retención borra los snapshots según cleanupPeriodDays (por defecto 30). desktopSessionCleanupPeriodDays solo limita transcripts de sesiones de Claude Desktop o Cowork."
+    },
+    {
+      "id": "u-checkpointing--l5",
+      "conceptId": "checkpoint-limits",
+      "format": "lightning",
+      "prompt": "Claude ran `rm file.txt` through Bash; bring the file back → ?",
+      "promptEs": "Claude corrió `rm file.txt` con Bash; recuperar el archivo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Restore code in /rewind"
+        },
+        {
+          "id": "B",
+          "text": "Restore code and conversation"
+        },
+        {
+          "id": "C",
+          "text": "Restore it from git"
+        },
+        {
+          "id": "D",
+          "text": "Summarize up to here"
+        }
+      ],
+      "answer": "C",
+      "why": "Los checkpoints no rastrean cambios hechos por comandos Bash como rm, mv o cp, así que ninguna restauración del rewind lo trae de vuelta. Recurre a git."
+    },
+    {
+      "id": "u-checkpointing--l6",
+      "conceptId": "checkpoint-limits",
+      "format": "thisorthat",
+      "prompt": "Undo edits made by a background forked skill → ?",
+      "promptEs": "Deshacer ediciones hechas por un skill forked en segundo plano → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/rewind, then Restore code"
+        },
+        {
+          "id": "B",
+          "text": "Revert them with git"
+        }
+      ],
+      "answer": "B",
+      "why": "Solo un skill forked en primer plano edita dentro de tu turno y se restaura. Los subagentes en segundo plano, el modo por defecto de un fork, no se restauran: usa git."
+    },
+    {
+      "id": "u-checkpointing--l7",
+      "conceptId": "checkpoint-limits",
+      "format": "lightning",
+      "prompt": "Restore code hits a tracked file that is a symlink → ?",
+      "promptEs": "Restore code encuentra un archivo rastreado que es un symlink → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Skipped; keeps its current contents"
+        },
+        {
+          "id": "B",
+          "text": "Restored like any other file"
+        },
+        {
+          "id": "C",
+          "text": "Reset to its first snapshot"
+        },
+        {
+          "id": "D",
+          "text": "Deleted from the working tree"
+        }
+      ],
+      "answer": "A",
+      "why": "La restauración salta symlinks y hard links, muestra la advertencia `Restored the code, but skipped N files` y esos archivos conservan su contenido actual."
+    },
+    {
+      "id": "u-checkpointing--l8",
+      "conceptId": "checkpoint-limits",
+      "format": "lightning",
+      "prompt": "Guard against Claude running a migration on a remote database → ?",
+      "promptEs": "Protegerte de que Claude corra una migración en una base de datos remota → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rely on /rewind afterwards"
+        },
+        {
+          "id": "B",
+          "text": "Raise cleanupPeriodDays"
+        },
+        {
+          "id": "C",
+          "text": "Summarize from here"
+        },
+        {
+          "id": "D",
+          "text": "Permission mode and rules"
+        }
+      ],
+      "answer": "D",
+      "why": "Las acciones sobre sistemas remotos (bases de datos, APIs, despliegues) no se pueden checkpointear. Se controlan antes, con el modo y las reglas de permisos."
+    }
+  ]
+}

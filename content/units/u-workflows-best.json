@@ -1,0 +1,441 @@
+{
+  "unitId": "u-workflows-best",
+  "audited": true,
+  "overview": {
+    "title": "Flujos comunes y buenas prácticas",
+    "hook": "Evitar que Claude resuelva el problema equivocado o termine sin pruebas.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "plan",
+          "label": "Plan mode",
+          "kind": "service",
+          "x": 28,
+          "y": 20
+        },
+        {
+          "id": "claude",
+          "label": "Claude implementa",
+          "kind": "actor",
+          "x": 50,
+          "y": 50
+        },
+        {
+          "id": "check",
+          "label": "Check ejecutable",
+          "kind": "data",
+          "x": 72,
+          "y": 20
+        },
+        {
+          "id": "gate",
+          "label": "/goal o Stop hook",
+          "kind": "service",
+          "x": 92,
+          "y": 50
+        },
+        {
+          "id": "clear",
+          "label": "/clear y reprompt",
+          "kind": "note",
+          "x": 50,
+          "y": 85
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "plan",
+          "label": "explora y planifica"
+        },
+        {
+          "from": "plan",
+          "to": "claude",
+          "label": "apruebas el plan"
+        },
+        {
+          "from": "claude",
+          "to": "check",
+          "label": "corre el check"
+        },
+        {
+          "from": "check",
+          "to": "gate",
+          "label": "pasa o falla"
+        },
+        {
+          "from": "gate",
+          "to": "claude",
+          "label": "sigue si falla"
+        },
+        {
+          "from": "you",
+          "to": "clear",
+          "label": "la sesión se desvía"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Si Claude salta directo a programar, puede resolver el problema equivocado. Y si no tiene cómo comprobar su trabajo, se detiene cuando algo parece terminado, y tú terminas detectando cada error.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Primero explora y planifica en plan mode: Claude lee archivos y propone un plan sin editar tu código. Con Ctrl+G abres el plan en tu editor y lo corriges antes de aprobarlo.",
+        "show": [
+          "you",
+          "plan"
+        ],
+        "focus": "plan"
+      },
+      {
+        "narration": "Al aprobar el plan, Claude implementa y se verifica contra ese plan. Al final le pides un commit con mensaje descriptivo y el pull request.",
+        "show": [
+          "you",
+          "plan",
+          "claude"
+        ],
+        "focus": "claude"
+      },
+      {
+        "narration": "Dale un check que pueda correr: tests, el código de salida del build, un linter o una captura para comparar. Claude corre el check, lee el resultado e itera hasta que pase.",
+        "show": [
+          "you",
+          "plan",
+          "claude",
+          "check"
+        ],
+        "focus": "check"
+      },
+      {
+        "narration": "Luego decide qué tan fuerte bloquea el final: pedirlo en el prompt, una condición /goal para la sesión, un Stop hook determinista, o un subagente verificador que intente refutar el resultado.",
+        "show": [
+          "you",
+          "plan",
+          "claude",
+          "check",
+          "gate"
+        ],
+        "focus": "gate"
+      },
+      {
+        "narration": "Si el cambio cabe en una frase, sáltate el plan. Y si la sesión se desvía, con tareas mezcladas o dos correcciones fallidas, usa /clear y escribe un mejor primer prompt.",
+        "show": [
+          "you",
+          "plan",
+          "claude",
+          "check",
+          "gate",
+          "clear"
+        ],
+        "focus": "clear"
+      }
+    ],
+    "keyPoints": [
+      "Explorar, planificar, implementar y commitear, en ese orden",
+      "Sin check ejecutable, tú eres el ciclo de verificación",
+      "Pide evidencia: salida de tests, comando y resultado",
+      "Stop hook: gate determinista; /goal: condición de la sesión",
+      "Dos correcciones fallidas: /clear y un mejor prompt"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/compact",
+        "difference": "Resume el historial y conserva lo importante; /clear reinicia el contexto por completo."
+      },
+      {
+        "unitOrService": "Auto mode",
+        "difference": "Quita prompts de permisos dentro de un turno; no verifica ni inicia turnos nuevos."
+      },
+      {
+        "unitOrService": "/loop",
+        "difference": "Repite un prompt cada cierto tiempo; /goal sigue hasta que se cumple una condición."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-workflows-best--l1",
+      "conceptId": "workflow-verify",
+      "format": "lightning",
+      "prompt": "Block every session's turn from ending until a test script passes, deterministically → ?",
+      "promptEs": "Impedir que el turno de cada sesión termine hasta que pase un script de tests, de forma determinista → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A /goal condition"
+        },
+        {
+          "id": "B",
+          "text": "A Stop hook running the script"
+        },
+        {
+          "id": "C",
+          "text": "A rule in CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "A PostToolUse hook"
+        }
+      ],
+      "answer": "B",
+      "why": "Un Stop hook vive en settings, aplica a toda sesión de su scope y corre tu script. /goal es solo de la sesión actual y lo evalúa un modelo; CLAUDE.md es solo un consejo."
+    },
+    {
+      "id": "u-workflows-best--l2",
+      "conceptId": "workflow-verify",
+      "format": "lightning",
+      "prompt": "Keep Claude taking turns this session until `npm test` exits 0, no hook config → ?",
+      "promptEs": "Que Claude siga tomando turnos en esta sesión hasta que `npm test` salga con 0, sin configurar hooks → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Stop hook in settings"
+        },
+        {
+          "id": "B",
+          "text": "/loop"
+        },
+        {
+          "id": "C",
+          "text": "/goal"
+        },
+        {
+          "id": "D",
+          "text": "Auto mode"
+        }
+      ],
+      "answer": "C",
+      "why": "/goal fija una condición de sesión que un evaluador revisa tras cada turno. /loop repite por intervalo de tiempo y auto mode no inicia turnos nuevos."
+    },
+    {
+      "id": "u-workflows-best--l3",
+      "conceptId": "workflow-verify",
+      "format": "thisorthat",
+      "prompt": "A fresh model tries to refute the result, so the worker isn't grading itself → ?",
+      "promptEs": "Un modelo nuevo intenta refutar el resultado, para que quien trabajó no se califique a sí mismo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Verification subagent"
+        },
+        {
+          "id": "B",
+          "text": "Stop hook running a test script"
+        }
+      ],
+      "answer": "A",
+      "why": "Un subagente verificador revisa en un contexto nuevo y busca refutar el resultado. Un Stop hook con script es un gate determinista, no una segunda opinión."
+    },
+    {
+      "id": "u-workflows-best--l4",
+      "conceptId": "workflow-verify",
+      "format": "lightning",
+      "prompt": "Review a session you weren't watching quickly → ask Claude for ?",
+      "promptEs": "Revisar rápido una sesión que no estabas mirando → ¿qué le pides a Claude?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A summary saying it passed"
+        },
+        {
+          "id": "B",
+          "text": "A more detailed plan"
+        },
+        {
+          "id": "C",
+          "text": "A /compact of the session"
+        },
+        {
+          "id": "D",
+          "text": "Test output and commands it ran"
+        }
+      ],
+      "answer": "D",
+      "why": "Pide evidencia, no afirmaciones: la salida de tests, el comando que corrió y qué devolvió. Revisar evidencia es más rápido que volver a verificar tú, y un resumen de éxito no prueba nada."
+    },
+    {
+      "id": "u-workflows-best--l5",
+      "conceptId": "workflow-explore-plan-code",
+      "format": "lightning",
+      "prompt": "Claude reads code and proposes changes without editing source → mode?",
+      "promptEs": "Claude lee código y propone cambios sin editar el código fuente → ¿modo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "acceptEdits"
+        },
+        {
+          "id": "B",
+          "text": "plan"
+        },
+        {
+          "id": "C",
+          "text": "auto"
+        },
+        {
+          "id": "D",
+          "text": "dontAsk"
+        }
+      ],
+      "answer": "B",
+      "why": "Plan mode investiga y propone un plan sin editar tu código hasta que lo apruebes. acceptEdits y auto sí aplican ediciones."
+    },
+    {
+      "id": "u-workflows-best--l6",
+      "conceptId": "workflow-explore-plan-code",
+      "format": "lightning",
+      "prompt": "Edit Claude's plan directly in your text editor before it proceeds → ?",
+      "promptEs": "Editar el plan de Claude directamente en tu editor de texto antes de que siga → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ctrl+G"
+        },
+        {
+          "id": "B",
+          "text": "Shift+Tab"
+        },
+        {
+          "id": "C",
+          "text": "Esc + Esc"
+        },
+        {
+          "id": "D",
+          "text": "Ctrl+O"
+        }
+      ],
+      "answer": "A",
+      "why": "Ctrl+G abre el plan en tu editor. Shift+Tab cambia de modo y Esc + Esc abre el menú de rewind; ninguno edita el plan."
+    },
+    {
+      "id": "u-workflows-best--l7",
+      "conceptId": "workflow-explore-plan-code",
+      "format": "thisorthat",
+      "prompt": "Rename one variable; you could describe the diff in one sentence → ?",
+      "promptEs": "Renombrar una variable; podrías describir el diff en una frase → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Plan mode first"
+        },
+        {
+          "id": "B",
+          "text": "Ask Claude to do it directly"
+        }
+      ],
+      "answer": "B",
+      "why": "Plan mode agrega overhead. Si el alcance es claro y el cambio es chico, pídelo directo; planificar sirve cuando dudas del enfoque o tocas varios archivos."
+    },
+    {
+      "id": "u-workflows-best--l8",
+      "conceptId": "workflow-explore-plan-code",
+      "format": "lightning",
+      "prompt": "Send a log file's contents into a new session from your shell → ?",
+      "promptEs": "Enviar el contenido de un archivo de log a una sesión nueva desde tu shell → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --continue error.log"
+        },
+        {
+          "id": "B",
+          "text": "/add-dir logs"
+        },
+        {
+          "id": "C",
+          "text": "cat error.log | claude"
+        },
+        {
+          "id": "D",
+          "text": "claude --resume error.log"
+        }
+      ],
+      "answer": "C",
+      "why": "Hacer pipe con `cat error.log | claude` envía el contenido directo. --continue y --resume retoman conversaciones; no cargan archivos."
+    },
+    {
+      "id": "u-workflows-best--l9",
+      "conceptId": "workflow-failure-patterns",
+      "format": "lightning",
+      "prompt": "Corrected Claude twice on the same issue, still wrong → ?",
+      "promptEs": "Corregiste a Claude dos veces en lo mismo y sigue mal → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Correct it a third time"
+        },
+        {
+          "id": "B",
+          "text": "Run /compact and retry"
+        },
+        {
+          "id": "C",
+          "text": "/clear and a better first prompt"
+        },
+        {
+          "id": "D",
+          "text": "Add IMPORTANT to CLAUDE.md"
+        }
+      ],
+      "answer": "C",
+      "why": "El contexto está lleno de enfoques fallidos. Una sesión limpia con un prompt mejor, que incluya lo aprendido, casi siempre supera a una sesión larga con correcciones acumuladas."
+    },
+    {
+      "id": "u-workflows-best--l10",
+      "conceptId": "workflow-failure-patterns",
+      "format": "thisorthat",
+      "prompt": "Unscoped investigation would read hundreds of files into your context → ?",
+      "promptEs": "Una investigación sin alcance leería cientos de archivos en tu contexto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Delegate it to subagents"
+        },
+        {
+          "id": "B",
+          "text": "Run it in plan mode"
+        }
+      ],
+      "answer": "A",
+      "why": "Los subagentes exploran en su propio contexto y devuelven un resumen. Plan mode evita ediciones, pero las lecturas igual llenan tu contexto principal."
+    },
+    {
+      "id": "u-workflows-best--l11",
+      "conceptId": "workflow-failure-patterns",
+      "format": "lightning",
+      "prompt": "Claude ignores rules buried in a long CLAUDE.md → ?",
+      "promptEs": "Claude ignora reglas perdidas en un CLAUDE.md largo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add more specific rules"
+        },
+        {
+          "id": "B",
+          "text": "Prune it; turn rules into hooks"
+        },
+        {
+          "id": "C",
+          "text": "Mark every line IMPORTANT"
+        },
+        {
+          "id": "D",
+          "text": "Run /clear before each prompt"
+        }
+      ],
+      "answer": "B",
+      "why": "Un CLAUDE.md sobreespecificado pierde reglas en el ruido. Poda lo que Claude ya hace bien o conviértelo en hook; enfatizar muchas líneas hace que ninguna destaque."
+    }
+  ]
+}

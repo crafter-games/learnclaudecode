@@ -1,0 +1,454 @@
+{
+  "unitId": "u-permission-modes",
+  "audited": true,
+  "overview": {
+    "title": "Modos de permisos y plan mode",
+    "hook": "Decidir cuánto corre Claude sin preguntarte, de una sola vez.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "flag",
+          "label": "Flag o defaultMode",
+          "kind": "data",
+          "x": 30,
+          "y": 20
+        },
+        {
+          "id": "cycle",
+          "label": "Shift+Tab",
+          "kind": "service",
+          "x": 30,
+          "y": 80
+        },
+        {
+          "id": "mode",
+          "label": "Modo activo",
+          "kind": "service",
+          "x": 55,
+          "y": 50
+        },
+        {
+          "id": "rules",
+          "label": "Reglas deny y ask",
+          "kind": "note",
+          "x": 55,
+          "y": 12
+        },
+        {
+          "id": "plan",
+          "label": "plan",
+          "kind": "service",
+          "x": 82,
+          "y": 25
+        },
+        {
+          "id": "unattended",
+          "label": "dontAsk / bypass",
+          "kind": "service",
+          "x": 82,
+          "y": 78
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "flag",
+          "label": "al iniciar"
+        },
+        {
+          "from": "you",
+          "to": "cycle",
+          "label": "en la sesión"
+        },
+        {
+          "from": "flag",
+          "to": "mode",
+          "label": "fija"
+        },
+        {
+          "from": "cycle",
+          "to": "mode",
+          "label": "rota"
+        },
+        {
+          "from": "rules",
+          "to": "mode",
+          "label": "aplican siempre"
+        },
+        {
+          "from": "mode",
+          "to": "plan",
+          "label": "explorar primero"
+        },
+        {
+          "from": "mode",
+          "to": "unattended",
+          "label": "sin humano"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Aprobar cada acción una por una cansa, pero dejar que Claude haga todo sin mirar es arriesgado. Un modo de permisos fija qué corre sin preguntarte en toda la sesión.",
+        "show": [
+          "you",
+          "mode"
+        ],
+        "focus": "mode"
+      },
+      {
+        "narration": "Hay seis modos. Manual, cuyo valor es default, solo lee sin preguntar. acceptEdits suma ediciones y comandos de archivos en tu directorio. plan explora sin editar. auto corre todo con un clasificador. dontAsk niega lo no aprobado y bypassPermissions corre todo.",
+        "show": [
+          "you",
+          "mode"
+        ],
+        "focus": "mode"
+      },
+      {
+        "narration": "El modo inicial sale primero del flag --permission-mode, luego de permissions.defaultMode en settings y al final del default incorporado. Durante la sesión, Shift+Tab rota entre default, acceptEdits y plan.",
+        "show": [
+          "you",
+          "mode",
+          "flag",
+          "cycle"
+        ],
+        "focus": "flag"
+      },
+      {
+        "narration": "Plan mode deja que Claude lea, explore y escriba un plan sin editar tu código. Cuando el plan está listo, eliges cómo seguir: con auto mode, aprobando cada edición, o seguir planeando.",
+        "show": [
+          "you",
+          "mode",
+          "flag",
+          "cycle",
+          "plan"
+        ],
+        "focus": "plan"
+      },
+      {
+        "narration": "Para correr sin humano, dontAsk niega todo lo que preguntaría y encaja en CI con una allowlist exacta. bypassPermissions salta los prompts, incluso en rutas protegidas como .git, y solo va en un contenedor o VM.",
+        "show": [
+          "you",
+          "mode",
+          "flag",
+          "cycle",
+          "plan",
+          "unattended"
+        ],
+        "focus": "unattended"
+      },
+      {
+        "narration": "Ojo: el modo es solo la base. Las reglas deny bloquean en todos los modos, incluso bypass, y las reglas ask siguen preguntando. Y un modo no limita a qué llega un comando; eso lo hace el sandbox.",
+        "show": [
+          "you",
+          "mode",
+          "flag",
+          "cycle",
+          "plan",
+          "unattended",
+          "rules"
+        ],
+        "focus": "rules"
+      }
+    ],
+    "keyPoints": [
+      "default solo lee; acceptEdits suma ediciones",
+      "Flag, luego defaultMode, luego default incorporado",
+      "Plan mode explora sin editar tu código",
+      "dontAsk para CI; bypass solo en contenedor",
+      "Deny bloquea en todos los modos"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "Reglas de permisos",
+        "difference": "Las reglas aprueban o bloquean herramientas concretas; el modo fija la base para lo que no coincide."
+      },
+      {
+        "unitOrService": "Sandbox y aislamiento",
+        "difference": "El modo decide si Claude pregunta; el sandbox decide a qué llega el comando al correr."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-permission-modes--l1",
+      "conceptId": "mode-catalog",
+      "format": "lightning",
+      "prompt": "Auto-approve file edits and `mv`/`mkdir` in the project; other Bash still asks → ?",
+      "promptEs": "Autoaprobar ediciones y `mv`/`mkdir` en el proyecto; el resto de Bash sigue preguntando → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`default`"
+        },
+        {
+          "id": "B",
+          "text": "`acceptEdits`"
+        },
+        {
+          "id": "C",
+          "text": "`auto`"
+        },
+        {
+          "id": "D",
+          "text": "`dontAsk`"
+        }
+      ],
+      "answer": "B",
+      "why": "`acceptEdits` aprueba ediciones y comandos de archivos dentro del directorio de trabajo, y el resto de Bash sigue preguntando. `auto` correría todo tras el clasificador."
+    },
+    {
+      "id": "u-permission-modes--l2",
+      "conceptId": "mode-catalog",
+      "format": "lightning",
+      "prompt": "Sensitive work: you approve every edit and command yourself. Config value → ?",
+      "promptEs": "Trabajo sensible: tú apruebas cada edición y comando. Valor de config → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`plan`"
+        },
+        {
+          "id": "B",
+          "text": "`dontAsk`"
+        },
+        {
+          "id": "C",
+          "text": "`default`"
+        },
+        {
+          "id": "D",
+          "text": "`acceptEdits`"
+        }
+      ],
+      "answer": "C",
+      "why": "`default` (Manual) solo corre lecturas sin preguntar y te pide aprobar lo demás. `plan` no sirve: bloquea las ediciones en vez de dejarte aprobarlas."
+    },
+    {
+      "id": "u-permission-modes--l3",
+      "conceptId": "mode-catalog",
+      "format": "thisorthat",
+      "prompt": "A deny rule matches a call in `bypassPermissions` mode → ?",
+      "promptEs": "Una regla deny coincide con una llamada en modo `bypassPermissions` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Blocked"
+        },
+        {
+          "id": "B",
+          "text": "Runs without a prompt"
+        }
+      ],
+      "answer": "A",
+      "why": "Las reglas deny bloquean en todos los modos, incluido `bypassPermissions`. Lo que no tiene efecto en bypass son las reglas allow."
+    },
+    {
+      "id": "u-permission-modes--l4",
+      "conceptId": "mode-catalog",
+      "format": "lightning",
+      "prompt": "`--permission-mode plan` passed, `defaultMode` is `acceptEdits` → session starts in?",
+      "promptEs": "Se pasa `--permission-mode plan` y `defaultMode` es `acceptEdits` → ¿en qué modo arranca?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`acceptEdits`, settings win"
+        },
+        {
+          "id": "B",
+          "text": "The built-in default"
+        },
+        {
+          "id": "C",
+          "text": "It asks you at startup"
+        },
+        {
+          "id": "D",
+          "text": "`plan`, the flag wins"
+        }
+      ],
+      "answer": "D",
+      "why": "El flag se revisa primero, luego `permissions.defaultMode` y al final el default incorporado. `defaultMode` solo decide cuando no pasas flag."
+    },
+    {
+      "id": "u-permission-modes--l5",
+      "conceptId": "mode-plan",
+      "format": "lightning",
+      "prompt": "Plan just the next request, without restarting the session → ?",
+      "promptEs": "Planear solo el próximo pedido, sin reiniciar la sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Prefix the prompt with `/plan`"
+        },
+        {
+          "id": "B",
+          "text": "`claude --permission-mode plan`"
+        },
+        {
+          "id": "C",
+          "text": "`\"defaultMode\": \"plan\"`"
+        },
+        {
+          "id": "D",
+          "text": "Press `Ctrl+G`"
+        }
+      ],
+      "answer": "A",
+      "why": "Anteponer `/plan` a un prompt entra en plan mode para ese pedido. El flag exige reiniciar, `defaultMode` cambia todas las sesiones y `Ctrl+G` abre un plan ya propuesto."
+    },
+    {
+      "id": "u-permission-modes--l6",
+      "conceptId": "mode-plan",
+      "format": "lightning",
+      "prompt": "Edit the proposed plan's text yourself before Claude proceeds → ?",
+      "promptEs": "Editar tú mismo el texto del plan propuesto antes de que Claude siga → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "No, keep planning"
+        },
+        {
+          "id": "B",
+          "text": "Prefix `/plan` again"
+        },
+        {
+          "id": "C",
+          "text": "`/config`"
+        },
+        {
+          "id": "D",
+          "text": "`Ctrl+G`"
+        }
+      ],
+      "answer": "D",
+      "why": "`Ctrl+G` abre el plan en tu editor de texto para cambiarlo directamente. \"No, keep planning\" le pide a Claude que lo cambie, no lo editas tú."
+    },
+    {
+      "id": "u-permission-modes--l7",
+      "conceptId": "mode-plan",
+      "format": "thisorthat",
+      "prompt": "Approve the plan but review each edit individually → ?",
+      "promptEs": "Aprobar el plan pero revisar cada edición por separado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Yes, manually approve edits"
+        },
+        {
+          "id": "B",
+          "text": "Yes, and use auto mode"
+        }
+      ],
+      "answer": "A",
+      "why": "\"Yes, manually approve edits\" aprueba el plan y te pide cada edición. \"Yes, and use auto mode\" pasa a auto mode, donde un clasificador revisa en vez de ti."
+    },
+    {
+      "id": "u-permission-modes--l8",
+      "conceptId": "mode-plan",
+      "format": "lightning",
+      "prompt": "Every terminal session in this repo starts in plan mode, shared via git → ?",
+      "promptEs": "Toda sesión de terminal en este repo arranca en plan mode, compartido por git → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claudeCode.initialPermissionMode`"
+        },
+        {
+          "id": "B",
+          "text": "A \"plan first\" line in CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "`defaultMode` in `.claude/settings.json`"
+        },
+        {
+          "id": "D",
+          "text": "`defaultMode` in `~/.claude/settings.json`"
+        }
+      ],
+      "answer": "C",
+      "why": "`\"defaultMode\": \"plan\"` en el `.claude/settings.json` del proyecto aplica a quien clone el repo. `~/.claude` es solo tu máquina y el setting de VS Code es de usuario."
+    },
+    {
+      "id": "u-permission-modes--l9",
+      "conceptId": "mode-bypass-vs-dontask",
+      "format": "thisorthat",
+      "prompt": "CI job: run only allowlisted tools, deny everything else, never wait → ?",
+      "promptEs": "Job de CI: correr solo herramientas de la allowlist, negar el resto, nunca esperar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`bypassPermissions`"
+        },
+        {
+          "id": "B",
+          "text": "`dontAsk`"
+        }
+      ],
+      "answer": "B",
+      "why": "`dontAsk` niega todo lo que preguntaría y solo corre lo preaprobado. `bypassPermissions` correría todo, no solo la allowlist."
+    },
+    {
+      "id": "u-permission-modes--l10",
+      "conceptId": "mode-bypass-vs-dontask",
+      "format": "lightning",
+      "prompt": "Admins must stop anyone from using bypass mode → ?",
+      "promptEs": "Los admins deben impedir que alguien use el modo bypass → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`disableAutoMode: \"disable\"`"
+        },
+        {
+          "id": "B",
+          "text": "`disableBypassPermissionsMode: \"disable\"`"
+        },
+        {
+          "id": "C",
+          "text": "`defaultMode: \"default\"`"
+        },
+        {
+          "id": "D",
+          "text": "A deny rule for `Bash`"
+        }
+      ],
+      "answer": "B",
+      "why": "`permissions.disableBypassPermissionsMode: \"disable\"` en managed settings bloquea el modo. `disableAutoMode` apaga auto, y `defaultMode` solo fija el inicio, no impide el flag."
+    },
+    {
+      "id": "u-permission-modes--l11",
+      "conceptId": "mode-bypass-vs-dontask",
+      "format": "lightning",
+      "prompt": "`--dangerously-skip-permissions` run as root on Linux, outside a recognized sandbox → ?",
+      "promptEs": "`--dangerously-skip-permissions` como root en Linux, fuera de un sandbox reconocido → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Runs after a warning dialog"
+        },
+        {
+          "id": "B",
+          "text": "Starts in `dontAsk` instead"
+        },
+        {
+          "id": "C",
+          "text": "Claude Code refuses to start"
+        },
+        {
+          "id": "D",
+          "text": "Starts in Manual mode"
+        }
+      ],
+      "answer": "C",
+      "why": "En Linux y macOS, Claude Code se niega a arrancar en bypass como root o con sudo. Para un contenedor autónomo, usa un usuario no root, como el dev container."
+    }
+  ]
+}

@@ -1,0 +1,550 @@
+{
+  "conceptId": "mode-catalog",
+  "card": {
+    "en": {
+      "tldr": "A permission mode sets the baseline for what Claude does without asking: `default` (Manual) runs only reads, `acceptEdits` adds file edits, `plan` explores without editing, `auto` runs everything behind a classifier, `dontAsk` denies anything that would prompt, and `bypassPermissions` runs everything. Pick the mode that matches how much oversight the task needs, then layer permission rules on top.",
+      "whenToUse": [
+        "Choosing how many prompts you see for a session or task",
+        "Predicting which mode a session starts in from flags and settings",
+        "Knowing which actions still prompt in a mode, such as other Bash commands in `acceptEdits`",
+        "Switching modes mid-session with `Shift+Tab`"
+      ],
+      "keyFacts": [
+        "`default` is labeled Manual and accepts `manual` as an alias; built-in read-only Bash commands such as `ls`, `cat` and `grep` run without a prompt in every mode.",
+        "`acceptEdits` auto-approves file edits and `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp` and `sed` for paths in the working directory or `additionalDirectories`; other Bash commands still prompt.",
+        "The starting mode comes from `--permission-mode` (or `--dangerously-skip-permissions`), then `permissions.defaultMode`, then the built-in default, which is `default` for `claude -p`.",
+        "`Shift+Tab` cycles `default` → `acceptEdits` → `plan` → `default`; `bypassPermissions` and `auto` slot in after `plan` when enabled, and `dontAsk` never appears in the cycle.",
+        "Deny rules block in every mode, including `bypassPermissions`; allow rules have no effect in `bypassPermissions`.",
+        "Explicit ask rules and `rm` of critical paths are never auto-approved in any mode."
+      ],
+      "gotchas": [
+        "`\"defaultMode\": \"auto\"` or `\"bypassPermissions\"` in `.claude/settings.json` or `.claude/settings.local.json` doesn't take effect.",
+        "Writes to protected paths such as `.git`, `.claude` or `.mcp.json` still prompt in `acceptEdits`.",
+        "`plan` blocks edits; if you want to approve each edit, that's `default`, not `plan`.",
+        "In `auto` mode, an explicit ask rule still forces a prompt."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Permission rules",
+          "difference": "Rules pre-approve or block specific tools; the mode is the baseline for everything they don't settle."
+        },
+        {
+          "concept": "Auto mode classifier",
+          "difference": "The classifier is how `auto` reviews actions; the catalog is the choice among all six modes."
+        }
+      ],
+      "examCues": [
+        "without approving each edit",
+        "review every action yourself",
+        "which mode does the session start in",
+        "fewer prompts on a long task",
+        "still prompts for other shell commands"
+      ]
+    },
+    "es": {
+      "tldr": "Un modo de permisos fija la base de lo que Claude hace sin preguntar: `default` (Manual) solo corre lecturas, `acceptEdits` suma ediciones de archivos, `plan` explora sin editar, `auto` corre todo tras un clasificador, `dontAsk` niega todo lo que preguntaría y `bypassPermissions` corre todo. Elige el modo según cuánta supervisión necesita la tarea y pon reglas de permisos encima.",
+      "whenToUse": [
+        "Elegir cuántos prompts ves en una sesión o tarea",
+        "Predecir en qué modo arranca una sesión según flags y settings",
+        "Saber qué acciones siguen preguntando en un modo, como otros comandos Bash en `acceptEdits`",
+        "Cambiar de modo en plena sesión con `Shift+Tab`"
+      ],
+      "keyFacts": [
+        "`default` se muestra como Manual y acepta el alias `manual`; los comandos Bash de solo lectura incorporados como `ls`, `cat` y `grep` corren sin preguntar en todos los modos.",
+        "`acceptEdits` autoaprueba ediciones de archivos y `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp` y `sed` en rutas del directorio de trabajo o de `additionalDirectories`; los demás comandos Bash siguen preguntando.",
+        "El modo inicial sale de `--permission-mode` (o `--dangerously-skip-permissions`), luego de `permissions.defaultMode` y luego del default incorporado, que es `default` para `claude -p`.",
+        "`Shift+Tab` rota `default` → `acceptEdits` → `plan` → `default`; `bypassPermissions` y `auto` entran después de `plan` cuando están habilitados, y `dontAsk` nunca aparece en el ciclo.",
+        "Las reglas deny bloquean en todos los modos, incluido `bypassPermissions`; las reglas allow no tienen efecto en `bypassPermissions`.",
+        "Las reglas ask explícitas y el `rm` de rutas críticas nunca se autoaprueban en ningún modo."
+      ],
+      "gotchas": [
+        "`\"defaultMode\": \"auto\"` o `\"bypassPermissions\"` en `.claude/settings.json` o `.claude/settings.local.json` no tiene efecto.",
+        "Las escrituras en rutas protegidas como `.git`, `.claude` o `.mcp.json` siguen preguntando en `acceptEdits`.",
+        "`plan` bloquea las ediciones; si quieres aprobar cada edición, eso es `default`, no `plan`.",
+        "En modo `auto`, una regla ask explícita igual fuerza un prompt."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas de permisos",
+          "difference": "Las reglas preaprueban o bloquean herramientas concretas; el modo es la base para todo lo que ellas no deciden."
+        },
+        {
+          "concept": "Clasificador de auto mode",
+          "difference": "El clasificador es cómo `auto` revisa acciones; el catálogo es la elección entre los seis modos."
+        }
+      ],
+      "examCues": [
+        "without approving each edit",
+        "review every action yourself",
+        "which mode does the session start in",
+        "fewer prompts on a long task",
+        "still prompts for other shell commands"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permission-modes.md",
+      "https://code.claude.com/docs/en/permissions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mode-catalog--d476244e",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer is changing production deployment scripts in a repository they don't know well. They want Claude to be able to edit files and run commands, but only after they approve each file edit and each non-read-only shell command themselves. Which way of starting the session meets this with the least setup?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --permission-mode plan`",
+          "correct": false,
+          "why": "Plan mode blocks edits to source files until you approve a plan; it doesn't let you approve edits one by one while working."
+        },
+        {
+          "id": "B",
+          "text": "`claude --permission-mode default`",
+          "correct": true,
+          "why": "Manual mode runs only reads without asking and prompts for everything else, so each edit and command needs approval."
+        },
+        {
+          "id": "C",
+          "text": "`claude --permission-mode acceptEdits`",
+          "correct": false,
+          "why": "File edits in the working directory would run without a prompt."
+        },
+        {
+          "id": "D",
+          "text": "`claude --permission-mode dontAsk`",
+          "correct": false,
+          "why": "It denies anything that would prompt instead of asking, so edits would never be offered for approval."
+        }
+      ],
+      "explanation": "The requirement is to approve every edit and every non-read-only command personally. `default`, labeled Manual, runs only reads without asking and prompts for the rest, which is what the docs recommend for sensitive work. `acceptEdits` would skip the prompt for edits, and `dontAsk` denies instead of asking. `plan` blocks edits rather than offering them for approval.",
+      "keywordCues": [
+        "only after they approve each file edit",
+        "each non-read-only shell command"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador está cambiando scripts de despliegue a producción en un repositorio que no conoce bien. Quiere que Claude pueda editar archivos y correr comandos, pero solo después de aprobar él mismo cada edición y cada comando de shell que no sea de solo lectura. ¿Qué forma de iniciar la sesión cumple esto con la menor configuración?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --permission-mode plan`",
+            "why": "Plan mode bloquea las ediciones del código hasta que apruebas un plan; no te deja aprobarlas una por una mientras trabaja."
+          },
+          {
+            "id": "B",
+            "text": "`claude --permission-mode default`",
+            "why": "Manual solo corre lecturas sin preguntar y pide aprobación para todo lo demás, así que cada edición y comando necesita tu visto bueno."
+          },
+          {
+            "id": "C",
+            "text": "`claude --permission-mode acceptEdits`",
+            "why": "Las ediciones en el directorio de trabajo correrían sin preguntar."
+          },
+          {
+            "id": "D",
+            "text": "`claude --permission-mode dontAsk`",
+            "why": "Niega todo lo que preguntaría en vez de preguntar, así que nunca te ofrecería las ediciones para aprobar."
+          }
+        ],
+        "explanation": "El requisito es aprobar personalmente cada edición y cada comando que no sea de solo lectura. `default`, llamado Manual, solo corre lecturas sin preguntar y pregunta por lo demás, que es lo que la documentación recomienda para trabajo sensible. `acceptEdits` saltaría el prompt de las ediciones y `dontAsk` niega en vez de preguntar. `plan` bloquea las ediciones en lugar de ofrecerlas para aprobar."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-catalog--a86047e7",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your `~/.claude/settings.json` sets `\"permissions\": {\"defaultMode\": \"acceptEdits\"}`, and no other settings file sets a starting mode. Today you are touching a sensitive module, so you launch `claude --permission-mode default` in a terminal. Which mode does the session start in?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`acceptEdits`, because a settings file outranks a command-line flag for the starting mode.",
+          "correct": false,
+          "why": "The flag is checked before `permissions.defaultMode`."
+        },
+        {
+          "id": "B",
+          "text": "The built-in default, because the flag and the settings file conflict.",
+          "correct": false,
+          "why": "There is no conflict fallback; the first source that applies decides."
+        },
+        {
+          "id": "C",
+          "text": "`default`, because the `--permission-mode` flag is checked first.",
+          "correct": true,
+          "why": "The starting mode comes from the flag first, then `defaultMode`, then the built-in default."
+        },
+        {
+          "id": "D",
+          "text": "`acceptEdits` for edits and `default` for Bash, merging both sources.",
+          "correct": false,
+          "why": "A session has one permission mode; sources are not merged."
+        }
+      ],
+      "explanation": "Claude Code takes the starting mode from the first source that applies: the `--permission-mode` flag, then `permissions.defaultMode` in a settings file, then the built-in default. Because you passed the flag, `default` wins for this session and your user setting still applies to sessions started without a flag. Nothing merges or falls back when both are present.",
+      "keywordCues": [
+        "`~/.claude/settings.json` sets",
+        "launch `claude --permission-mode default`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Tu `~/.claude/settings.json` define `\"permissions\": {\"defaultMode\": \"acceptEdits\"}` y ningún otro archivo de settings fija un modo inicial. Hoy tocas un módulo sensible, así que lanzas `claude --permission-mode default` en una terminal. ¿En qué modo arranca la sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`acceptEdits`, porque un archivo de settings le gana a un flag para el modo inicial.",
+            "why": "El flag se revisa antes que `permissions.defaultMode`."
+          },
+          {
+            "id": "B",
+            "text": "El default incorporado, porque el flag y el archivo de settings entran en conflicto.",
+            "why": "No hay respaldo por conflicto; decide la primera fuente que aplica."
+          },
+          {
+            "id": "C",
+            "text": "`default`, porque el flag `--permission-mode` se revisa primero.",
+            "why": "El modo inicial sale primero del flag, luego de `defaultMode` y luego del default incorporado."
+          },
+          {
+            "id": "D",
+            "text": "`acceptEdits` para ediciones y `default` para Bash, combinando ambas fuentes.",
+            "why": "Una sesión tiene un solo modo de permisos; las fuentes no se combinan."
+          }
+        ],
+        "explanation": "Claude Code toma el modo inicial de la primera fuente que aplica: el flag `--permission-mode`, luego `permissions.defaultMode` en un archivo de settings y luego el default incorporado. Como pasaste el flag, `default` gana en esta sesión y tu setting de usuario sigue aplicando a las sesiones que arrancas sin flag. Nada se combina ni hay respaldo cuando ambos están presentes."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-catalog--59520fb7",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer runs a session in `acceptEdits` mode with no permission rules configured. Claude is about to perform the actions below, all inside the working directory. Which two will still show a permission prompt? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Running `npm install`",
+          "correct": true,
+          "why": "`acceptEdits` only auto-approves file edits and common filesystem commands; other Bash commands still prompt."
+        },
+        {
+          "id": "B",
+          "text": "Editing `src/app.ts`",
+          "correct": false,
+          "why": "File edits in the working directory are auto-approved in `acceptEdits`."
+        },
+        {
+          "id": "C",
+          "text": "Running `mv old.txt new.txt`",
+          "correct": false,
+          "why": "`mv` is one of the filesystem commands `acceptEdits` auto-approves for in-scope paths."
+        },
+        {
+          "id": "D",
+          "text": "Writing to `.husky/pre-commit`",
+          "correct": true,
+          "why": "`.husky` is a protected path; writes there are prompted in `acceptEdits`."
+        },
+        {
+          "id": "E",
+          "text": "Running `ls src`",
+          "correct": false,
+          "why": "`ls` is in the built-in read-only set, which runs without a prompt in every mode."
+        }
+      ],
+      "explanation": "`acceptEdits` auto-approves file edits plus `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp` and `sed` on paths in the working directory. Other Bash commands such as `npm install` still prompt, and writes to protected paths like `.husky` are prompted in this mode. Built-in read-only commands such as `ls` never prompt. So the install and the protected-path write are the two prompts.",
+      "keywordCues": [
+        "`acceptEdits` mode",
+        "no permission rules configured",
+        "inside the working directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador usa una sesión en modo `acceptEdits` sin reglas de permisos configuradas. Claude va a realizar las acciones de abajo, todas dentro del directorio de trabajo. ¿Cuáles dos seguirán mostrando un prompt de permisos? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `npm install`",
+            "why": "`acceptEdits` solo autoaprueba ediciones y comandos de archivos comunes; los demás comandos Bash siguen preguntando."
+          },
+          {
+            "id": "B",
+            "text": "Editar `src/app.ts`",
+            "why": "Las ediciones dentro del directorio de trabajo se autoaprueban en `acceptEdits`."
+          },
+          {
+            "id": "C",
+            "text": "Correr `mv old.txt new.txt`",
+            "why": "`mv` es uno de los comandos de archivos que `acceptEdits` autoaprueba en rutas dentro del alcance."
+          },
+          {
+            "id": "D",
+            "text": "Escribir en `.husky/pre-commit`",
+            "why": "`.husky` es una ruta protegida; las escrituras ahí preguntan en `acceptEdits`."
+          },
+          {
+            "id": "E",
+            "text": "Correr `ls src`",
+            "why": "`ls` está en el conjunto de solo lectura incorporado, que corre sin preguntar en todos los modos."
+          }
+        ],
+        "explanation": "`acceptEdits` autoaprueba ediciones de archivos y `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp` y `sed` en rutas del directorio de trabajo. Otros comandos Bash como `npm install` siguen preguntando, y las escrituras en rutas protegidas como `.husky` preguntan en este modo. Los comandos de solo lectura incorporados como `ls` nunca preguntan. Así que la instalación y la escritura en la ruta protegida son los dos prompts."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-catalog--f522c2b0",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer is starting a long migration and is tired of approving routine commands every few seconds. They still want something to block actions that go beyond their request or look driven by hostile content Claude read, and they don't want to write an allowlist in advance. Which mode fits?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`bypassPermissions`",
+          "correct": false,
+          "why": "It skips checks entirely and offers no protection against prompt injection or unintended actions."
+        },
+        {
+          "id": "B",
+          "text": "`dontAsk`",
+          "correct": false,
+          "why": "It denies anything not pre-approved, so it needs the allowlist they don't want to write."
+        },
+        {
+          "id": "C",
+          "text": "`acceptEdits`",
+          "correct": false,
+          "why": "Routine non-filesystem Bash commands would keep prompting."
+        },
+        {
+          "id": "D",
+          "text": "`auto`",
+          "correct": true,
+          "why": "A classifier reviews actions instead of prompting and blocks escalation or actions driven by hostile content."
+        }
+      ],
+      "explanation": "The requirements are fewer routine prompts, background protection against escalation or injected instructions, and no pre-written allowlist. `auto` runs actions without routine prompts while a separate classifier blocks anything that escalates beyond the request or appears driven by hostile content. `bypassPermissions` removes prompts but offers no such protection, and `dontAsk` depends on pre-approved tools. `acceptEdits` would still prompt for most commands.",
+      "keywordCues": [
+        "tired of approving routine commands",
+        "block actions that go beyond their request",
+        "don't want to write an allowlist"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador empieza una migración larga y está cansado de aprobar comandos rutinarios cada pocos segundos. Aun así quiere que algo bloquee acciones que vayan más allá de su pedido o que parezcan guiadas por contenido hostil que Claude leyó, y no quiere escribir una allowlist por adelantado. ¿Qué modo encaja?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`bypassPermissions`",
+            "why": "Salta los chequeos por completo y no protege contra prompt injection ni acciones no deseadas."
+          },
+          {
+            "id": "B",
+            "text": "`dontAsk`",
+            "why": "Niega todo lo no preaprobado, así que necesita la allowlist que no quiere escribir."
+          },
+          {
+            "id": "C",
+            "text": "`acceptEdits`",
+            "why": "Los comandos Bash rutinarios que no son de archivos seguirían preguntando."
+          },
+          {
+            "id": "D",
+            "text": "`auto`",
+            "why": "Un clasificador revisa las acciones en vez de preguntar y bloquea escaladas o acciones guiadas por contenido hostil."
+          }
+        ],
+        "explanation": "Los requisitos son menos prompts rutinarios, protección de fondo contra escaladas o instrucciones inyectadas y ninguna allowlist previa. `auto` corre acciones sin prompts rutinarios mientras un clasificador aparte bloquea lo que va más allá del pedido o parece guiado por contenido hostil. `bypassPermissions` quita los prompts pero no da esa protección, y `dontAsk` depende de herramientas preaprobadas. `acceptEdits` seguiría preguntando por la mayoría de los comandos."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-catalog--4f4debbe",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which flag and value start a session in the mode that auto-approves file edits in the working directory?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--permission-mode acceptEdits",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "claude --permission-mode acceptEdits",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--permission-mode acceptEdits` starts the session in `acceptEdits`, which auto-approves file edits and common filesystem commands for paths in the working directory. The same flag accepts any mode's config value.",
+      "keywordCues": [
+        "flag and value",
+        "auto-approves file edits"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag y valor inician una sesión en el modo que autoaprueba ediciones de archivos en el directorio de trabajo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--permission-mode acceptEdits",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "claude --permission-mode acceptEdits",
+            "why": ""
+          }
+        ],
+        "explanation": "`--permission-mode acceptEdits` inicia la sesión en `acceptEdits`, que autoaprueba ediciones y comandos de archivos comunes en rutas del directorio de trabajo. El mismo flag acepta el valor de config de cualquier modo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-catalog--291e6441",
+      "conceptId": "mode-catalog",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "When you start a new terminal session, Claude Code takes the permission mode from the first source that applies. Order these sources from checked first to checked last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "The built-in default",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "The `--permission-mode` flag",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "`permissions.defaultMode` in a settings file",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The `--permission-mode` flag (or `--dangerously-skip-permissions`) is checked first. If no flag is passed, `permissions.defaultMode` from a settings file applies, with settings precedence deciding between files. Only when neither applies does the built-in default decide.",
+      "keywordCues": [
+        "first source that applies",
+        "from checked first to checked last"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Cuando inicias una nueva sesión de terminal, Claude Code toma el modo de permisos de la primera fuente que aplica. Ordena estas fuentes desde la que se revisa primero hasta la última.",
+        "options": [
+          {
+            "id": "A",
+            "text": "El default incorporado",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "El flag `--permission-mode`",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "`permissions.defaultMode` en un archivo de settings",
+            "why": ""
+          }
+        ],
+        "explanation": "El flag `--permission-mode` (o `--dangerously-skip-permissions`) se revisa primero. Si no hay flag, aplica `permissions.defaultMode` de un archivo de settings, y la precedencia de settings decide entre archivos. Solo cuando ninguno aplica decide el default incorporado."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "C",
+        "A"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mode-catalog--r0",
+      "conceptId": "mode-catalog",
+      "kind": "recall",
+      "prompt": "Name the six permission modes and what each one runs without asking.",
+      "promptEs": "Nombra los seis modos de permisos y qué corre cada uno sin preguntar.",
+      "idealAnswer": "`default` (Manual) runs only reads, and `acceptEdits` adds file edits and common filesystem commands in the working directory. `plan` reads and explores without editing source, `auto` runs everything with a background classifier, `dontAsk` runs only reads and pre-approved tools and denies the rest, and `bypassPermissions` runs everything. Deny rules still block in every mode.",
+      "rubric": [
+        "default runs only reads; acceptEdits adds edits and filesystem commands",
+        "plan explores without editing",
+        "auto uses a classifier; dontAsk denies what isn't pre-approved",
+        "bypassPermissions runs everything, but deny rules still block"
+      ]
+    }
+  ]
+}

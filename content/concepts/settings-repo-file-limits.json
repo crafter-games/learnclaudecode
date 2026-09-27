@@ -1,0 +1,414 @@
+{
+  "conceptId": "settings-repo-file-limits",
+  "card": {
+    "en": {
+      "tldr": "A key committed to `.claude/settings.json` can fail to reach teammates for two reasons: its Scope doesn't allow repository files, or it waits for each person to trust the folder. Check the Scope column of the settings index, then check whether the key grants capability.",
+      "whenToUse": [
+        "A teammate cloned the repo but still gets prompts for committed `permissions.allow` rules",
+        "A committed `permissions.defaultMode` of `auto` or `bypassPermissions` never takes effect",
+        "Predict what a `claude -p` run in a fresh, untrusted checkout will use"
+      ],
+      "keyFacts": [
+        "Keys whose Scope is `User or managed`, `User, local, or managed`, `Managed` or `Global config` never apply from the shared project file.",
+        "`permissions.defaultMode` values `auto` and `bypassPermissions` don't take effect from project or local settings; the `autoMode` block is `User or managed`.",
+        "`permissions.allow`, `permissions.additionalDirectories`, `extraKnownMarketplaces` and most `env` values apply only after each person trusts the folder.",
+        "`deny` and `ask` rules apply right away, since they only restrict.",
+        "`claude -p` never shows the trust dialog: project allow rules aren't used and a `this workspace has not been trusted` warning goes to stderr.",
+        "You can trust a folder by hand with `projects[\"<path>\"].hasTrustDialogAccepted` set to `true` in `~/.claude.json`."
+      ],
+      "gotchas": [
+        "Trusting only a parent folder doesn't activate a repo's allow rules; the dialog appears again listing them.",
+        "An untracked `.claude/settings.local.json` applies its allow rules without the trust step; a tracked one is treated as repository-supplied.",
+        "Accepting trust doesn't help a key whose Scope excludes project files.",
+        "Telemetry export variables in a project `env` never apply, apart from a few off values."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-scopes-files",
+          "difference": "Scopes answer who a file should affect; here the key is already committed and doesn't apply."
+        },
+        {
+          "concept": "settings-env-block",
+          "difference": "The env block explains how variables apply; this concept explains why a repo value is ignored or delayed."
+        }
+      ],
+      "examCues": [
+        "committed to the repo but teammates don't get it",
+        "still gets prompted after cloning",
+        "fresh checkout in CI",
+        "never takes effect from the project file",
+        "trust dialog"
+      ]
+    },
+    "es": {
+      "tldr": "Una clave commiteada en `.claude/settings.json` puede no llegar a tu equipo por dos razones: su Scope no admite archivos del repositorio, o espera a que cada persona confíe en la carpeta. Revisa la columna Scope del índice de settings y luego si la clave otorga capacidad.",
+      "whenToUse": [
+        "Un compañero clonó el repo pero sigue viendo prompts para reglas `permissions.allow` commiteadas",
+        "Un `permissions.defaultMode` commiteado en `auto` o `bypassPermissions` nunca tiene efecto",
+        "Predecir qué usará una corrida `claude -p` en un checkout nuevo sin confianza"
+      ],
+      "keyFacts": [
+        "Las claves con Scope `User or managed`, `User, local, or managed`, `Managed` o `Global config` nunca aplican desde el archivo compartido del proyecto.",
+        "Los valores `auto` y `bypassPermissions` de `permissions.defaultMode` no tienen efecto desde settings de proyecto o local; el bloque `autoMode` es `User or managed`.",
+        "`permissions.allow`, `permissions.additionalDirectories`, `extraKnownMarketplaces` y la mayoría de `env` aplican solo después de que cada persona confía en la carpeta.",
+        "Las reglas `deny` y `ask` aplican de inmediato, porque solo restringen.",
+        "`claude -p` nunca muestra el diálogo de confianza: las reglas allow del proyecto no se usan y va a stderr la advertencia `this workspace has not been trusted`.",
+        "Puedes confiar en una carpeta a mano poniendo `projects[\"<path>\"].hasTrustDialogAccepted` en `true` en `~/.claude.json`."
+      ],
+      "gotchas": [
+        "Confiar solo en una carpeta padre no activa las reglas allow del repo; el diálogo vuelve a aparecer listándolas.",
+        "Un `.claude/settings.local.json` sin trackear aplica sus reglas allow sin el paso de confianza; uno trackeado se trata como del repositorio.",
+        "Aceptar la confianza no ayuda a una clave cuyo Scope excluye archivos de proyecto.",
+        "Las variables de exportación de telemetría en un `env` de proyecto nunca aplican, salvo algunos valores que la apagan."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-scopes-files",
+          "difference": "Los scopes responden a quién debe afectar un archivo; aquí la clave ya está commiteada y no aplica."
+        },
+        {
+          "concept": "settings-env-block",
+          "difference": "El bloque env explica cómo aplican las variables; este concepto explica por qué un valor del repo se ignora o se retrasa."
+        }
+      ],
+      "examCues": [
+        "committed to the repo but teammates don't get it",
+        "still gets prompted after cloning",
+        "fresh checkout in CI",
+        "never takes effect from the project file",
+        "trust dialog"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/settings.md",
+      "https://code.claude.com/docs/en/permissions.md",
+      "https://code.claude.com/docs/en/settings-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-repo-file-limits--beae4e80",
+      "conceptId": "settings-repo-file-limits",
+      "secondaryConcepts": [
+        "settings-scopes-files"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team lead committed `\"permissions\": {\"defaultMode\": \"auto\"}` to `.claude/settings.json`. Teammates accepted the trust dialog, yet their sessions still start in the default mode. One developer wants his own sessions to start in auto mode in every project, on every launch.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `permissions.defaultMode` to `auto` in `~/.claude/settings.json`",
+          "correct": true,
+          "why": "`auto` takes effect from user or managed settings, and user settings apply in every project."
+        },
+        {
+          "id": "B",
+          "text": "Move the key to `.claude/settings.local.json` in each repo",
+          "correct": false,
+          "why": "Local settings can't set `auto` either, and it would be per project."
+        },
+        {
+          "id": "C",
+          "text": "Accept the workspace trust dialog again in each repo",
+          "correct": false,
+          "why": "The key isn't waiting for trust; project files can't set that value at all."
+        },
+        {
+          "id": "D",
+          "text": "Start every session with `claude --settings '{\"permissions\": {\"defaultMode\": \"auto\"}}'`",
+          "correct": false,
+          "why": "`--settings` lasts one session, so it wouldn't apply on every launch without retyping it."
+        }
+      ],
+      "explanation": "The value is ignored because of its scope, not because of trust: `auto` and `bypassPermissions` don't take effect from project or local settings. The documented fix is to set it in `~/.claude/settings.json` or managed settings. User settings cover every project on every launch. Re-accepting trust or moving to the local file doesn't change the scope restriction.",
+      "keywordCues": [
+        "accepted the trust dialog",
+        "still start in the default mode",
+        "in every project, on every launch"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/permissions.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Un líder de equipo commiteó `\"permissions\": {\"defaultMode\": \"auto\"}` en `.claude/settings.json`. El equipo aceptó el diálogo de confianza, pero sus sesiones siguen arrancando en el modo default. Un desarrollador quiere que sus propias sesiones arranquen en modo auto en todo proyecto y en cada arranque.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Fijar `permissions.defaultMode` en `auto` en `~/.claude/settings.json`",
+            "why": "`auto` tiene efecto desde settings de usuario o managed, y los de usuario aplican en todo proyecto."
+          },
+          {
+            "id": "B",
+            "text": "Mover la clave a `.claude/settings.local.json` en cada repo",
+            "why": "Los settings locales tampoco pueden fijar `auto`, y sería por proyecto."
+          },
+          {
+            "id": "C",
+            "text": "Aceptar de nuevo el diálogo de confianza en cada repo",
+            "why": "La clave no espera confianza; los archivos de proyecto simplemente no pueden fijar ese valor."
+          },
+          {
+            "id": "D",
+            "text": "Iniciar cada sesión con `claude --settings '{\"permissions\": {\"defaultMode\": \"auto\"}}'`",
+            "why": "`--settings` dura una sesión, así que no aplicaría en cada arranque sin volver a escribirlo."
+          }
+        ],
+        "explanation": "El valor se ignora por su scope, no por la confianza: `auto` y `bypassPermissions` no tienen efecto desde settings de proyecto o local. La solución documentada es ponerlo en `~/.claude/settings.json` o en managed. Los settings de usuario cubren todo proyecto en cada arranque. Aceptar otra vez la confianza o moverlo al archivo local no cambia la restricción de scope."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-repo-file-limits--afe2c8bb",
+      "conceptId": "settings-repo-file-limits",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A new teammate cloned a repository into `~/code/api`. Its committed `.claude/settings.json` allows `Bash(npm test)` and denies reads of `.env`. The deny works, but she is still prompted before `npm test`. She had only trusted `~/code` earlier. She wants the committed allow rules active without changing the repository.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run her work with `claude -p` so no trust dialog is needed",
+          "correct": false,
+          "why": "`claude -p` never shows the dialog, and project allow rules aren't used in a never-trusted folder."
+        },
+        {
+          "id": "B",
+          "text": "Launch `claude` interactively in the repo and accept the trust dialog for it",
+          "correct": true,
+          "why": "Allow rules in `.claude/settings.json` apply only after the trust dialog for that repo is accepted."
+        },
+        {
+          "id": "C",
+          "text": "Re-trust `~/code`, since trust on a parent covers the repo",
+          "correct": false,
+          "why": "Parent-folder trust doesn't count for allow rules; the dialog appears again for the repo."
+        },
+        {
+          "id": "D",
+          "text": "Commit `permissions.defaultMode: \"acceptEdits\"` to the shared file",
+          "correct": false,
+          "why": "That changes the repository and doesn't make the allow rules apply without trust."
+        }
+      ],
+      "explanation": "The deny applying while the allow is ignored is the signature of workspace trust: allow rules grant capability and wait for trust, deny rules apply immediately. Trusting a parent folder doesn't count for a repository's allow rules, so the dialog reappears listing them. Accepting it in an interactive session activates the rules. A `claude -p` run never shows the dialog and doesn't use them.",
+      "keywordCues": [
+        "The deny works",
+        "still prompted",
+        "only trusted `~/code`",
+        "without changing the repository"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/permissions.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Una nueva integrante clonó un repositorio en `~/code/api`. Su `.claude/settings.json` commiteado permite `Bash(npm test)` y niega leer `.env`. El deny funciona, pero igual le pregunta antes de `npm test`. Antes solo había confiado en `~/code`. Quiere activar las reglas allow commiteadas sin cambiar el repositorio.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Trabajar con `claude -p` para no necesitar el diálogo de confianza",
+            "why": "`claude -p` nunca muestra el diálogo, y las reglas allow del proyecto no se usan en una carpeta nunca confiada."
+          },
+          {
+            "id": "B",
+            "text": "Lanzar `claude` en modo interactivo en el repo y aceptar su diálogo de confianza",
+            "why": "Las reglas allow de `.claude/settings.json` aplican solo tras aceptar el diálogo de confianza de ese repo."
+          },
+          {
+            "id": "C",
+            "text": "Volver a confiar en `~/code`, porque la confianza del padre cubre el repo",
+            "why": "La confianza de una carpeta padre no cuenta para las reglas allow; el diálogo vuelve a aparecer para el repo."
+          },
+          {
+            "id": "D",
+            "text": "Commitear `permissions.defaultMode: \"acceptEdits\"` en el archivo compartido",
+            "why": "Eso cambia el repositorio y no hace que las reglas allow apliquen sin confianza."
+          }
+        ],
+        "explanation": "Que el deny aplique y el allow no es la marca de la confianza del workspace: las reglas allow otorgan capacidad y esperan confianza, las deny aplican de inmediato. Confiar en una carpeta padre no cuenta para las reglas allow de un repositorio, así que el diálogo reaparece listándolas. Aceptarlo en una sesión interactiva activa las reglas. Una corrida `claude -p` nunca muestra el diálogo y no las usa."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-repo-file-limits--dff06d2b",
+      "conceptId": "settings-repo-file-limits",
+      "secondaryConcepts": [
+        "settings-env-block"
+      ],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A CI job runs `claude -p` in a fresh checkout that no one has ever trusted. The repository's `.claude/settings.json` sets `API_TIMEOUT_MS` under `env`, allows `Bash(npm test)`, and denies `Read(./.env)`. Which two of these take effect in that run? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The `API_TIMEOUT_MS` value from `env`",
+          "correct": true,
+          "why": "Project `env` applies at startup in `-p` mode, which never shows the trust dialog."
+        },
+        {
+          "id": "B",
+          "text": "The allow rule for `Bash(npm test)`",
+          "correct": false,
+          "why": "In a never-trusted folder, `-p` doesn't use project allow rules and prints a warning to stderr."
+        },
+        {
+          "id": "C",
+          "text": "The deny rule for `Read(./.env)`",
+          "correct": true,
+          "why": "Deny rules only restrict, so they don't wait for workspace trust."
+        },
+        {
+          "id": "D",
+          "text": "A trust dialog that pauses the job until someone answers",
+          "correct": false,
+          "why": "`claude -p` never shows the trust dialog."
+        },
+        {
+          "id": "E",
+          "text": "Nothing from the file until `hasTrustDialogAccepted` is set",
+          "correct": false,
+          "why": "Deny rules and the `env` block still apply in a `-p` run without trust."
+        }
+      ],
+      "explanation": "Each key in the file follows its own trust rule. `env` values from project settings apply at startup in `-p` mode, and `deny` rules apply right away because they only restrict. `permissions.allow` rules grant capability, so a `-p` run in a never-trusted folder skips them and warns on stderr. No dialog ever appears in `-p` mode.",
+      "keywordCues": [
+        "`claude -p`",
+        "no one has ever trusted",
+        "take effect in that run"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/permissions.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Un job de CI corre `claude -p` en un checkout nuevo en el que nadie ha confiado nunca. El `.claude/settings.json` del repo fija `API_TIMEOUT_MS` bajo `env`, permite `Bash(npm test)` y niega `Read(./.env)`. ¿Cuáles dos tienen efecto en esa corrida? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El valor `API_TIMEOUT_MS` de `env`",
+            "why": "El `env` del proyecto aplica al arrancar en modo `-p`, que nunca muestra el diálogo de confianza."
+          },
+          {
+            "id": "B",
+            "text": "La regla allow para `Bash(npm test)`",
+            "why": "En una carpeta nunca confiada, `-p` no usa las reglas allow del proyecto e imprime una advertencia a stderr."
+          },
+          {
+            "id": "C",
+            "text": "La regla deny para `Read(./.env)`",
+            "why": "Las reglas deny solo restringen, así que no esperan la confianza del workspace."
+          },
+          {
+            "id": "D",
+            "text": "Un diálogo de confianza que pausa el job hasta que alguien responda",
+            "why": "`claude -p` nunca muestra el diálogo de confianza."
+          },
+          {
+            "id": "E",
+            "text": "Nada del archivo hasta fijar `hasTrustDialogAccepted`",
+            "why": "Las reglas deny y el bloque `env` igual aplican en una corrida `-p` sin confianza."
+          }
+        ],
+        "explanation": "Cada clave del archivo sigue su propia regla de confianza. Los valores `env` del proyecto aplican al arrancar en modo `-p`, y las reglas `deny` aplican de inmediato porque solo restringen. Las reglas `permissions.allow` otorgan capacidad, así que una corrida `-p` en una carpeta nunca confiada las omite y avisa por stderr. En modo `-p` nunca aparece un diálogo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-repo-file-limits--7edce916",
+      "conceptId": "settings-repo-file-limits",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "In `~/.claude.json`, under `projects[\"<path>\"]`, which key do you set to `true` to trust a folder by hand?",
+      "options": [
+        {
+          "id": "A",
+          "text": "hasTrustDialogAccepted",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "For content that needs the exact folder trusted, you can set `projects[\"<path>\"].hasTrustDialogAccepted` to `true` in `~/.claude.json`, where the path is the repository root, or the folder itself outside a repository. Claude Code prints the exact key in the stderr warning for skipped allow rules.",
+      "keywordCues": [
+        "`~/.claude.json`",
+        "trust a folder by hand"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/permissions.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "En `~/.claude.json`, bajo `projects[\"<path>\"]`, ¿qué clave pones en `true` para confiar en una carpeta a mano?",
+        "options": [
+          {
+            "id": "A",
+            "text": "hasTrustDialogAccepted",
+            "why": ""
+          }
+        ],
+        "explanation": "Para contenido que necesita confianza en la carpeta exacta, puedes poner `projects[\"<path>\"].hasTrustDialogAccepted` en `true` en `~/.claude.json`, donde la ruta es la raíz del repositorio, o la carpeta misma fuera de un repositorio. Claude Code imprime la clave exacta en la advertencia de stderr por reglas allow omitidas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-repo-file-limits--r0",
+      "conceptId": "settings-repo-file-limits",
+      "kind": "recall",
+      "prompt": "Give the two reasons a key committed to .claude/settings.json may not reach a teammate, with one example of each.",
+      "promptEs": "Da las dos razones por las que una clave commiteada en .claude/settings.json puede no llegar a un compañero, con un ejemplo de cada una.",
+      "idealAnswer": "First, the key's Scope excludes project files, such as User or managed keys or permissions.defaultMode set to auto or bypassPermissions, so the repo file is ignored. Second, the key waits for workspace trust, such as permissions.allow, additionalDirectories or most env values, while deny and ask rules apply right away.",
+      "rubric": [
+        "Scope excludes the project file, with an example",
+        "Waits for workspace trust, with an example",
+        "deny and ask apply immediately"
+      ]
+    },
+    {
+      "id": "settings-repo-file-limits--r1",
+      "conceptId": "settings-repo-file-limits",
+      "kind": "why-not",
+      "prompt": "A committed permissions.defaultMode of bypassPermissions is ignored. Why is the answer not about which file reaches whom, and why doesn't trusting the folder fix it?",
+      "promptEs": "Un permissions.defaultMode commiteado en bypassPermissions se ignora. ¿Por qué no se trata de qué archivo llega a quién, y por qué confiar en la carpeta no lo arregla?",
+      "idealAnswer": "The file already reaches every teammate who clones the repo; the problem is that bypassPermissions and auto never take effect from project or local settings. That is a scope restriction, not a trust wait, so accepting the dialog changes nothing. Each person sets it in user settings, or the organization in managed settings.",
+      "rubric": [
+        "The shared file already reaches teammates",
+        "The value is ignored by scope in project and local files",
+        "Trust doesn't lift a scope restriction",
+        "Set it in user or managed settings"
+      ]
+    }
+  ]
+}

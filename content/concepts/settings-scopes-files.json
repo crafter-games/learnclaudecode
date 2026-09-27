@@ -1,0 +1,549 @@
+{
+  "conceptId": "settings-scopes-files",
+  "card": {
+    "en": {
+      "tldr": "Claude Code reads settings from four scopes: user, shared project, project local and managed. Pick the file by who the setting should affect: you everywhere, the whole team, only you in this project, or the whole organization.",
+      "whenToUse": [
+        "Setting a personal preference that follows you into every project",
+        "Sharing permissions, hooks or plugins with everyone who clones a repo",
+        "Overriding a team setting for yourself in one project without a commit",
+        "Recognizing policy your organization enforces"
+      ],
+      "keyFacts": [
+        "`~/.claude/settings.json` (user): you, in every project on this machine.",
+        "`.claude/settings.json` (shared project): everyone in the folder; commit it so teammates get it.",
+        "`.claude/settings.local.json` (project local): only you in this project; 'Yes, and don't ask again' saves allow rules here.",
+        "Managed settings (`managed-settings.json`, MDM or server-managed from the claude.ai console): everyone your organization deploys it to; nothing you set overrides it, apart from a few security exceptions.",
+        "`~/.claude.json` is a separate file Claude Code writes for itself: sign-in session, MCP server configurations, trust decisions and global config keys.",
+        "Installing Claude Code doesn't create any settings file."
+      ],
+      "gotchas": [
+        "Claude Code keeps the local file out of git only when it writes the file itself; if you create it by hand, add it to `.gitignore` yourself.",
+        "An uncommitted `.claude/settings.json` is just a file on your disk: nobody else gets it.",
+        "A cloud session on a single repository reads the committed project file and server-managed settings, not your user or local file nor a `managed-settings.json` on your device; a multi-repository session reads only `enabledPlugins` and `extraKnownMarketplaces` from each repo's file.",
+        "On Windows, `~/.claude` means `%USERPROFILE%\\.claude`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "~/.claude.json",
+          "difference": "Global config Claude Code writes itself (sign-in, MCP servers, trust); not one of the four settings scopes."
+        },
+        {
+          "concept": "Repository file limits",
+          "difference": "Some keys are ignored or wait for workspace trust even when committed in `.claude/settings.json`."
+        }
+      ],
+      "examCues": [
+        "applies to everyone who clones the repo",
+        "only for me in this project",
+        "in every project on my machine",
+        "enforced for the whole organization",
+        "without affecting teammates"
+      ]
+    },
+    "es": {
+      "tldr": "Claude Code lee settings de cuatro scopes: user, proyecto compartido, proyecto local y managed. Elige el archivo según a quién debe afectar: a ti en todas partes, a todo el equipo, solo a ti en este proyecto o a toda la organización.",
+      "whenToUse": [
+        "Fijar una preferencia personal que te siga a todos tus proyectos",
+        "Compartir permisos, hooks o plugins con todos los que clonan un repo",
+        "Pisar un setting del equipo solo para ti en un proyecto, sin commit",
+        "Reconocer la política que impone tu organización"
+      ],
+      "keyFacts": [
+        "`~/.claude/settings.json` (user): tú, en todos los proyectos de esta máquina.",
+        "`.claude/settings.json` (proyecto compartido): todos en esa carpeta; commitéalo para que lo reciba el equipo.",
+        "`.claude/settings.local.json` (proyecto local): solo tú en este proyecto; 'Yes, and don't ask again' guarda aquí reglas allow.",
+        "Managed settings (`managed-settings.json`, MDM o server-managed desde la consola de claude.ai): todos a quienes tu organización lo despliega; nada que tú configures lo pisa, salvo unas pocas excepciones de seguridad.",
+        "`~/.claude.json` es un archivo aparte que Claude Code escribe para sí: sesión iniciada, configuración de servidores MCP, decisiones de trust y claves de global config.",
+        "Instalar Claude Code no crea ningún archivo de settings."
+      ],
+      "gotchas": [
+        "Claude Code deja el archivo local fuera de git solo cuando lo escribe él; si lo creas a mano, agrégalo tú a `.gitignore`.",
+        "Un `.claude/settings.json` sin commitear es solo un archivo en tu disco: nadie más lo recibe.",
+        "Una sesión en la nube sobre un solo repositorio lee el archivo de proyecto commiteado y los server-managed settings, no tu archivo user ni el local ni un `managed-settings.json` de tu equipo; una sesión con varios repositorios solo lee `enabledPlugins` y `extraKnownMarketplaces` del archivo de cada repo.",
+        "En Windows, `~/.claude` significa `%USERPROFILE%\\.claude`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "~/.claude.json",
+          "difference": "Global config que Claude Code escribe solo (sesión, servidores MCP, trust); no es uno de los cuatro scopes."
+        },
+        {
+          "concept": "Límites del archivo del repo",
+          "difference": "Algunas claves se ignoran o esperan el workspace trust aunque estén commiteadas en `.claude/settings.json`."
+        }
+      ],
+      "examCues": [
+        "applies to everyone who clones the repo",
+        "only for me in this project",
+        "in every project on my machine",
+        "enforced for the whole organization",
+        "without affecting teammates"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/settings.md",
+      "https://code.claude.com/docs/en/settings-example.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-scopes-files--9cf3c821",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Priya wants vim editor mode and an allow rule for `Bash(git diff *)` in every repository she opens on her laptop. Her teammates must not see these choices, and she doesn't want to repeat them per project. Where should she put them, with a single file?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`.claude/settings.json` in each repository",
+          "correct": false,
+          "why": "It's the shared project file: committing it changes the setting for teammates, and it must be repeated per repository."
+        },
+        {
+          "id": "B",
+          "text": "`~/.claude/settings.json`",
+          "correct": true,
+          "why": "User settings apply to you in every project on this machine and are never part of a repository."
+        },
+        {
+          "id": "C",
+          "text": "`.claude/settings.local.json` in each repository",
+          "correct": false,
+          "why": "It stays private, but it applies to one project only, so she'd need a copy in every repository."
+        },
+        {
+          "id": "D",
+          "text": "A `managed-settings.json` file",
+          "correct": false,
+          "why": "Managed settings are policy your organization deploys, not a place for personal preferences."
+        }
+      ],
+      "explanation": "The requirement is 'me, in every project, and nobody else'. That is exactly the user scope, `~/.claude/settings.json`. The project local file is also private, which makes it tempting, but it reaches only the project that contains it, so it fails the single-file requirement.",
+      "keywordCues": [
+        "in every repository she opens",
+        "teammates must not see",
+        "with a single file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "Priya quiere el modo de edición vim y una regla allow para `Bash(git diff *)` en todos los repositorios que abre en su laptop. Sus compañeros no deben ver estas elecciones y no quiere repetirlas por proyecto. ¿Dónde debe ponerlas, con un solo archivo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`.claude/settings.json` en cada repositorio",
+            "why": "Es el archivo compartido del proyecto: al commitearlo cambia el setting para el equipo, y hay que repetirlo por repositorio."
+          },
+          {
+            "id": "B",
+            "text": "`~/.claude/settings.json`",
+            "why": "Los settings de user te aplican en todos los proyectos de esta máquina y nunca forman parte de un repositorio."
+          },
+          {
+            "id": "C",
+            "text": "`.claude/settings.local.json` en cada repositorio",
+            "why": "Es privado, pero aplica a un solo proyecto, así que necesitaría una copia en cada repositorio."
+          },
+          {
+            "id": "D",
+            "text": "Un archivo `managed-settings.json`",
+            "why": "Managed settings es la política que despliega tu organización, no un lugar para preferencias personales."
+          }
+        ],
+        "explanation": "El requisito es 'yo, en todos los proyectos, y nadie más'. Eso es exactamente el scope user, `~/.claude/settings.json`. El archivo local también es privado, lo que lo hace tentador, pero solo alcanza al proyecto que lo contiene, así que no cumple el requisito de un solo archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-scopes-files--5aaeb311",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team wants the same deny rules and a `PreToolUse` hook to apply for every developer who clones their repository, and also in cloud sessions started on that single repository. Where should they define them so it applies to everyone who clones the repo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "In each developer's `~/.claude/settings.json`",
+          "correct": false,
+          "why": "User settings stay on each machine: every developer must copy them, and a cloud session doesn't read them."
+        },
+        {
+          "id": "B",
+          "text": "In `.claude/settings.local.json`, then commit it",
+          "correct": false,
+          "why": "Cloud sessions don't read project local settings, and the file is meant for personal overrides kept out of git."
+        },
+        {
+          "id": "C",
+          "text": "In `.claude/settings.json`, committed to the repository",
+          "correct": true,
+          "why": "The shared project file travels with every clone, and a single-repository cloud session reads it from the clone."
+        },
+        {
+          "id": "D",
+          "text": "In a `managed-settings.json` file on each laptop",
+          "correct": false,
+          "why": "A managed file on a device doesn't reach a cloud session; only server-managed settings do."
+        }
+      ],
+      "explanation": "The shared project file, `.claude/settings.json`, is the scope for team permissions and hooks: commit it and every clone gets it. A cloud session starts from a fresh clone, so with one repository it reads that committed file too. User and local files never leave your machine, and a device-level `managed-settings.json` doesn't reach cloud sessions.",
+      "keywordCues": [
+        "every developer who clones",
+        "cloud sessions",
+        "applies to everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que las mismas reglas deny y un hook `PreToolUse` apliquen a todo desarrollador que clone su repositorio, y también en sesiones en la nube iniciadas sobre ese único repositorio. ¿Dónde deben definirlos para que aplique a todos los que clonan el repo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "En el `~/.claude/settings.json` de cada desarrollador",
+            "why": "Los settings de user quedan en cada máquina: cada uno debe copiarlos y una sesión en la nube no los lee."
+          },
+          {
+            "id": "B",
+            "text": "En `.claude/settings.local.json` y luego commitearlo",
+            "why": "Las sesiones en la nube no leen los settings de proyecto local, y el archivo es para overrides personales fuera de git."
+          },
+          {
+            "id": "C",
+            "text": "En `.claude/settings.json`, commiteado en el repositorio",
+            "why": "El archivo compartido viaja con cada clon, y una sesión en la nube de un solo repositorio lo lee del clon."
+          },
+          {
+            "id": "D",
+            "text": "En un archivo `managed-settings.json` en cada laptop",
+            "why": "Un archivo managed en el dispositivo no llega a una sesión en la nube; solo los server-managed settings llegan."
+          }
+        ],
+        "explanation": "El archivo compartido del proyecto, `.claude/settings.json`, es el scope para permisos y hooks del equipo: commitéalo y cada clon lo recibe. Una sesión en la nube parte de un clon nuevo, así que con un solo repositorio también lee ese archivo. Los archivos user y local nunca salen de tu máquina, y un `managed-settings.json` del dispositivo no llega a la nube."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-scopes-files--b02d8d05",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Marco created `.claude/settings.local.json` by hand in a git repository to switch the model for himself. Claude Code hasn't written to the file yet. He needs it to stay out of his commits. What should he do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Nothing: git never tracks files under `.claude/`",
+          "correct": false,
+          "why": "Git tracks `.claude/` like any folder; that's how `.claude/settings.json` gets shared."
+        },
+        {
+          "id": "B",
+          "text": "Add it to `.gitignore` himself",
+          "correct": true,
+          "why": "Claude Code adds the file to the global git excludes only when it first writes it; a hand-made file needs a manual ignore."
+        },
+        {
+          "id": "C",
+          "text": "Move the key into `~/.claude.json`",
+          "correct": false,
+          "why": "That file is written by Claude Code for sign-in, MCP servers and trust; it isn't a per-project settings scope."
+        },
+        {
+          "id": "D",
+          "text": "Rename it to `.claude/settings.json`",
+          "correct": false,
+          "why": "That's the shared file meant to be committed, the opposite of what he wants."
+        }
+      ],
+      "explanation": "The local file is personal, but it's only kept out of git automatically when Claude Code writes it: the first write adds `**/.claude/settings.local.json` to your global git excludes. Because Marco created it by hand and Claude Code hasn't written it yet, he must add it to `.gitignore` himself. Assuming `.claude/` is ignored is the tempting mistake.",
+      "keywordCues": [
+        "created by hand",
+        "hasn't written to the file yet",
+        "stay out of his commits"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "Marco creó a mano `.claude/settings.local.json` en un repositorio git para cambiar el modelo solo para él. Claude Code todavía no ha escrito en el archivo. Necesita que quede fuera de sus commits. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Nada: git nunca rastrea archivos bajo `.claude/`",
+            "why": "Git rastrea `.claude/` como cualquier carpeta; así se comparte `.claude/settings.json`."
+          },
+          {
+            "id": "B",
+            "text": "Agregarlo él mismo a `.gitignore`",
+            "why": "Claude Code agrega el archivo a los excludes globales de git solo la primera vez que lo escribe; uno creado a mano necesita ignorarse a mano."
+          },
+          {
+            "id": "C",
+            "text": "Mover la clave a `~/.claude.json`",
+            "why": "Ese archivo lo escribe Claude Code para sesión, servidores MCP y trust; no es un scope de settings por proyecto."
+          },
+          {
+            "id": "D",
+            "text": "Renombrarlo a `.claude/settings.json`",
+            "why": "Ese es el archivo compartido pensado para commitearse, lo contrario de lo que quiere."
+          }
+        ],
+        "explanation": "El archivo local es personal, pero solo queda fuera de git automáticamente cuando Claude Code lo escribe: la primera escritura agrega `**/.claude/settings.local.json` a tus excludes globales de git. Como Marco lo creó a mano y Claude Code aún no lo escribió, debe agregarlo él a `.gitignore`. Suponer que `.claude/` ya está ignorado es el error tentador."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-scopes-files--fb9fb1bb",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Lena starts a cloud session at claude.ai/code on a single repository. On her laptop she has `~/.claude/settings.json`, a `.claude/settings.local.json` in that repo, and a `managed-settings.json` deployed by IT. Her organization also uses server-managed settings. Which two sources apply in the cloud session? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The repository's committed `.claude/settings.json`",
+          "correct": true,
+          "why": "The file is part of the clone and the session starts inside it."
+        },
+        {
+          "id": "B",
+          "text": "Her `~/.claude/settings.json`",
+          "correct": false,
+          "why": "User settings stay on her machine; cloud sessions don't read them."
+        },
+        {
+          "id": "C",
+          "text": "Her `.claude/settings.local.json`",
+          "correct": false,
+          "why": "The local file isn't in the clone and isn't read in cloud sessions."
+        },
+        {
+          "id": "D",
+          "text": "Server-managed settings from the claude.ai console",
+          "correct": true,
+          "why": "Server-managed settings are the only managed source that reaches a cloud session."
+        },
+        {
+          "id": "E",
+          "text": "The `managed-settings.json` on her laptop",
+          "correct": false,
+          "why": "A managed file or MDM profile on the device doesn't reach a cloud session."
+        }
+      ],
+      "explanation": "A cloud session runs on a fresh clone in a cloud environment, not on the laptop. With one repository it reads the committed `.claude/settings.json`, and of the managed sources only server-managed settings reach it. User and local files stay on the machine, and a device-level `managed-settings.json` doesn't travel either, even though it would win on the laptop.",
+      "keywordCues": [
+        "cloud session",
+        "single repository",
+        "server-managed settings"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "Lena inicia una sesión en la nube en claude.ai/code sobre un solo repositorio. En su laptop tiene `~/.claude/settings.json`, un `.claude/settings.local.json` en ese repo y un `managed-settings.json` que desplegó TI. Su organización también usa server-managed settings. ¿Qué dos fuentes aplican en la sesión en la nube? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El `.claude/settings.json` commiteado del repositorio",
+            "why": "El archivo es parte del clon y la sesión arranca dentro de él."
+          },
+          {
+            "id": "B",
+            "text": "Su `~/.claude/settings.json`",
+            "why": "Los settings de user quedan en su máquina; las sesiones en la nube no los leen."
+          },
+          {
+            "id": "C",
+            "text": "Su `.claude/settings.local.json`",
+            "why": "El archivo local no está en el clon y no se lee en la nube."
+          },
+          {
+            "id": "D",
+            "text": "Los server-managed settings de la consola de claude.ai",
+            "why": "Son la única fuente managed que llega a una sesión en la nube."
+          },
+          {
+            "id": "E",
+            "text": "El `managed-settings.json` de su laptop",
+            "why": "Un archivo managed o perfil MDM del dispositivo no llega a una sesión en la nube."
+          }
+        ],
+        "explanation": "Una sesión en la nube corre sobre un clon nuevo en un entorno cloud, no en la laptop. Con un solo repositorio lee el `.claude/settings.json` commiteado, y de las fuentes managed solo le llegan los server-managed settings. Los archivos user y local se quedan en la máquina, y el `managed-settings.json` del dispositivo tampoco viaja, aunque en la laptop ganaría."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-scopes-files--eccbf887",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which file, relative to the project root, holds your personal settings for this one project and is the file where Claude Code saves 'Yes, and don't ask again' approvals?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.local.json",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "./.claude/settings.local.json",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`.claude/settings.local.json` is the project local scope: it applies only to you in this project, sits above the shared `.claude/settings.json`, and is where Claude Code writes standing approvals from permission prompts as `allow` rules.",
+      "keywordCues": [
+        "personal settings for this one project",
+        "Yes, and don't ask again"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "¿Qué archivo, relativo a la raíz del proyecto, guarda tus settings personales para este único proyecto y es donde Claude Code guarda las aprobaciones de 'Yes, and don't ask again'?",
+        "options": [
+          {
+            "id": "A",
+            "text": ".claude/settings.local.json",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "./.claude/settings.local.json",
+            "why": ""
+          }
+        ],
+        "explanation": "`.claude/settings.local.json` es el scope de proyecto local: aplica solo a ti en este proyecto, está sobre el `.claude/settings.json` compartido y es donde Claude Code escribe como reglas `allow` las aprobaciones permanentes de los prompts de permisos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-scopes-files--0b43000f",
+      "conceptId": "settings-scopes-files",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which file, relative to the project root, do you commit so everyone who clones the repository gets the same permissions, hooks and plugins?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.json",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "./.claude/settings.json",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`.claude/settings.json` is the shared project scope. Committing it is what makes it reach teammates' clones; until then it's only a file on your disk.",
+      "keywordCues": [
+        "commit",
+        "everyone who clones the repository"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/settings-example.md"
+      ],
+      "es": {
+        "stem": "¿Qué archivo, relativo a la raíz del proyecto, commiteas para que todos los que clonan el repositorio reciban los mismos permisos, hooks y plugins?",
+        "options": [
+          {
+            "id": "A",
+            "text": ".claude/settings.json",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "./.claude/settings.json",
+            "why": ""
+          }
+        ],
+        "explanation": "`.claude/settings.json` es el scope de proyecto compartido. Commitearlo es lo que hace que llegue a los clones del equipo; hasta entonces es solo un archivo en tu disco."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-scopes-files--r0",
+      "conceptId": "settings-scopes-files",
+      "kind": "recall",
+      "prompt": "Name the four settings scopes, the file for each, and who each one affects.",
+      "promptEs": "Nombra los cuatro scopes de settings, el archivo de cada uno y a quién afecta cada uno.",
+      "idealAnswer": "User is `~/.claude/settings.json` and affects you in every project on this machine. Shared project is `.claude/settings.json`, committed so everyone who clones the repo gets it, and project local is `.claude/settings.local.json`, only you in that project and kept out of git. Managed settings are deployed by the organization to everyone and nothing you set overrides them.",
+      "rubric": [
+        "User: ~/.claude/settings.json, you in every project",
+        "Shared project: .claude/settings.json, committed for the team",
+        "Project local: .claude/settings.local.json, only you in this project",
+        "Managed: organization-wide, not overridable"
+      ]
+    },
+    {
+      "id": "settings-scopes-files--r1",
+      "conceptId": "settings-scopes-files",
+      "kind": "why-not",
+      "prompt": "You want Opus for yourself only in one team repository. Why not change the model in the committed .claude/settings.json?",
+      "promptEs": "Quieres Opus solo para ti en un repositorio del equipo. ¿Por qué no cambiar el modelo en el .claude/settings.json commiteado?",
+      "idealAnswer": "The committed `.claude/settings.json` is the shared project file, so the change would reach every teammate once committed. Put the model in `.claude/settings.local.json` instead: it applies over the shared file and only your sessions in that project change.",
+      "rubric": [
+        "The shared file affects every teammate",
+        "Use .claude/settings.local.json",
+        "The local file applies over the shared file, only for you"
+      ]
+    }
+  ]
+}

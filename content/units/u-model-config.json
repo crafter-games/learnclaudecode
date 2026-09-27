@@ -1,0 +1,433 @@
+{
+  "unitId": "u-model-config",
+  "audited": true,
+  "overview": {
+    "title": "Modelos, esfuerzo y estilos de salida",
+    "hook": "Elegir qué modelo piensa, cuánto piensa, qué tan rápido y cómo responde.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "model",
+          "label": "/model (alias)",
+          "kind": "service",
+          "x": 40,
+          "y": 20
+        },
+        {
+          "id": "advisor",
+          "label": "Advisor",
+          "kind": "service",
+          "x": 75,
+          "y": 15
+        },
+        {
+          "id": "effort",
+          "label": "/effort y /fast",
+          "kind": "service",
+          "x": 40,
+          "y": 50
+        },
+        {
+          "id": "style",
+          "label": "Output style",
+          "kind": "service",
+          "x": 40,
+          "y": 80
+        },
+        {
+          "id": "response",
+          "label": "Respuesta",
+          "kind": "data",
+          "x": 75,
+          "y": 60
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "model",
+          "label": "elige"
+        },
+        {
+          "from": "model",
+          "to": "advisor",
+          "label": "consulta"
+        },
+        {
+          "from": "effort",
+          "to": "model",
+          "label": "cuánto razona"
+        },
+        {
+          "from": "model",
+          "to": "response",
+          "label": "genera"
+        },
+        {
+          "from": "style",
+          "to": "response",
+          "label": "forma"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Una tarea difícil pide más razonamiento, una tarea simple pide velocidad y bajo costo. Claude Code te da varias palancas distintas, y confundirlas cuesta dinero o calidad. Todo empieza contigo eligiendo.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Primera palanca: qué modelo. Usas un alias como sonnet, opus o haiku, o un nombre completo para fijar una versión. El alias opusplan usa Opus en plan mode y Sonnet al ejecutar. /model tiene la mayor prioridad y guarda tu elección como default.",
+        "show": [
+          "you",
+          "model"
+        ],
+        "focus": "model"
+      },
+      {
+        "narration": "Si quieres un modelo más fuerte solo en los momentos clave, no cambias el modelo principal: configuras un advisor. Claude decide cuándo consultarlo, por ejemplo antes de elegir un enfoque o cuando un error se repite.",
+        "show": [
+          "you",
+          "model",
+          "advisor"
+        ],
+        "focus": "advisor"
+      },
+      {
+        "narration": "Segunda palanca: cuánto razona el mismo modelo. El esfuerzo va de low a max. La palabra ultrathink pide razonar más solo en ese turno. Fast mode es el mismo Opus, más rápido, pero a mayor precio por token.",
+        "show": [
+          "you",
+          "model",
+          "advisor",
+          "effort"
+        ],
+        "focus": "effort"
+      },
+      {
+        "narration": "Tercera palanca: la forma de cada respuesta. Un output style como Concise, Explanatory o Learning cambia el tono, el largo y el rol en toda la sesión. Se cambia con /output-style.",
+        "show": [
+          "you",
+          "model",
+          "advisor",
+          "effort",
+          "style",
+          "response"
+        ],
+        "focus": "style"
+      },
+      {
+        "narration": "No confundas: bajar el esfuerzo puede bajar la calidad, fast mode no. Un output style es guía, no garantía; lo que debe pasar siempre va en un hook. Y lo que Claude debe saber del proyecto va en CLAUDE.md, no en un estilo.",
+        "show": [
+          "you",
+          "model",
+          "advisor",
+          "effort",
+          "style",
+          "response"
+        ],
+        "focus": "response"
+      }
+    ],
+    "keyPoints": [
+      "Alias para seguir lo recomendado; nombre completo para fijar versión.",
+      "Prioridad: /model, luego --model, ANTHROPIC_MODEL, settings.",
+      "Advisor: segundo modelo consultado en puntos de decisión.",
+      "Fast mode: misma calidad, más rápido, más caro.",
+      "Output style: forma de cada respuesta, sin imponerse."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "opusplan vs advisor",
+        "difference": "opusplan cambia de modelo al salir de plan mode; el advisor se consulta cuando Claude lo decide."
+      },
+      {
+        "unitOrService": "CLAUDE.md",
+        "difference": "Guarda lo que Claude debe saber del proyecto; el output style define cómo responde."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-model-config--l1",
+      "conceptId": "model-select",
+      "format": "lightning",
+      "prompt": "Opus while in plan mode, Sonnet automatically for execution → ?",
+      "promptEs": "Opus en plan mode y Sonnet automáticamente al ejecutar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/advisor opus"
+        },
+        {
+          "id": "B",
+          "text": "opusplan"
+        },
+        {
+          "id": "C",
+          "text": "best"
+        },
+        {
+          "id": "D",
+          "text": "sonnet[1m]"
+        }
+      ],
+      "answer": "B",
+      "why": "`opusplan` usa `opus` en plan mode y cambia a `sonnet` para ejecutar. El advisor no cambia de modelo en el límite del plan: Claude lo consulta cuando decide que lo necesita."
+    },
+    {
+      "id": "u-model-config--l2",
+      "conceptId": "model-select",
+      "format": "lightning",
+      "prompt": "Stay on one exact Opus version even when aliases move to newer releases → ?",
+      "promptEs": "Quedarte en una versión exacta de Opus aunque los alias pasen a versiones nuevas → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "opus"
+        },
+        {
+          "id": "B",
+          "text": "default"
+        },
+        {
+          "id": "C",
+          "text": "claude-opus-5-5"
+        },
+        {
+          "id": "D",
+          "text": "best"
+        }
+      ],
+      "answer": "C",
+      "why": "Los alias apuntan a la versión recomendada y se actualizan con el tiempo. Para fijar una versión usas el nombre completo, como `claude-opus-5-5`. `default` solo limpia el override."
+    },
+    {
+      "id": "u-model-config--l3",
+      "conceptId": "model-select",
+      "format": "thisorthat",
+      "prompt": "Stronger model consulted mid-task at decision points, Claude chooses when → ?",
+      "promptEs": "Modelo más fuerte consultado a mitad de tarea en puntos de decisión, Claude elige cuándo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Advisor (/advisor)"
+        },
+        {
+          "id": "B",
+          "text": "opusplan"
+        }
+      ],
+      "answer": "A",
+      "why": "El advisor lo llama Claude cuando necesita guía: antes de elegir un enfoque o ante un error recurrente. `opusplan` solo cambia de modelo cuando entras o sales de plan mode."
+    },
+    {
+      "id": "u-model-config--l4",
+      "conceptId": "model-select",
+      "format": "lightning",
+      "prompt": "Two terminals on different models at once, saved default untouched → ?",
+      "promptEs": "Dos terminales con modelos distintos a la vez, sin tocar el default guardado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /model <name> in each"
+        },
+        {
+          "id": "B",
+          "text": "Set \"model\" in settings"
+        },
+        {
+          "id": "C",
+          "text": "Set ANTHROPIC_DEFAULT_MODEL"
+        },
+        {
+          "id": "D",
+          "text": "Launch each with --model"
+        }
+      ],
+      "answer": "D",
+      "why": "`--model` aplica solo a la sesión que lanzas con él. `/model <name>` guarda la elección como default en tus settings de usuario, así que sí toca el default."
+    },
+    {
+      "id": "u-model-config--l5",
+      "conceptId": "model-effort-fast",
+      "format": "lightning",
+      "prompt": "Deeper reasoning on this one turn, session effort unchanged → ?",
+      "promptEs": "Razonamiento más profundo solo en este turno, sin cambiar el esfuerzo de la sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write ultrathink in the prompt"
+        },
+        {
+          "id": "B",
+          "text": "Write think hard in the prompt"
+        },
+        {
+          "id": "C",
+          "text": "/effort max"
+        },
+        {
+          "id": "D",
+          "text": "/fast"
+        }
+      ],
+      "answer": "A",
+      "why": "`ultrathink` es la palabra que Claude Code reconoce para ese turno. \"think hard\" pasa como texto normal, y `/effort max` cambia el nivel de toda la sesión."
+    },
+    {
+      "id": "u-model-config--l6",
+      "conceptId": "model-effort-fast",
+      "format": "lightning",
+      "prompt": "Same Opus quality, lower latency, higher price per token → ?",
+      "promptEs": "Misma calidad de Opus, menos latencia, mayor precio por token → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/effort low"
+        },
+        {
+          "id": "B",
+          "text": "/model haiku"
+        },
+        {
+          "id": "C",
+          "text": "/fast"
+        },
+        {
+          "id": "D",
+          "text": "opusplan"
+        }
+      ],
+      "answer": "C",
+      "why": "Fast mode es el mismo Opus con otra configuración de API: responde más rápido con la misma calidad, pero cuesta más por token. Bajar el esfuerzo también acelera, pero puede bajar la calidad."
+    },
+    {
+      "id": "u-model-config--l7",
+      "conceptId": "model-effort-fast",
+      "format": "thisorthat",
+      "prompt": "Faster answers on simple tasks, accepting less thinking, no higher per-token price → ?",
+      "promptEs": "Respuestas más rápidas en tareas simples, aceptando menos razonamiento, sin mayor precio por token → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Fast mode (/fast)"
+        },
+        {
+          "id": "B",
+          "text": "Lower effort level"
+        }
+      ],
+      "answer": "B",
+      "why": "Menos esfuerzo significa menos razonamiento, respuestas más rápidas y menos tokens. Fast mode mantiene la calidad pero cobra más por token."
+    },
+    {
+      "id": "u-model-config--l8",
+      "conceptId": "model-effort-fast",
+      "format": "lightning",
+      "prompt": "Effort level applied to the current session only unless set via environment variable → ?",
+      "promptEs": "Nivel de esfuerzo que aplica solo a la sesión actual salvo que lo fijes con variable de entorno → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "xhigh"
+        },
+        {
+          "id": "B",
+          "text": "max"
+        },
+        {
+          "id": "C",
+          "text": "high"
+        },
+        {
+          "id": "D",
+          "text": "medium"
+        }
+      ],
+      "answer": "B",
+      "why": "`max` solo dura la sesión actual, salvo con `CLAUDE_CODE_EFFORT_LEVEL`. Los niveles `low` a `xhigh` se pueden guardar como default con `/effort`."
+    },
+    {
+      "id": "u-model-config--l9",
+      "conceptId": "model-output-styles",
+      "format": "lightning",
+      "prompt": "Built-in style that leaves TODO(human) spots for you to code → ?",
+      "promptEs": "Estilo integrado que deja marcas TODO(human) para que tú escribas código → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Explanatory"
+        },
+        {
+          "id": "B",
+          "text": "Proactive"
+        },
+        {
+          "id": "C",
+          "text": "Concise"
+        },
+        {
+          "id": "D",
+          "text": "Learning"
+        }
+      ],
+      "answer": "D",
+      "why": "Learning agrega bloques `Insight` y además te deja partes con `TODO(human)`. Explanatory solo explica sus decisiones con `Insight`; no te pide escribir código."
+    },
+    {
+      "id": "u-model-config--l10",
+      "conceptId": "model-output-styles",
+      "format": "lightning",
+      "prompt": "Folder for a custom output style shared with everyone who clones the repo → ?",
+      "promptEs": "Carpeta para un output style personalizado compartido con todos los que clonan el repo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/output-styles"
+        },
+        {
+          "id": "B",
+          "text": ".claude/output-styles"
+        },
+        {
+          "id": "C",
+          "text": ".claude/skills"
+        },
+        {
+          "id": "D",
+          "text": ".claude/agents"
+        }
+      ],
+      "answer": "B",
+      "why": "`.claude/output-styles` es el nivel de proyecto y viaja con el repo. `~/.claude/output-styles` es de usuario: solo existe en tu máquina."
+    },
+    {
+      "id": "u-model-config--l11",
+      "conceptId": "model-output-styles",
+      "format": "thisorthat",
+      "prompt": "Build commands and conventions Claude must know whatever style is active → ?",
+      "promptEs": "Comandos de build y convenciones que Claude debe conocer sea cual sea el estilo activo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An output style"
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE.md"
+        }
+      ],
+      "answer": "B",
+      "why": "CLAUDE.md guarda lo que Claude debe saber del proyecto y sigue cargado con cualquier estilo. El output style define cómo responde, y solo hay uno activo a la vez."
+    }
+  ]
+}

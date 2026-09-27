@@ -86,7 +86,7 @@ interface Verdict {
   blind: { id: string; answer: string[] }[];
   items: ItemVerdict[];
   cards: { conceptId: string; severity: Severity; issues: string[]; fixed: { en: CardBody; es: CardBody } | null }[];
-  recall: { conceptId: string; index: number; severity: Severity; issues: string[]; fixedIdealAnswer: string | null }[];
+  recall: { conceptId: string; index: number; severity: Severity; issues: string[]; fixedIdealAnswer: string | null; fixedRubric?: string[] | null }[];
   overview: { severity: "ok" | "explanation"; issues: string[]; fixed: Pick<UnitOverview, "hook" | "segments" | "keyPoints" | "confusedWith"> | null };
 }
 
@@ -295,7 +295,7 @@ function finalize() {
       const recall = c.recall
         .map((r, i) => ({ r, i, rv: v.recall.find((x) => x.conceptId === c.conceptId && x.index === i) }))
         .filter(({ rv }) => rv?.severity !== "fatal")
-        .map(({ r, i, rv }) => ({ id: `${c.conceptId}--r${i}`, conceptId: c.conceptId, ...r, idealAnswer: rv?.fixedIdealAnswer ?? r.idealAnswer }));
+        .map(({ r, i, rv }) => ({ id: `${c.conceptId}--r${i}`, conceptId: c.conceptId, ...r, idealAnswer: rv?.fixedIdealAnswer ?? r.idealAnswer, rubric: rv?.fixedRubric ?? r.rubric }));
       const scenarios = questions.filter((q) => !q.format);
       if (!scenarios.length) report.push(`${c.conceptId}: sin escenarios válidos — regenerar`);
       // One held-out scenario for mocks when there are ≥ 3 (stable: lowest hash).

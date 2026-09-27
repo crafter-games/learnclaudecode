@@ -1,0 +1,533 @@
+{
+  "conceptId": "interactive-input-prefixes",
+  "card": {
+    "en": {
+      "tldr": "The first character of your input changes what it does: `/` starts a command or skill, `@` autocompletes a file path mention, and `!` enters shell mode. A `!` command runs directly without Claude interpreting or approving it, its output is added to the conversation, and Claude responds to it unless `respondToBashCommands` is `false`.",
+      "whenToUse": [
+        "Run a command yourself and have Claude react to the output: `! npm test`",
+        "Point Claude at a specific file in your prompt: `@` plus the path",
+        "Run a command or skill: `/` at the start",
+        "Write a multiline prompt: `\\` + Enter or `Ctrl+J`"
+      ],
+      "keyFacts": [
+        "Shell mode adds the command and its output to the conversation context and doesn't require Claude to interpret or approve it.",
+        "By default Claude responds to `!` output, at the same cost as a normal prompt; `\"respondToBashCommands\": false` only adds the output.",
+        "Commands typed in shell mode run outside the sandbox (except in strict sandbox mode), because the sandbox applies to commands Claude runs.",
+        "Shell mode supports `Ctrl+B` backgrounding and `Tab` completion from previous `!` commands in the project.",
+        "Newlines: `\\` + Enter and `Ctrl+J` work in every terminal; `Shift+Enter` is native in terminals such as iTerm2, WezTerm, Ghostty, Kitty and Windows Terminal.",
+        "`@` triggers file path autocomplete."
+      ],
+      "gotchas": [
+        "A `!` command doesn't go through Claude: it runs exactly as you typed it, with no approval step.",
+        "`/` runs a command only when it starts the message; mid-prompt it just completes the name.",
+        "Exit shell mode with Esc, Backspace or `Ctrl+U` on an empty prompt.",
+        "Queued `!` commands wait until the turn ends."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/btw",
+          "difference": "Answers from existing context with no tools and adds nothing to history; `!` runs a command and adds its output."
+        },
+        {
+          "concept": "Asking Claude to run a command",
+          "difference": "Claude runs it through the Bash tool under permissions and the sandbox; `!` runs it directly."
+        }
+      ],
+      "examCues": [
+        "run it yourself",
+        "add its output to the conversation",
+        "without Claude approving the command",
+        "no reply after the output",
+        "reference a file in the prompt"
+      ]
+    },
+    "es": {
+      "tldr": "El primer carácter de tu entrada cambia lo que hace: `/` inicia un comando o skill, `@` autocompleta la mención de una ruta de archivo y `!` entra a shell mode. Un comando `!` corre directo sin que Claude lo interprete ni apruebe, su salida entra a la conversación y Claude responde, salvo que `respondToBashCommands` sea `false`.",
+      "whenToUse": [
+        "Correr un comando tú mismo y que Claude reaccione a la salida: `! npm test`",
+        "Señalarle a Claude un archivo concreto en tu prompt: `@` más la ruta",
+        "Correr un comando o skill: `/` al inicio",
+        "Escribir un prompt de varias líneas: `\\` + Enter o `Ctrl+J`"
+      ],
+      "keyFacts": [
+        "Shell mode suma el comando y su salida al contexto de la conversación y no requiere que Claude lo interprete ni lo apruebe.",
+        "Por defecto Claude responde a la salida de `!`, con el mismo costo que un prompt normal; `\"respondToBashCommands\": false` solo agrega la salida.",
+        "Los comandos que escribes en shell mode corren fuera del sandbox (salvo en strict sandbox mode), porque el sandbox aplica a los comandos que corre Claude.",
+        "Shell mode admite pasar a segundo plano con `Ctrl+B` y completar con `Tab` desde comandos `!` previos del proyecto.",
+        "Saltos de línea: `\\` + Enter y `Ctrl+J` funcionan en toda terminal; `Shift+Enter` es nativo en terminales como iTerm2, WezTerm, Ghostty, Kitty y Windows Terminal.",
+        "`@` dispara el autocompletado de rutas de archivo."
+      ],
+      "gotchas": [
+        "Un comando `!` no pasa por Claude: corre tal como lo escribiste, sin paso de aprobación.",
+        "`/` corre un comando solo si inicia el mensaje; a mitad del prompt solo completa el nombre.",
+        "Sales de shell mode con Esc, Backspace o `Ctrl+U` con el prompt vacío.",
+        "Los comandos `!` en cola esperan al fin del turno."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/btw",
+          "difference": "Responde desde el contexto existente sin herramientas y no agrega nada al historial; `!` corre un comando y agrega su salida."
+        },
+        {
+          "concept": "Pedirle a Claude que corra un comando",
+          "difference": "Claude lo corre con la herramienta Bash bajo permisos y sandbox; `!` lo corre directo."
+        }
+      ],
+      "examCues": [
+        "run it yourself",
+        "add its output to the conversation",
+        "without Claude approving the command",
+        "no reply after the output",
+        "reference a file in the prompt"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/interactive-mode.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "interactive-input-prefixes--757ebd63",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [
+        "cmd-btw"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Your tests are failing and you want Claude to explain why. You want to run `npm test` yourself, have the output land in the conversation, and get Claude's explanation without writing a second prompt or waiting for Claude to decide to run it. What should you type?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`run npm test and explain the failures`",
+          "correct": false,
+          "why": "Claude decides whether and how to run it through the Bash tool; you aren't running it yourself."
+        },
+        {
+          "id": "B",
+          "text": "`/btw why do the tests fail?`",
+          "correct": false,
+          "why": "/btw has no tools, so nothing runs and no output is added."
+        },
+        {
+          "id": "C",
+          "text": "`@package.json`",
+          "correct": false,
+          "why": "@ mentions a file path; it doesn't run anything."
+        },
+        {
+          "id": "D",
+          "text": "`! npm test`",
+          "correct": true,
+          "why": "Shell mode runs it directly, adds the output to context, and Claude responds to it by default."
+        }
+      ],
+      "explanation": "The requirement is to run the command yourself and still get Claude's reaction in one step. The `!` prefix runs the command directly without Claude interpreting or approving it, adds its output to the conversation, and Claude responds to that output automatically. A plain prompt leaves the decision to Claude. /btw has no tool access, and @ only references a file.",
+      "keywordCues": [
+        "run `npm test` yourself",
+        "output land in the conversation",
+        "without writing a second prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "Tus tests fallan y quieres que Claude explique por qué. Quieres correr `npm test` tú mismo, que la salida quede en la conversación y recibir la explicación de Claude sin escribir un segundo prompt ni esperar a que Claude decida correrlo. ¿Qué escribes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`run npm test and explain the failures`",
+            "why": "Claude decide si lo corre y cómo, con la herramienta Bash; no lo corres tú."
+          },
+          {
+            "id": "B",
+            "text": "`/btw why do the tests fail?`",
+            "why": "/btw no tiene herramientas, así que nada corre ni se agrega salida."
+          },
+          {
+            "id": "C",
+            "text": "`@package.json`",
+            "why": "@ menciona una ruta de archivo; no corre nada."
+          },
+          {
+            "id": "D",
+            "text": "`! npm test`",
+            "why": "Shell mode lo corre directo, suma la salida al contexto y Claude responde por defecto."
+          }
+        ],
+        "explanation": "El requisito es correr el comando tú mismo y aun así obtener la reacción de Claude en un paso. El prefijo `!` corre el comando directo sin que Claude lo interprete ni apruebe, suma su salida a la conversación y Claude responde a esa salida automáticamente. Un prompt normal deja la decisión a Claude. /btw no tiene herramientas y @ solo referencia un archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-input-prefixes--dd965136",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer enabled sandboxing so that Bash commands can't reach the network. They then type `! curl https://internal.example.com/health` and it succeeds. Their session isn't in strict sandbox mode. What explains this?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`curl` is on their `permissions.allow` list.",
+          "correct": false,
+          "why": "Permission rules gate Claude's tool calls; they don't decide whether the sandbox applies."
+        },
+        {
+          "id": "B",
+          "text": "The sandbox applies to commands Claude runs, not to commands typed in shell mode.",
+          "correct": true,
+          "why": "Shell mode commands run outside the sandbox unless the session is in strict sandbox mode."
+        },
+        {
+          "id": "C",
+          "text": "`respondToBashCommands` is `true`, which disables the sandbox.",
+          "correct": false,
+          "why": "That setting only controls whether Claude replies to the output."
+        },
+        {
+          "id": "D",
+          "text": "The command was moved to the background, which runs outside the sandbox.",
+          "correct": false,
+          "why": "Nothing was backgrounded, and backgrounding doesn't define the sandbox boundary."
+        }
+      ],
+      "explanation": "The deciding fact is who runs the command. Commands you type in shell mode run outside the sandbox even when sandboxing is enabled, because the sandbox applies to the commands Claude runs; only strict sandbox mode sessions differ. Permission rules and `respondToBashCommands` don't change that boundary.",
+      "keywordCues": [
+        "enabled sandboxing",
+        "type `! curl",
+        "isn't in strict sandbox mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador activó el sandbox para que los comandos Bash no lleguen a la red. Luego escribe `! curl https://internal.example.com/health` y funciona. Su sesión no está en strict sandbox mode. ¿Qué lo explica?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`curl` está en su lista `permissions.allow`.",
+            "why": "Las reglas de permisos filtran las tool calls de Claude; no deciden si aplica el sandbox."
+          },
+          {
+            "id": "B",
+            "text": "El sandbox aplica a los comandos que corre Claude, no a los que escribes en shell mode.",
+            "why": "Los comandos de shell mode corren fuera del sandbox salvo en strict sandbox mode."
+          },
+          {
+            "id": "C",
+            "text": "`respondToBashCommands` es `true`, lo que desactiva el sandbox.",
+            "why": "Ese setting solo controla si Claude responde a la salida."
+          },
+          {
+            "id": "D",
+            "text": "El comando pasó a segundo plano, que corre fuera del sandbox.",
+            "why": "Nada pasó a segundo plano, y eso no define el límite del sandbox."
+          }
+        ],
+        "explanation": "El dato que decide es quién corre el comando. Los comandos que escribes en shell mode corren fuera del sandbox aunque esté activado, porque el sandbox aplica a los comandos que corre Claude; solo las sesiones en strict sandbox mode son distintas. Las reglas de permisos y `respondToBashCommands` no cambian ese límite."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-input-prefixes--42213730",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You often run `! git log -5`, `! git diff` and `! npm ls` in a row and then ask one question about all three. Claude currently replies after each command, which costs a full prompt each time. You want the outputs added to context with no reply, in every session.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `\"respondToBashCommands\": false` in `settings.json`.",
+          "correct": true,
+          "why": "Output is added to context without a reply, so you can ask about all three together."
+        },
+        {
+          "id": "B",
+          "text": "Run each command through /btw instead.",
+          "correct": false,
+          "why": "/btw has no tools and adds nothing to history, so the outputs never reach context."
+        },
+        {
+          "id": "C",
+          "text": "Queue the three `!` commands while Claude is working.",
+          "correct": false,
+          "why": "Queued shell commands still run after the turn and Claude still responds to each by default."
+        },
+        {
+          "id": "D",
+          "text": "Set `\"disableAllHooks\": true` in `settings.json`.",
+          "correct": false,
+          "why": "That turns off hooks; it doesn't change how Claude reacts to `!` output."
+        }
+      ],
+      "explanation": "The requirement is output in context but no automatic reply, persistently. By default Claude responds to shell mode output at the cost of a normal prompt; setting `respondToBashCommands` to `false` in `settings.json` adds the output without a reply, so several commands can be discussed together. /btw can't run commands and adds nothing to history. Queueing only changes when commands run, not whether Claude replies.",
+      "keywordCues": [
+        "added to context with no reply",
+        "in every session",
+        "ask one question about all three"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "Sueles correr `! git log -5`, `! git diff` y `! npm ls` seguidos y luego haces una sola pregunta sobre los tres. Hoy Claude responde después de cada comando, lo que cuesta un prompt completo cada vez. Quieres que las salidas se sumen al contexto sin respuesta, en todas las sesiones.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner `\"respondToBashCommands\": false` en `settings.json`.",
+            "why": "La salida entra al contexto sin respuesta, así que preguntas por los tres juntos."
+          },
+          {
+            "id": "B",
+            "text": "Correr cada comando con /btw.",
+            "why": "/btw no tiene herramientas y no agrega nada al historial, así que las salidas nunca llegan al contexto."
+          },
+          {
+            "id": "C",
+            "text": "Encolar los tres comandos `!` mientras Claude trabaja.",
+            "why": "Los comandos de shell en cola igual corren al final del turno y Claude responde a cada uno por defecto."
+          },
+          {
+            "id": "D",
+            "text": "Poner `\"disableAllHooks\": true` en `settings.json`.",
+            "why": "Eso apaga los hooks; no cambia cómo reacciona Claude a la salida de `!`."
+          }
+        ],
+        "explanation": "El requisito es salida en contexto sin respuesta automática, de forma persistente. Por defecto Claude responde a la salida de shell mode con el costo de un prompt normal; poner `respondToBashCommands` en `false` en `settings.json` agrega la salida sin respuesta, así que puedes discutir varios comandos juntos. /btw no corre comandos ni agrega nada al historial. Encolar solo cambia cuándo corren los comandos, no si Claude responde."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-input-prefixes--a4486328",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "You are writing a multi-line prompt over SSH in a terminal whose keyboard support you don't know, and you haven't configured anything. You need to insert newlines without submitting the prompt. Which two methods work in any terminal? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Shift+Enter",
+          "correct": false,
+          "why": "Native only in some terminals; others need configuration."
+        },
+        {
+          "id": "B",
+          "text": "`\\` followed by Enter",
+          "correct": true,
+          "why": "The quick escape works in all terminals."
+        },
+        {
+          "id": "C",
+          "text": "Option+Enter",
+          "correct": false,
+          "why": "Requires enabling Option as Meta on macOS."
+        },
+        {
+          "id": "D",
+          "text": "Ctrl+J",
+          "correct": true,
+          "why": "The control sequence works in any terminal without configuration."
+        },
+        {
+          "id": "E",
+          "text": "Ctrl+Enter",
+          "correct": false,
+          "why": "It sends queued messages, and may arrive as plain Enter."
+        }
+      ],
+      "explanation": "The deciding constraint is any terminal with no configuration. `\\` + Enter and `Ctrl+J` both work everywhere. Shift+Enter is native only in terminals such as iTerm2, WezTerm, Ghostty, Kitty or Windows Terminal, and Option+Enter needs Option as Meta. Ctrl+Enter is the send-queued-messages key, not a newline.",
+      "keywordCues": [
+        "terminal whose keyboard support you don't know",
+        "haven't configured anything",
+        "work in any terminal"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "Escribes un prompt de varias líneas por SSH en una terminal cuyo soporte de teclado no conoces, y no configuraste nada. Necesitas insertar saltos de línea sin enviar el prompt. ¿Qué dos métodos funcionan en cualquier terminal? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Shift+Enter",
+            "why": "Es nativo solo en algunas terminales; otras necesitan configuración."
+          },
+          {
+            "id": "B",
+            "text": "`\\` seguido de Enter",
+            "why": "El escape rápido funciona en todas las terminales."
+          },
+          {
+            "id": "C",
+            "text": "Option+Enter",
+            "why": "Requiere activar Option como Meta en macOS."
+          },
+          {
+            "id": "D",
+            "text": "Ctrl+J",
+            "why": "La secuencia de control funciona en cualquier terminal sin configurar."
+          },
+          {
+            "id": "E",
+            "text": "Ctrl+Enter",
+            "why": "Envía los mensajes en cola, y puede llegar como Enter normal."
+          }
+        ],
+        "explanation": "La restricción que decide es cualquier terminal sin configuración. `\\` + Enter y `Ctrl+J` funcionan en todas. Shift+Enter es nativo solo en terminales como iTerm2, WezTerm, Ghostty, Kitty o Windows Terminal, y Option+Enter necesita Option como Meta. Ctrl+Enter es la tecla para enviar la cola, no un salto de línea."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-input-prefixes--46004196",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which settings key, set to `false`, makes `!` shell commands add their output to context without Claude replying?",
+      "options": [
+        {
+          "id": "A",
+          "text": "respondToBashCommands",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`respondToBashCommands` controls whether Claude replies after a `!` command. It defaults to replying; `false` only adds the output to the conversation, so you can run several commands and ask about them together.",
+      "keywordCues": [
+        "set to `false`",
+        "without Claude replying"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de settings, puesta en `false`, hace que los comandos `!` sumen su salida al contexto sin que Claude responda?",
+        "options": [
+          {
+            "id": "A",
+            "text": "respondToBashCommands",
+            "why": ""
+          }
+        ],
+        "explanation": "`respondToBashCommands` controla si Claude responde después de un comando `!`. Por defecto responde; `false` solo agrega la salida a la conversación, así puedes correr varios comandos y preguntar por todos juntos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-input-prefixes--0cd2f5e6",
+      "conceptId": "interactive-input-prefixes",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "What do you type at the prompt to run `git status` yourself in shell mode, adding its output to the conversation?",
+      "options": [
+        {
+          "id": "A",
+          "text": "! git status",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "!git status",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Starting the input with `!` enters shell mode: the command runs directly without Claude approving it, and the command and its output are added to the conversation context.",
+      "keywordCues": [
+        "run `git status` yourself",
+        "shell mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md"
+      ],
+      "es": {
+        "stem": "¿Qué escribes en el prompt para correr `git status` tú mismo en shell mode y sumar su salida a la conversación?",
+        "options": [
+          {
+            "id": "A",
+            "text": "! git status",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "!git status",
+            "why": ""
+          }
+        ],
+        "explanation": "Empezar la entrada con `!` entra a shell mode: el comando corre directo sin que Claude lo apruebe, y el comando y su salida se suman al contexto de la conversación."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "interactive-input-prefixes--r0",
+      "conceptId": "interactive-input-prefixes",
+      "kind": "recall",
+      "prompt": "Describe what happens when you type `! npm test` at the prompt, and how to change what Claude does afterward.",
+      "promptEs": "Describe qué pasa cuando escribes `! npm test` en el prompt y cómo cambiar lo que Claude hace después.",
+      "idealAnswer": "The `!` prefix enters shell mode: the command runs directly without Claude interpreting or approving it, and the command and its output are added to the conversation. Claude then responds to the output automatically; setting `respondToBashCommands` to `false` only adds the output. It also runs outside the sandbox, since the sandbox covers commands Claude runs.",
+      "rubric": [
+        "Runs directly without Claude's approval",
+        "Output is added to the conversation context",
+        "Claude responds by default; respondToBashCommands false disables the reply",
+        "Runs outside the sandbox"
+      ]
+    },
+    {
+      "id": "interactive-input-prefixes--r1",
+      "conceptId": "interactive-input-prefixes",
+      "kind": "why-not",
+      "prompt": "You want the output of `git diff` in the conversation so Claude can review it. Why is /btw the wrong tool?",
+      "promptEs": "Quieres la salida de `git diff` en la conversación para que Claude la revise. ¿Por qué /btw es la herramienta equivocada?",
+      "idealAnswer": "/btw answers only from what is already in context and has no tool access, so it can't run `git diff`, and its question and answer never enter the conversation history. `! git diff` runs the command directly and adds its output to the conversation for Claude to review.",
+      "rubric": [
+        "/btw has no tools, so it can't run the command",
+        "/btw adds nothing to history",
+        "`!` runs it and adds the output to context"
+      ]
+    }
+  ]
+}

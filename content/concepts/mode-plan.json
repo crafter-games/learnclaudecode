@@ -1,0 +1,572 @@
+{
+  "conceptId": "mode-plan",
+  "card": {
+    "en": {
+      "tldr": "Plan mode has Claude read files, run exploratory commands and write a plan without editing your source. You review the plan and then choose how Claude proceeds. Use it when the risk is solving the wrong problem or changing an unfamiliar codebase too early.",
+      "whenToUse": [
+        "Exploring an unfamiliar codebase before changing it",
+        "Getting a proposal you can review and edit before any file changes",
+        "Making a project's terminal sessions start by planning",
+        "Planning a single request without switching modes for the whole session"
+      ],
+      "keyFacts": [
+        "Enter it with `Shift+Tab`, by prefixing one prompt with `/plan`, or with `claude --permission-mode plan`.",
+        "For a project default, set `\"permissions\": {\"defaultMode\": \"plan\"}` in `.claude/settings.json`; the VS Code extension ignores project settings and uses `claudeCode.initialPermissionMode` instead.",
+        "When the plan is ready you choose Yes, and use auto mode; Yes, manually approve edits; or No, keep planning.",
+        "`Ctrl+G` opens the proposed plan in your default text editor so you can edit it before Claude proceeds.",
+        "Approving a plan exits plan mode; press `Shift+Tab` again to leave without approving.",
+        "Without auto mode available, shell commands outside the built-in read-only set prompt during planning."
+      ],
+      "gotchas": [
+        "If auto mode isn't available, the first approve option reads Yes, auto-accept edits instead.",
+        "In an interactive terminal session with bypass permissions available, plan mode's blocks aren't enforced.",
+        "`/plan` covers one prompt; to plan again after approving, prefix the next prompt or cycle back with `Shift+Tab`.",
+        "A \"plan first\" line in CLAUDE.md only steers Claude; it doesn't block edits."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Manual mode (`default`)",
+          "difference": "Manual lets Claude edit after you approve each change; plan blocks edits until you approve a plan."
+        }
+      ],
+      "examCues": [
+        "explore before changing anything",
+        "propose a plan first",
+        "edit the plan before it runs",
+        "every session in this repo starts by planning",
+        "just this one request"
+      ]
+    },
+    "es": {
+      "tldr": "Plan mode hace que Claude lea archivos, corra comandos para explorar y escriba un plan sin editar tu código. Revisas el plan y luego eliges cómo sigue Claude. Úsalo cuando el riesgo es resolver el problema equivocado o cambiar demasiado pronto un código que no conoces.",
+      "whenToUse": [
+        "Explorar un código desconocido antes de cambiarlo",
+        "Obtener una propuesta que puedes revisar y editar antes de tocar archivos",
+        "Hacer que las sesiones de terminal de un proyecto empiecen planeando",
+        "Planear un solo pedido sin cambiar el modo de toda la sesión"
+      ],
+      "keyFacts": [
+        "Entras con `Shift+Tab`, anteponiendo `/plan` a un prompt o con `claude --permission-mode plan`.",
+        "Como default del proyecto, pon `\"permissions\": {\"defaultMode\": \"plan\"}` en `.claude/settings.json`; la extensión de VS Code ignora los settings del proyecto y usa `claudeCode.initialPermissionMode`.",
+        "Cuando el plan está listo eliges Yes, and use auto mode; Yes, manually approve edits; o No, keep planning.",
+        "`Ctrl+G` abre el plan propuesto en tu editor de texto para editarlo antes de que Claude siga.",
+        "Aprobar un plan sale de plan mode; presiona `Shift+Tab` otra vez para salir sin aprobar.",
+        "Sin auto mode disponible, los comandos de shell fuera del conjunto de solo lectura preguntan durante la planificación."
+      ],
+      "gotchas": [
+        "Si auto mode no está disponible, la primera opción de aprobar dice Yes, auto-accept edits.",
+        "En una sesión de terminal interactiva con bypass permissions disponible, los bloqueos de plan mode no se aplican.",
+        "`/plan` cubre un prompt; para volver a planear tras aprobar, antepónlo al siguiente prompt o vuelve con `Shift+Tab`.",
+        "Una línea \"planea primero\" en CLAUDE.md solo guía a Claude; no bloquea ediciones."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Modo Manual (`default`)",
+          "difference": "Manual deja que Claude edite tras aprobar cada cambio; plan bloquea las ediciones hasta que apruebas un plan."
+        }
+      ],
+      "examCues": [
+        "explore before changing anything",
+        "propose a plan first",
+        "edit the plan before it runs",
+        "every session in this repo starts by planning",
+        "just this one request"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permission-modes.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mode-plan--cca82b7a",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Mid-session in a terminal, a developer wants Claude to study the authentication module and propose how to split it before anything is edited. They want this for just this one request, without restarting the session or changing settings for other sessions. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add \"always plan before editing\" to the project's CLAUDE.md.",
+          "correct": false,
+          "why": "CLAUDE.md only steers Claude; it doesn't block edits, and it affects every session."
+        },
+        {
+          "id": "B",
+          "text": "Exit and relaunch with `claude --permission-mode plan`.",
+          "correct": false,
+          "why": "It works, but it requires restarting the session."
+        },
+        {
+          "id": "C",
+          "text": "Prefix the request with `/plan`.",
+          "correct": true,
+          "why": "Prefixing a single prompt with `/plan` enters plan mode for that request in the running session."
+        },
+        {
+          "id": "D",
+          "text": "Set `\"defaultMode\": \"plan\"` in `.claude/settings.json`.",
+          "correct": false,
+          "why": "That changes the starting mode for every terminal session in the project, not this one request."
+        }
+      ],
+      "explanation": "The requirement is plan mode for one request, in the running session, without touching settings. Prefixing a prompt with `/plan` does exactly that. Relaunching with `--permission-mode plan` needs a restart, and `defaultMode` in `.claude/settings.json` changes every session in the project. A CLAUDE.md instruction is guidance, not an enforced block.",
+      "keywordCues": [
+        "just this one request",
+        "without restarting the session",
+        "without changing settings"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "En plena sesión de terminal, un desarrollador quiere que Claude estudie el módulo de autenticación y proponga cómo dividirlo antes de editar nada. Lo quiere solo para este pedido, sin reiniciar la sesión ni cambiar settings de otras sesiones. ¿Qué debería hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar \"siempre planea antes de editar\" al CLAUDE.md del proyecto.",
+            "why": "CLAUDE.md solo guía a Claude; no bloquea ediciones y afecta a todas las sesiones."
+          },
+          {
+            "id": "B",
+            "text": "Salir y relanzar con `claude --permission-mode plan`.",
+            "why": "Funciona, pero exige reiniciar la sesión."
+          },
+          {
+            "id": "C",
+            "text": "Anteponer `/plan` al pedido.",
+            "why": "Anteponer `/plan` a un prompt entra en plan mode para ese pedido en la sesión en curso."
+          },
+          {
+            "id": "D",
+            "text": "Poner `\"defaultMode\": \"plan\"` en `.claude/settings.json`.",
+            "why": "Eso cambia el modo inicial de todas las sesiones de terminal del proyecto, no de este pedido."
+          }
+        ],
+        "explanation": "El requisito es plan mode para un pedido, en la sesión en curso, sin tocar settings. Anteponer `/plan` a un prompt hace justo eso. Relanzar con `--permission-mode plan` requiere reiniciar y `defaultMode` en `.claude/settings.json` cambia todas las sesiones del proyecto. Una instrucción en CLAUDE.md es una guía, no un bloqueo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-plan--8e944f13",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A tech lead wants every terminal session that anyone starts in the team's repository to begin in plan mode, so Claude always explores and proposes before editing. The setting must apply to everyone who clones the repo. Where should it go?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` in the project's `.claude/settings.json`",
+          "correct": true,
+          "why": "Project settings are committed with the repo, and terminal sessions honor `plan` from them."
+        },
+        {
+          "id": "B",
+          "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` in each developer's `~/.claude/settings.json`",
+          "correct": false,
+          "why": "User settings apply only on that machine and aren't shared through the repo."
+        },
+        {
+          "id": "C",
+          "text": "`claudeCode.initialPermissionMode` set to `plan`",
+          "correct": false,
+          "why": "It's a VS Code user setting, so it covers neither terminal sessions nor other developers."
+        },
+        {
+          "id": "D",
+          "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` in `.claude/settings.local.json`",
+          "correct": false,
+          "why": "Local settings are personal and not shared with people who clone the repo."
+        }
+      ],
+      "explanation": "The requirement is a starting mode shared by everyone who clones the repo. Setting `defaultMode` to `plan` in the project's `.claude/settings.json` does that, because terminal sessions honor every value except `auto` and `bypassPermissions` from project settings. User and local settings stay on one machine, and `claudeCode.initialPermissionMode` is a per-user VS Code setting.",
+      "keywordCues": [
+        "every terminal session that anyone starts",
+        "apply to everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un tech lead quiere que toda sesión de terminal que cualquiera inicie en el repositorio del equipo arranque en plan mode, para que Claude siempre explore y proponga antes de editar. El setting debe aplicar a todos los que clonen el repo. ¿Dónde debería ir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` en el `.claude/settings.json` del proyecto",
+            "why": "Los settings del proyecto se commitean con el repo y las sesiones de terminal respetan `plan` desde ahí."
+          },
+          {
+            "id": "B",
+            "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` en el `~/.claude/settings.json` de cada desarrollador",
+            "why": "Los settings de usuario aplican solo en esa máquina y no se comparten por el repo."
+          },
+          {
+            "id": "C",
+            "text": "`claudeCode.initialPermissionMode` en `plan`",
+            "why": "Es un setting de usuario de VS Code, así que no cubre sesiones de terminal ni a otros desarrolladores."
+          },
+          {
+            "id": "D",
+            "text": "`\"permissions\": {\"defaultMode\": \"plan\"}` en `.claude/settings.local.json`",
+            "why": "Los settings locales son personales y no se comparten con quienes clonan el repo."
+          }
+        ],
+        "explanation": "El requisito es un modo inicial compartido por todos los que clonan el repo. Poner `defaultMode` en `plan` en el `.claude/settings.json` del proyecto lo logra, porque las sesiones de terminal respetan desde los settings del proyecto todos los valores salvo `auto` y `bypassPermissions`. Los settings de usuario y locales se quedan en una máquina, y `claudeCode.initialPermissionMode` es un setting de VS Code por usuario."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-plan--1df96589",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Claude has presented a plan for a database migration. The developer agrees with most of it but wants to rewrite step 3 themselves, directly in the plan text, before Claude starts editing. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Choose \"No, keep planning\" and describe the change.",
+          "correct": false,
+          "why": "That asks Claude to revise the plan; the developer doesn't edit the text directly."
+        },
+        {
+          "id": "B",
+          "text": "Press `Ctrl+G` to open the plan in their text editor.",
+          "correct": true,
+          "why": "`Ctrl+G` opens the proposed plan in the default text editor for direct editing before Claude proceeds."
+        },
+        {
+          "id": "C",
+          "text": "Choose \"Yes, manually approve edits\" and fix step 3 later.",
+          "correct": false,
+          "why": "Claude would start editing with the unchanged plan."
+        },
+        {
+          "id": "D",
+          "text": "Press `Shift+Tab` to leave plan mode.",
+          "correct": false,
+          "why": "It leaves plan mode without approving and doesn't let them edit the plan."
+        }
+      ],
+      "explanation": "The requirement is to edit the plan text directly before any change is made. `Ctrl+G` opens the proposed plan in the default text editor so the developer can rewrite it before Claude proceeds. \"No, keep planning\" relies on Claude to rewrite it, and approving first means Claude works from the unedited plan. `Shift+Tab` just exits plan mode.",
+      "keywordCues": [
+        "rewrite step 3 themselves",
+        "directly in the plan text",
+        "before Claude starts editing"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Claude presentó un plan para una migración de base de datos. El desarrollador está de acuerdo con casi todo, pero quiere reescribir él mismo el paso 3, directamente en el texto del plan, antes de que Claude empiece a editar. ¿Qué debería hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Elegir \"No, keep planning\" y describir el cambio.",
+            "why": "Eso le pide a Claude que revise el plan; el desarrollador no edita el texto directamente."
+          },
+          {
+            "id": "B",
+            "text": "Presionar `Ctrl+G` para abrir el plan en su editor de texto.",
+            "why": "`Ctrl+G` abre el plan propuesto en el editor de texto por defecto para editarlo directamente antes de que Claude siga."
+          },
+          {
+            "id": "C",
+            "text": "Elegir \"Yes, manually approve edits\" y corregir el paso 3 después.",
+            "why": "Claude empezaría a editar con el plan sin cambios."
+          },
+          {
+            "id": "D",
+            "text": "Presionar `Shift+Tab` para salir de plan mode.",
+            "why": "Sale de plan mode sin aprobar y no le permite editar el plan."
+          }
+        ],
+        "explanation": "El requisito es editar el texto del plan directamente antes de cualquier cambio. `Ctrl+G` abre el plan propuesto en el editor de texto por defecto para que el desarrollador lo reescriba antes de que Claude siga. \"No, keep planning\" depende de que Claude lo reescriba, y aprobar primero hace que Claude trabaje con el plan sin editar. `Shift+Tab` solo sale de plan mode."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-plan--0ae387ab",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Your organization sets `permissions.disableAutoMode` to `\"disable\"` in managed settings, and bypass permissions are not enabled. You start `claude --permission-mode plan` in a terminal and ask Claude to investigate a flaky build. Which two statements are true? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "If Claude tries to run `npm run build` while planning, you are prompted to approve it.",
+          "correct": true,
+          "why": "Without auto mode, commands outside the built-in read-only set prompt during planning."
+        },
+        {
+          "id": "B",
+          "text": "Claude can run `grep` and `ls` while planning without a prompt.",
+          "correct": true,
+          "why": "Built-in read-only commands run without a prompt in every mode."
+        },
+        {
+          "id": "C",
+          "text": "The first approve option reads \"Yes, and use auto mode\".",
+          "correct": false,
+          "why": "When auto mode isn't available, that option reads \"Yes, auto-accept edits\"."
+        },
+        {
+          "id": "D",
+          "text": "Claude may edit source files during planning if you approve each edit.",
+          "correct": false,
+          "why": "Edits stay blocked until you approve the plan."
+        },
+        {
+          "id": "E",
+          "text": "Approving the plan keeps the session in plan mode for the next request.",
+          "correct": false,
+          "why": "Approving exits plan mode and switches to the mode the chosen option describes."
+        }
+      ],
+      "explanation": "With auto mode turned off and no bypass, plan mode prompts for shell commands outside the built-in read-only set, so `npm run build` asks you, while `grep` and `ls` run freely. Edits stay blocked until you approve a plan. Because auto mode isn't available, the first approve option reads \"Yes, auto-accept edits\", and approving any option exits plan mode.",
+      "keywordCues": [
+        "`permissions.disableAutoMode`",
+        "bypass permissions are not enabled",
+        "`claude --permission-mode plan`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Tu organización pone `permissions.disableAutoMode` en `\"disable\"` en managed settings, y bypass permissions no está habilitado. Inicias `claude --permission-mode plan` en una terminal y le pides a Claude investigar un build inestable. ¿Cuáles dos afirmaciones son verdaderas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Si Claude intenta correr `npm run build` mientras planea, te pide aprobarlo.",
+            "why": "Sin auto mode, los comandos fuera del conjunto de solo lectura incorporado preguntan durante la planificación."
+          },
+          {
+            "id": "B",
+            "text": "Claude puede correr `grep` y `ls` mientras planea sin preguntar.",
+            "why": "Los comandos de solo lectura incorporados corren sin preguntar en todos los modos."
+          },
+          {
+            "id": "C",
+            "text": "La primera opción de aprobar dice \"Yes, and use auto mode\".",
+            "why": "Cuando auto mode no está disponible, esa opción dice \"Yes, auto-accept edits\"."
+          },
+          {
+            "id": "D",
+            "text": "Claude puede editar código durante la planificación si apruebas cada edición.",
+            "why": "Las ediciones siguen bloqueadas hasta que apruebas el plan."
+          },
+          {
+            "id": "E",
+            "text": "Aprobar el plan deja la sesión en plan mode para el siguiente pedido.",
+            "why": "Aprobar sale de plan mode y cambia al modo que describe la opción elegida."
+          }
+        ],
+        "explanation": "Con auto mode apagado y sin bypass, plan mode pregunta por los comandos de shell fuera del conjunto de solo lectura incorporado, así que `npm run build` te pregunta, mientras `grep` y `ls` corren libres. Las ediciones siguen bloqueadas hasta que apruebas un plan. Como auto mode no está disponible, la primera opción de aprobar dice \"Yes, auto-accept edits\", y aprobar cualquier opción sale de plan mode."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-plan--03a8491a",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "In a running session, what do you type at the start of a single prompt so Claude plans that request without editing?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/plan",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Prefixing a single prompt with `/plan` enters plan mode for that request. After you approve a plan, prefix your next prompt with `/plan` again to plan once more.",
+      "keywordCues": [
+        "at the start of a single prompt",
+        "plans that request"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "En una sesión en curso, ¿qué escribes al inicio de un solo prompt para que Claude planee ese pedido sin editar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/plan",
+            "why": ""
+          }
+        ],
+        "explanation": "Anteponer `/plan` a un prompt entra en plan mode para ese pedido. Tras aprobar un plan, antepón `/plan` al siguiente prompt para volver a planear."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mode-plan--59697ba6",
+      "conceptId": "mode-plan",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Complete the project's `.claude/settings.json` so every terminal session started in this repository begins in plan mode.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "initialPermissionMode",
+          "correct": false,
+          "why": "That name belongs to the VS Code setting `claudeCode.initialPermissionMode`, not to `permissions` in settings.json."
+        },
+        {
+          "id": "1b",
+          "text": "defaultMode",
+          "correct": true,
+          "why": "`permissions.defaultMode` sets the mode sessions start in."
+        },
+        {
+          "id": "1c",
+          "text": "mode",
+          "correct": false,
+          "why": "There is no `permissions.mode` key."
+        },
+        {
+          "id": "2a",
+          "text": "acceptEdits",
+          "correct": false,
+          "why": "Sessions would start auto-approving edits instead of planning."
+        },
+        {
+          "id": "2b",
+          "text": "default",
+          "correct": false,
+          "why": "Sessions would start in Manual mode, not plan mode."
+        },
+        {
+          "id": "2c",
+          "text": "plan",
+          "correct": true,
+          "why": "`plan` makes Claude explore and propose before editing."
+        }
+      ],
+      "explanation": "The starting mode is set with `permissions.defaultMode`, and the value `plan` makes sessions begin in plan mode. Placed in the project's `.claude/settings.json`, it applies to terminal sessions started in the repository. `initialPermissionMode` is part of the VS Code extension's own setting, not a `permissions` key.",
+      "keywordCues": [
+        "`.claude/settings.json`",
+        "begins in plan mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Completa el `.claude/settings.json` del proyecto para que toda sesión de terminal iniciada en este repositorio arranque en plan mode.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "initialPermissionMode",
+            "why": "Ese nombre pertenece al setting de VS Code `claudeCode.initialPermissionMode`, no a `permissions` en settings.json."
+          },
+          {
+            "id": "1b",
+            "text": "defaultMode",
+            "why": "`permissions.defaultMode` fija el modo en que arrancan las sesiones."
+          },
+          {
+            "id": "1c",
+            "text": "mode",
+            "why": "No existe la clave `permissions.mode`."
+          },
+          {
+            "id": "2a",
+            "text": "acceptEdits",
+            "why": "Las sesiones arrancarían autoaprobando ediciones en vez de planear."
+          },
+          {
+            "id": "2b",
+            "text": "default",
+            "why": "Las sesiones arrancarían en modo Manual, no en plan mode."
+          },
+          {
+            "id": "2c",
+            "text": "plan",
+            "why": "`plan` hace que Claude explore y proponga antes de editar."
+          }
+        ],
+        "explanation": "El modo inicial se fija con `permissions.defaultMode`, y el valor `plan` hace que las sesiones arranquen en plan mode. En el `.claude/settings.json` del proyecto aplica a las sesiones de terminal iniciadas en el repositorio. `initialPermissionMode` es parte del setting propio de la extensión de VS Code, no una clave de `permissions`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": \"{{2}}\"\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mode-plan--r0",
+      "conceptId": "mode-plan",
+      "kind": "recall",
+      "prompt": "Describe what Claude can and can't do in plan mode, how you enter it, and your choices when the plan is ready.",
+      "promptEs": "Describe qué puede y no puede hacer Claude en plan mode, cómo entras y qué opciones tienes cuando el plan está listo.",
+      "idealAnswer": "In plan mode Claude reads files, runs exploratory commands and writes a plan, but doesn't edit your source until you approve. You enter it with Shift+Tab, a `/plan` prefix on one prompt, `--permission-mode plan`, or `defaultMode: \"plan\"` in settings. When the plan is ready you choose Yes, and use auto mode; Yes, manually approve edits; or No, keep planning, and `Ctrl+G` lets you edit the plan first.",
+      "rubric": [
+        "Reads and explores but doesn't edit source",
+        "At least two ways to enter: Shift+Tab, /plan, --permission-mode plan, defaultMode",
+        "The approve options: auto mode, manually approve edits, keep planning",
+        "Ctrl+G edits the plan before approving"
+      ]
+    }
+  ]
+}

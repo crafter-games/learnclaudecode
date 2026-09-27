@@ -1,0 +1,508 @@
+{
+  "conceptId": "auth-precedence",
+  "card": {
+    "en": {
+      "tldr": "When several credentials are present, Claude Code uses the highest one: cloud provider, then `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_API_KEY`, `apiKeyHelper`, `CLAUDE_CODE_OAUTH_TOKEN`, Anthropic profiles, and finally your `/login` subscription. This decides why a leftover key overrides your plan and how to authenticate CI without a browser.",
+      "whenToUse": [
+        "Your subscription stops working after an old API key reappears",
+        "Authenticating CI or scripts where browser login isn't available",
+        "Routing requests through an LLM gateway or proxy",
+        "Checking which credential a session is actually using"
+      ],
+      "keyFacts": [
+        "Order: cloud provider (`CLAUDE_CODE_USE_BEDROCK`, `_VERTEX`, `_FOUNDRY`) > `ANTHROPIC_AUTH_TOKEN` > `ANTHROPIC_API_KEY` > `apiKeyHelper` > `CLAUDE_CODE_OAUTH_TOKEN` > Anthropic profiles and federation credentials > `/login` subscription (an active `ant auth login` profile not named in `ANTHROPIC_PROFILE` ranks below a working `/login`).",
+        "`ANTHROPIC_AUTH_TOKEN` is sent as `Authorization: Bearer`; `ANTHROPIC_API_KEY` as `X-Api-Key`.",
+        "In interactive mode you approve `ANTHROPIC_API_KEY` once; with `-p` it is always used when present.",
+        "`claude setup-token` prints a one-year OAuth token and doesn't save it; export it as `CLAUDE_CODE_OAUTH_TOKEN`.",
+        "`/status` shows the active method and marks the credential that isn't in use."
+      ],
+      "gotchas": [
+        "An approved `ANTHROPIC_API_KEY` beats your subscription even while you are logged in with `/login`; unset it to fall back.",
+        "Bare mode (`--bare`) doesn't read `CLAUDE_CODE_OAUTH_TOKEN`; use `ANTHROPIC_API_KEY` or `apiKeyHelper` there.",
+        "The setup-token token can only make model requests: no Remote Control or claude.ai connectors.",
+        "Cloud sessions always use your subscription, even if you set `ANTHROPIC_API_KEY` there."
+      ],
+      "confusedWith": [
+        {
+          "concept": "ANTHROPIC_BASE_URL",
+          "difference": "Changes the endpoint requests go to; it isn't a credential."
+        }
+      ],
+      "examCues": [
+        "an old API key in the shell profile",
+        "This organization has been disabled",
+        "CI where browser login isn't available",
+        "gateway that authenticates with bearer tokens",
+        "which method is active"
+      ]
+    },
+    "es": {
+      "tldr": "Cuando hay varias credenciales, Claude Code usa la más alta: proveedor cloud, luego `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_API_KEY`, `apiKeyHelper`, `CLAUDE_CODE_OAUTH_TOKEN`, perfiles de Anthropic y al final tu suscripción de `/login`. Esto explica por qué una key olvidada le gana a tu plan y cómo autenticar CI sin navegador.",
+      "whenToUse": [
+        "Tu suscripción deja de funcionar porque reaparece una API key vieja",
+        "Autenticar CI o scripts donde no hay login por navegador",
+        "Enrutar requests por un LLM gateway o proxy",
+        "Revisar qué credencial usa realmente una sesión"
+      ],
+      "keyFacts": [
+        "Orden: proveedor cloud (`CLAUDE_CODE_USE_BEDROCK`, `_VERTEX`, `_FOUNDRY`) > `ANTHROPIC_AUTH_TOKEN` > `ANTHROPIC_API_KEY` > `apiKeyHelper` > `CLAUDE_CODE_OAUTH_TOKEN` > perfiles de Anthropic y credenciales de federación > suscripción de `/login` (un perfil activo de `ant auth login` no nombrado en `ANTHROPIC_PROFILE` queda debajo de un `/login` que funcione).",
+        "`ANTHROPIC_AUTH_TOKEN` se envía como `Authorization: Bearer`; `ANTHROPIC_API_KEY` como `X-Api-Key`.",
+        "En modo interactivo apruebas `ANTHROPIC_API_KEY` una vez; con `-p` se usa siempre que exista.",
+        "`claude setup-token` imprime un token OAuth de un año y no lo guarda; expórtalo como `CLAUDE_CODE_OAUTH_TOKEN`.",
+        "`/status` muestra el método activo y marca la credencial que no está en uso."
+      ],
+      "gotchas": [
+        "Una `ANTHROPIC_API_KEY` aprobada le gana a tu suscripción aunque hayas iniciado sesión con `/login`; haz unset para volver a ella.",
+        "El modo bare (`--bare`) no lee `CLAUDE_CODE_OAUTH_TOKEN`; ahí usa `ANTHROPIC_API_KEY` o `apiKeyHelper`.",
+        "El token de setup-token solo hace requests al modelo: nada de Remote Control ni conectores de claude.ai.",
+        "Las sesiones en la nube siempre usan tu suscripción, aunque pongas `ANTHROPIC_API_KEY` ahí."
+      ],
+      "confusedWith": [
+        {
+          "concept": "ANTHROPIC_BASE_URL",
+          "difference": "Cambia el endpoint al que van las requests; no es una credencial."
+        }
+      ],
+      "examCues": [
+        "an old API key in the shell profile",
+        "This organization has been disabled",
+        "CI where browser login isn't available",
+        "gateway that authenticates with bearer tokens",
+        "which method is active"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/authentication.md",
+      "https://code.claude.com/docs/en/troubleshoot-install.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "auth-precedence--e57ad34f",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer with an active Max subscription gets `This organization has been disabled` on every request. Months ago she approved an `ANTHROPIC_API_KEY` from a previous employer that is still exported in her `~/.zshrc`. She wants Claude Code to use her subscription, permanently, in every new terminal.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/login` again with her Max account",
+          "correct": false,
+          "why": "The approved API key still ranks above the `/login` subscription."
+        },
+        {
+          "id": "B",
+          "text": "Export a `claude setup-token` token as `CLAUDE_CODE_OAUTH_TOKEN`",
+          "correct": false,
+          "why": "`ANTHROPIC_API_KEY` ranks above `CLAUDE_CODE_OAUTH_TOKEN`, so the old key still wins."
+        },
+        {
+          "id": "C",
+          "text": "Remove the export from `~/.zshrc`, unset the variable, then check `/status`",
+          "correct": true,
+          "why": "With the key gone, Claude Code falls back to the subscription, and `/status` confirms it."
+        },
+        {
+          "id": "D",
+          "text": "Add an `apiKeyHelper` that prints her subscription email",
+          "correct": false,
+          "why": "`apiKeyHelper` ranks below `ANTHROPIC_API_KEY` and must return an API key."
+        }
+      ],
+      "explanation": "An approved `ANTHROPIC_API_KEY` outranks subscription OAuth credentials, so a key from a disabled organization breaks every request. The fix is to unset the variable and remove it from the shell profile so new terminals don't bring it back, then confirm with `/status`. Logging in again or adding a lower-ranked credential doesn't help because the key still wins.",
+      "keywordCues": [
+        "active Max subscription",
+        "still exported in her `~/.zshrc`",
+        "permanently, in every new terminal"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora con suscripción Max activa recibe `This organization has been disabled` en cada request. Hace meses aprobó una `ANTHROPIC_API_KEY` de un empleador anterior que sigue exportada en su `~/.zshrc`. Quiere que Claude Code use su suscripción, de forma permanente, en cada terminal nueva.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/login` otra vez con su cuenta Max",
+            "why": "La API key aprobada sigue por encima de la suscripción de `/login`."
+          },
+          {
+            "id": "B",
+            "text": "Exportar un token de `claude setup-token` como `CLAUDE_CODE_OAUTH_TOKEN`",
+            "why": "`ANTHROPIC_API_KEY` está por encima de `CLAUDE_CODE_OAUTH_TOKEN`, así que la key vieja sigue ganando."
+          },
+          {
+            "id": "C",
+            "text": "Quitar el export de `~/.zshrc`, hacer unset y revisar `/status`",
+            "why": "Sin la key, Claude Code vuelve a la suscripción, y `/status` lo confirma."
+          },
+          {
+            "id": "D",
+            "text": "Agregar un `apiKeyHelper` que imprima el email de su suscripción",
+            "why": "`apiKeyHelper` está debajo de `ANTHROPIC_API_KEY` y debe devolver una API key."
+          }
+        ],
+        "explanation": "Una `ANTHROPIC_API_KEY` aprobada está por encima de las credenciales OAuth de la suscripción, así que una key de una organización deshabilitada rompe cada request. La solución es hacer unset y quitarla del perfil de shell para que las terminales nuevas no la traigan, y confirmar con `/status`. Volver a hacer login o agregar una credencial de menor rango no sirve porque la key sigue ganando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auth-precedence--e5a38a3c",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team wants a CI job to run Claude Code on a headless runner where browser login isn't available. Usage must be billed to a teammate's Max subscription, not to Console API credits, with the least setup.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Create a Console API key and store it as `ANTHROPIC_API_KEY`",
+          "correct": false,
+          "why": "It authenticates against the Console, not the subscription."
+        },
+        {
+          "id": "B",
+          "text": "Run `/login` on the runner during each job",
+          "correct": false,
+          "why": "It needs an interactive browser authorization, which the runner lacks."
+        },
+        {
+          "id": "C",
+          "text": "Put the subscription token in `ANTHROPIC_AUTH_TOKEN`",
+          "correct": false,
+          "why": "That variable is a bearer token for LLM gateways or proxies."
+        },
+        {
+          "id": "D",
+          "text": "Run `claude setup-token` locally and store it as `CLAUDE_CODE_OAUTH_TOKEN`",
+          "correct": true,
+          "why": "It mints a one-year subscription token meant for CI where browser login isn't available."
+        }
+      ],
+      "explanation": "The requirements are no browser on the runner and billing to the subscription. `claude setup-token` runs the browser flow once on a local machine and prints a one-year OAuth token tied to the subscription, which the job reads from `CLAUDE_CODE_OAUTH_TOKEN`. A Console API key would bill API usage instead. `ANTHROPIC_AUTH_TOKEN` is for gateways that expect bearer tokens.",
+      "keywordCues": [
+        "browser login isn't available",
+        "billed to a teammate's Max subscription"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que un job de CI corra Claude Code en un runner headless sin login por navegador. El uso debe cobrarse a la suscripción Max de un compañero, no a créditos de API de Console, con la menor configuración.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Crear una API key de Console y guardarla como `ANTHROPIC_API_KEY`",
+            "why": "Autentica contra Console, no contra la suscripción."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/login` en el runner en cada job",
+            "why": "Necesita una autorización interactiva por navegador, que el runner no tiene."
+          },
+          {
+            "id": "C",
+            "text": "Poner el token de la suscripción en `ANTHROPIC_AUTH_TOKEN`",
+            "why": "Esa variable es un bearer token para LLM gateways o proxies."
+          },
+          {
+            "id": "D",
+            "text": "Correr `claude setup-token` localmente y guardarlo como `CLAUDE_CODE_OAUTH_TOKEN`",
+            "why": "Genera un token de suscripción de un año pensado para CI sin login por navegador."
+          }
+        ],
+        "explanation": "Los requisitos son un runner sin navegador y cobro a la suscripción. `claude setup-token` hace el flujo de navegador una vez en una máquina local e imprime un token OAuth de un año ligado a la suscripción, que el job lee de `CLAUDE_CODE_OAUTH_TOKEN`. Una API key de Console cobraría uso de API. `ANTHROPIC_AUTH_TOKEN` es para gateways que esperan bearer tokens."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auth-precedence--44ca930c",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A CI job runs `claude -p` with `CLAUDE_CODE_OAUTH_TOKEN` set from a secret. Requests fail because the runner image also exports a stale `ANTHROPIC_API_KEY`. The job must authenticate with the subscription token, deterministically, every run.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Remove `ANTHROPIC_API_KEY` from the job's environment",
+          "correct": true,
+          "why": "With the higher-ranked key gone, `CLAUDE_CODE_OAUTH_TOKEN` is the credential used."
+        },
+        {
+          "id": "B",
+          "text": "Add `--bare` to the `claude -p` command",
+          "correct": false,
+          "why": "Bare mode doesn't read `CLAUDE_CODE_OAUTH_TOKEN` at all."
+        },
+        {
+          "id": "C",
+          "text": "Decline the API key in the approval prompt",
+          "correct": false,
+          "why": "With `-p` there is no prompt; the key is always used when present."
+        },
+        {
+          "id": "D",
+          "text": "Regenerate the token with `claude setup-token`",
+          "correct": false,
+          "why": "A new token still ranks below `ANTHROPIC_API_KEY`."
+        }
+      ],
+      "explanation": "`ANTHROPIC_API_KEY` ranks above `CLAUDE_CODE_OAUTH_TOKEN`, and in non-interactive mode it is always used when present. The only way to make the token win is to take the key out of the job's environment. Declining is only possible in interactive mode, and `--bare` makes it worse because bare mode ignores the OAuth token.",
+      "keywordCues": [
+        "`claude -p`",
+        "also exports a stale `ANTHROPIC_API_KEY`",
+        "deterministically, every run"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Un job de CI corre `claude -p` con `CLAUDE_CODE_OAUTH_TOKEN` tomado de un secret. Las requests fallan porque la imagen del runner también exporta una `ANTHROPIC_API_KEY` vieja. El job debe autenticarse con el token de la suscripción, de forma determinista, en cada corrida.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Quitar `ANTHROPIC_API_KEY` del entorno del job",
+            "why": "Sin la key de mayor rango, `CLAUDE_CODE_OAUTH_TOKEN` es la credencial usada."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `--bare` al comando `claude -p`",
+            "why": "El modo bare no lee `CLAUDE_CODE_OAUTH_TOKEN`."
+          },
+          {
+            "id": "C",
+            "text": "Rechazar la API key en el prompt de aprobación",
+            "why": "Con `-p` no hay prompt; la key se usa siempre que exista."
+          },
+          {
+            "id": "D",
+            "text": "Regenerar el token con `claude setup-token`",
+            "why": "Un token nuevo sigue por debajo de `ANTHROPIC_API_KEY`."
+          }
+        ],
+        "explanation": "`ANTHROPIC_API_KEY` está por encima de `CLAUDE_CODE_OAUTH_TOKEN`, y en modo no interactivo se usa siempre que exista. La única forma de que gane el token es sacar la key del entorno del job. Rechazarla solo es posible en modo interactivo, y `--bare` lo empeora porque el modo bare ignora el token OAuth."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auth-precedence--b5594f1a",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command runs the browser authorization once and prints a one-year OAuth token for use in CI?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude setup-token",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude setup-token` opens the same browser flow as `/login` and prints the token after you approve access. It doesn't save the token anywhere. You copy it and set it as `CLAUDE_CODE_OAUTH_TOKEN` wherever you want to authenticate.",
+      "keywordCues": [
+        "one-year OAuth token",
+        "for use in CI"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando hace la autorización por navegador una vez e imprime un token OAuth de un año para usar en CI?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude setup-token",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude setup-token` abre el mismo flujo de navegador que `/login` e imprime el token cuando apruebas el acceso. No lo guarda en ningún lado. Lo copias y lo pones como `CLAUDE_CODE_OAUTH_TOKEN` donde quieras autenticarte."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auth-precedence--cd4e9859",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable should hold the token printed by `claude setup-token` so Claude Code uses it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_OAUTH_TOKEN",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`CLAUDE_CODE_OAUTH_TOKEN` holds the long-lived OAuth token from `claude setup-token`. It ranks below `ANTHROPIC_API_KEY` and `apiKeyHelper` but above `/login` credentials. Bare mode doesn't read it.",
+      "keywordCues": [
+        "token printed by `claude setup-token`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno debe guardar el token que imprime `claude setup-token` para que Claude Code lo use?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CODE_OAUTH_TOKEN",
+            "why": ""
+          }
+        ],
+        "explanation": "`CLAUDE_CODE_OAUTH_TOKEN` guarda el token OAuth de larga duración de `claude setup-token`. Está por debajo de `ANTHROPIC_API_KEY` y `apiKeyHelper`, pero por encima de las credenciales de `/login`. El modo bare no la lee."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auth-precedence--877f02c1",
+      "conceptId": "auth-precedence",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Several credentials are present. Order these sources as Claude Code picks them, from highest to lowest precedence.",
+      "options": [
+        {
+          "id": "A",
+          "text": "`ANTHROPIC_API_KEY`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Subscription OAuth credentials from `/login`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Cloud provider credentials (`CLAUDE_CODE_USE_BEDROCK` set)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`CLAUDE_CODE_OAUTH_TOKEN`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "E",
+          "text": "`ANTHROPIC_AUTH_TOKEN`",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Cloud provider credentials come first when a variable like `CLAUDE_CODE_USE_BEDROCK` is set. Next is the `ANTHROPIC_AUTH_TOKEN` bearer token, then `ANTHROPIC_API_KEY`. `CLAUDE_CODE_OAUTH_TOKEN` comes after `apiKeyHelper`, and `/login` subscription credentials are last, which is why any of the others overrides your plan.",
+      "keywordCues": [
+        "from highest to lowest precedence"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/authentication.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Hay varias credenciales. Ordena estas fuentes como Claude Code las elige, de mayor a menor precedencia.",
+        "options": [
+          {
+            "id": "A",
+            "text": "`ANTHROPIC_API_KEY`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Credenciales OAuth de la suscripción de `/login`",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Credenciales de proveedor cloud (`CLAUDE_CODE_USE_BEDROCK` definido)",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`CLAUDE_CODE_OAUTH_TOKEN`",
+            "why": ""
+          },
+          {
+            "id": "E",
+            "text": "`ANTHROPIC_AUTH_TOKEN`",
+            "why": ""
+          }
+        ],
+        "explanation": "Las credenciales de proveedor cloud van primero cuando hay una variable como `CLAUDE_CODE_USE_BEDROCK`. Sigue el bearer token `ANTHROPIC_AUTH_TOKEN` y luego `ANTHROPIC_API_KEY`. `CLAUDE_CODE_OAUTH_TOKEN` va después de `apiKeyHelper`, y la suscripción de `/login` va al final, por eso cualquiera de las otras le gana a tu plan."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "C",
+        "E",
+        "A",
+        "D",
+        "B"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "auth-precedence--r0",
+      "conceptId": "auth-precedence",
+      "kind": "recall",
+      "prompt": "You have a Pro subscription but also an ANTHROPIC_API_KEY in your shell. Explain which credential Claude Code uses and how to confirm and fix it.",
+      "promptEs": "Tienes suscripción Pro pero también una ANTHROPIC_API_KEY en tu shell. Explica qué credencial usa Claude Code y cómo confirmarlo y arreglarlo.",
+      "idealAnswer": "Once you approve it, the API key wins because ANTHROPIC_API_KEY ranks above the /login subscription credentials, and with -p it is always used. To go back to the subscription, unset the variable and remove it from your shell profile, then check /status to confirm the active method.",
+      "rubric": [
+        "The approved API key outranks the subscription",
+        "With -p the key is always used",
+        "Unset it and remove it from the shell profile",
+        "Confirm with /status"
+      ]
+    }
+  ]
+}

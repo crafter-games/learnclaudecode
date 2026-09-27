@@ -1,0 +1,358 @@
+{
+  "unitId": "u-debug",
+  "audited": true,
+  "overview": {
+    "title": "Diagnosticar la configuración",
+    "hook": "Averiguar por qué algo que configuraste no surte efecto, sin adivinar.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "files",
+          "label": "Tus archivos",
+          "kind": "data",
+          "x": 30,
+          "y": 15
+        },
+        {
+          "id": "context",
+          "label": "/context",
+          "kind": "service",
+          "x": 32,
+          "y": 70
+        },
+        {
+          "id": "detail",
+          "label": "/hooks, /mcp, etc.",
+          "kind": "service",
+          "x": 58,
+          "y": 88
+        },
+        {
+          "id": "doctor",
+          "label": "/doctor",
+          "kind": "service",
+          "x": 58,
+          "y": 45
+        },
+        {
+          "id": "log",
+          "label": "Log de debug",
+          "kind": "data",
+          "x": 88,
+          "y": 75
+        },
+        {
+          "id": "clean",
+          "label": "Config limpia",
+          "kind": "zone",
+          "x": 88,
+          "y": 18
+        }
+      ],
+      "edges": [
+        {
+          "from": "files",
+          "to": "context",
+          "label": "¿cargó?"
+        },
+        {
+          "from": "context",
+          "to": "detail",
+          "label": "profundiza"
+        },
+        {
+          "from": "you",
+          "to": "doctor",
+          "label": "checkup"
+        },
+        {
+          "from": "detail",
+          "to": "log",
+          "label": "--debug"
+        },
+        {
+          "from": "you",
+          "to": "clean",
+          "label": "--safe-mode"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Configuraste una regla, un hook o un servidor MCP y Claude actúa como si no existiera. Casi siempre el archivo no cargó, cargó desde otro lugar o algo lo sobrescribió.",
+        "show": [
+          "you",
+          "files"
+        ],
+        "focus": "files"
+      },
+      {
+        "narration": "El primer paso es /context. Muestra todo lo que ocupa la ventana de contexto, por categoría, y confirma si tu CLAUDE.md, tus reglas y las descripciones de tus skills están presentes.",
+        "show": [
+          "you",
+          "files",
+          "context"
+        ],
+        "focus": "context"
+      },
+      {
+        "narration": "Después profundizas con el comando dedicado: /hooks para los hooks activos, /mcp para los servidores y su estado, /permissions para las reglas resueltas y /status para ver qué fuentes de settings están activas, incluidas las administradas.",
+        "show": [
+          "you",
+          "files",
+          "context",
+          "detail"
+        ],
+        "focus": "detail"
+      },
+      {
+        "narration": "Para la salud general, claude doctor en la terminal imprime un diagnóstico de solo lectura sin abrir sesión. Dentro de una sesión, /doctor además propone arreglos y pregunta antes de aplicarlos.",
+        "show": [
+          "you",
+          "files",
+          "context",
+          "detail",
+          "doctor"
+        ],
+        "focus": "doctor"
+      },
+      {
+        "narration": "Si un hook aparece pero no se dispara, arranca con claude --debug o usa /debug. El log, en ~/.claude/debug/<session-id>.txt, registra cada evento, qué matchers se evaluaron y el código de salida del hook.",
+        "show": [
+          "you",
+          "files",
+          "context",
+          "detail",
+          "doctor",
+          "log"
+        ],
+        "focus": "log"
+      },
+      {
+        "narration": "Si sospechas de tu propia configuración, descártala. claude --safe-mode apaga CLAUDE.md, skills, plugins, hooks y MCP. Un CLAUDE_CONFIG_DIR vacío, lanzado fuera del proyecto, ignora toda la config de usuario y de proyecto. Los settings administrados siguen aplicando.",
+        "show": [
+          "you",
+          "files",
+          "context",
+          "detail",
+          "doctor",
+          "log",
+          "clean"
+        ],
+        "focus": "clean"
+      },
+      {
+        "narration": "No confundas inspeccionar con configurar. Para crear o cambiar algo usas comandos como /init o /config. Aquí solo averiguas qué está cargado y activo.",
+        "show": [
+          "you",
+          "files",
+          "context",
+          "detail",
+          "doctor",
+          "log",
+          "clean"
+        ],
+        "focus": "context"
+      }
+    ],
+    "keyPoints": [
+      "/context primero: ¿el archivo cargó o no?",
+      "claude doctor: solo lectura; /doctor propone arreglos",
+      "/status muestra fuentes de settings, incluidas las administradas",
+      "--safe-mode apaga personalizaciones; auth y permisos siguen",
+      "CLAUDE_CONFIG_DIR vacío: sin config de usuario ni proyecto"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/init y /config",
+        "difference": "Crean o cambian configuración; los comandos de diagnóstico solo muestran qué cargó o está activo."
+      },
+      {
+        "unitOrService": "Precedencia de settings",
+        "difference": "Explica qué valor gana; /status te dice qué fuentes están activas en la sesión."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-debug--l1",
+      "conceptId": "debug-inspect-commands",
+      "format": "lightning",
+      "prompt": "Confirm your CLAUDE.md and skill descriptions are in this session's context → ?",
+      "promptEs": "Confirmar que tu CLAUDE.md y las descripciones de skills están en el contexto de la sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory"
+        },
+        {
+          "id": "B",
+          "text": "/context"
+        },
+        {
+          "id": "C",
+          "text": "/status"
+        },
+        {
+          "id": "D",
+          "text": "/skills"
+        }
+      ],
+      "answer": "B",
+      "why": "/context desglosa todo lo que ocupa la ventana de contexto, incluidos memory files y skills. /memory muestra ubicaciones y abre el editor, pero no confirma qué cargó."
+    },
+    {
+      "id": "u-debug--l2",
+      "conceptId": "debug-inspect-commands",
+      "format": "thisorthat",
+      "prompt": "Read-only install and settings diagnostics from the terminal, without starting a session → ?",
+      "promptEs": "Diagnóstico de instalación y settings de solo lectura desde la terminal, sin abrir sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/doctor"
+        },
+        {
+          "id": "B",
+          "text": "claude doctor"
+        }
+      ],
+      "answer": "B",
+      "why": "claude doctor se ejecuta en la shell, no abre sesión y solo imprime. /doctor corre dentro de una sesión y además propone arreglos."
+    },
+    {
+      "id": "u-debug--l3",
+      "conceptId": "debug-inspect-commands",
+      "format": "lightning",
+      "prompt": "Check whether managed settings are in effect for this session → ?",
+      "promptEs": "Comprobar si hay settings administrados en efecto en esta sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/permissions"
+        },
+        {
+          "id": "B",
+          "text": "/config"
+        },
+        {
+          "id": "C",
+          "text": "/status"
+        },
+        {
+          "id": "D",
+          "text": "/hooks"
+        }
+      ],
+      "answer": "C",
+      "why": "/status muestra las fuentes de settings activas, incluido si hay settings administrados. /permissions solo muestra las reglas resueltas, no de qué fuentes vienen."
+    },
+    {
+      "id": "u-debug--l4",
+      "conceptId": "debug-inspect-commands",
+      "format": "lightning",
+      "prompt": "Where claude --debug writes its log by default → ?",
+      "promptEs": "Dónde escribe claude --debug su log por defecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The terminal output"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude.json"
+        },
+        {
+          "id": "C",
+          "text": ".claude/debug.log in the project"
+        },
+        {
+          "id": "D",
+          "text": "~/.claude/debug/<session-id>.txt"
+        }
+      ],
+      "answer": "D",
+      "why": "El log va a ~/.claude/debug/<session-id>.txt. La flag --debug no imprime en la terminal; para otra ruta usarías --debug-file."
+    },
+    {
+      "id": "u-debug--l5",
+      "conceptId": "debug-clean-config",
+      "format": "lightning",
+      "prompt": "Disable CLAUDE.md, hooks, skills and MCP but keep login and permissions → ?",
+      "promptEs": "Desactivar CLAUDE.md, hooks, skills y MCP pero mantener login y permisos → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Empty CLAUDE_CONFIG_DIR"
+        },
+        {
+          "id": "B",
+          "text": "/clear"
+        },
+        {
+          "id": "C",
+          "text": "claude --safe-mode"
+        },
+        {
+          "id": "D",
+          "text": "claude --debug"
+        }
+      ],
+      "answer": "C",
+      "why": "--safe-mode apaga las personalizaciones y deja funcionando autenticación, modelo, tools integradas y permisos. Un CLAUDE_CONFIG_DIR vacío te obliga a iniciar sesión de nuevo."
+    },
+    {
+      "id": "u-debug--l6",
+      "conceptId": "debug-clean-config",
+      "format": "thisorthat",
+      "prompt": "File for user-wide permissions, hooks and env → ?",
+      "promptEs": "Archivo para permissions, hooks y env de todo el usuario → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude.json"
+        }
+      ],
+      "answer": "A",
+      "why": "~/.claude.json guarda estado de la app y toggles de UI; permissions, hooks y env ahí se ignoran. Van en ~/.claude/settings.json: son dos archivos distintos."
+    },
+    {
+      "id": "u-debug--l7",
+      "conceptId": "debug-clean-config",
+      "format": "lightning",
+      "prompt": "Correct path so a project skill appears in /skills → ?",
+      "promptEs": "Ruta correcta para que una skill de proyecto aparezca en /skills → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/skills/name.md"
+        },
+        {
+          "id": "B",
+          "text": ".claude/skills/name/SKILL.md"
+        },
+        {
+          "id": "C",
+          "text": ".claude/SKILL.md"
+        },
+        {
+          "id": "D",
+          "text": ".claude/skills/SKILL.md"
+        }
+      ],
+      "answer": "B",
+      "why": "Cada skill es una carpeta con SKILL.md dentro. Un archivo suelto .claude/skills/name.md no aparece en /skills."
+    }
+  ]
+}

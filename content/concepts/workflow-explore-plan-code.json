@@ -1,0 +1,567 @@
+{
+  "conceptId": "workflow-explore-plan-code",
+  "card": {
+    "en": {
+      "tldr": "Letting Claude jump straight to code can solve the wrong problem. The recommended order is explore in plan mode, plan, implement against the plan, then commit. Skip planning when you could describe the diff in one sentence.",
+      "whenToUse": [
+        "You're uncertain about the approach",
+        "The change modifies multiple files",
+        "You're unfamiliar with the code being modified",
+        "You want to review changes before they touch disk"
+      ],
+      "keyFacts": [
+        "Enter plan mode by pressing `Shift+Tab` until the status bar shows `⏸ plan mode on`, or start with `claude --permission-mode plan`.",
+        "In plan mode Claude reads files and proposes a plan but doesn't edit your source until you approve.",
+        "Press `Ctrl+G` to open the plan in your text editor and edit it before Claude proceeds.",
+        "Leave plan mode by approving the plan or pressing `Shift+Tab`, then have Claude implement and verify against the plan.",
+        "Feed context with `@` file references, pasted images, URLs, or piped input such as `cat error.log | claude`.",
+        "An `@` file reference includes the file's full content; a directory reference shows a file listing, not contents."
+      ],
+      "gotchas": [
+        "Plan mode adds overhead: for a typo, a log line or a variable rename, ask Claude directly.",
+        "Pressing `Shift+Tab` to leave plan mode doesn't approve the plan.",
+        "Planning prevents the wrong solution; it doesn't prove the implementation works, so still give a check."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Give Claude a way to verify its work",
+          "difference": "Verification proves the result; planning makes sure you're building the right thing first."
+        },
+        {
+          "concept": "Checkpoints and /rewind",
+          "difference": "Rewinding undoes changes after they happen; plan mode keeps edits off disk until you approve."
+        }
+      ],
+      "examCues": [
+        "before any file changes",
+        "unfamiliar codebase",
+        "touches several files",
+        "edit the plan before it proceeds",
+        "could describe the diff in one sentence"
+      ]
+    },
+    "es": {
+      "tldr": "Dejar que Claude salte directo al código puede resolver el problema equivocado. El orden recomendado es explorar en plan mode, planificar, implementar contra el plan y luego commitear. Sáltate el plan si puedes describir el diff en una frase.",
+      "whenToUse": [
+        "No estás seguro del enfoque",
+        "El cambio modifica varios archivos",
+        "No conoces el código que vas a modificar",
+        "Quieres revisar los cambios antes de que toquen el disco"
+      ],
+      "keyFacts": [
+        "Entra en plan mode presionando `Shift+Tab` hasta que la barra de estado muestre `⏸ plan mode on`, o inicia con `claude --permission-mode plan`.",
+        "En plan mode Claude lee archivos y propone un plan, pero no edita tu código hasta que lo apruebes.",
+        "Presiona `Ctrl+G` para abrir el plan en tu editor de texto y editarlo antes de que Claude siga.",
+        "Sales de plan mode aprobando el plan o presionando `Shift+Tab`; luego Claude implementa y verifica contra el plan.",
+        "Da contexto con referencias `@` a archivos, imágenes pegadas, URLs o entrada por pipe como `cat error.log | claude`.",
+        "Una referencia `@` a un archivo incluye su contenido completo; una a un directorio muestra la lista de archivos, no su contenido."
+      ],
+      "gotchas": [
+        "Plan mode agrega overhead: para un typo, una línea de log o renombrar una variable, pídelo directo.",
+        "Presionar `Shift+Tab` para salir de plan mode no aprueba el plan.",
+        "Planificar evita la solución equivocada; no prueba que la implementación funcione, así que igual da un check."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Darle a Claude una forma de verificar su trabajo",
+          "difference": "Verificar prueba el resultado; planificar asegura primero que construyes lo correcto."
+        },
+        {
+          "concept": "Checkpoints y /rewind",
+          "difference": "Rebobinar deshace cambios después de que ocurren; plan mode no deja que las ediciones toquen el disco hasta que apruebes."
+        }
+      ],
+      "examCues": [
+        "before any file changes",
+        "unfamiliar codebase",
+        "touches several files",
+        "edit the plan before it proceeds",
+        "could describe the diff in one sentence"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/best-practices.md",
+      "https://code.claude.com/docs/en/common-workflows.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "workflow-explore-plan-code--d2a866b7",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You need to add Google OAuth to a codebase you've never worked in. The change will touch session handling, login, and how secrets are loaded, across several files. You want Claude to read the relevant code and propose an approach before any file on disk changes.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Start in `acceptEdits` mode, ask Claude to implement OAuth, then review the diff.",
+          "correct": false,
+          "why": "acceptEdits applies file edits as Claude goes, so files change before you've seen an approach."
+        },
+        {
+          "id": "B",
+          "text": "Start with `claude --permission-mode plan`, have Claude explore the auth code, then ask for a plan.",
+          "correct": true,
+          "why": "Plan mode lets Claude read and propose a plan without editing source until you approve."
+        },
+        {
+          "id": "C",
+          "text": "Ask Claude to implement it directly and use `/rewind` if the approach is wrong.",
+          "correct": false,
+          "why": "Rewinding undoes changes after they touch disk; it doesn't prevent them."
+        },
+        {
+          "id": "D",
+          "text": "Add \"don't edit files until I approve a plan\" to CLAUDE.md, then ask for the feature.",
+          "correct": false,
+          "why": "CLAUDE.md is advisory; plan mode is what actually keeps edits off disk."
+        }
+      ],
+      "explanation": "The deciding requirements are an unfamiliar, multi-file change and no file edits before you've seen an approach. Plan mode, entered with `claude --permission-mode plan` or `Shift+Tab`, lets Claude explore and propose a plan while blocking source edits until you approve. `/rewind` is tempting, but it only restores after files have changed. acceptEdits and a CLAUDE.md request don't keep edits off disk.",
+      "keywordCues": [
+        "codebase you've never worked in",
+        "across several files",
+        "before any file on disk changes"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "Necesitas agregar Google OAuth a un codebase en el que nunca trabajaste. El cambio tocará el manejo de sesiones, el login y cómo se cargan los secretos, en varios archivos. Quieres que Claude lea el código relevante y proponga un enfoque antes de que cambie cualquier archivo en disco.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Iniciar en modo `acceptEdits`, pedirle a Claude que implemente OAuth y luego revisar el diff.",
+            "why": "acceptEdits aplica ediciones mientras Claude avanza, así que los archivos cambian antes de que veas un enfoque."
+          },
+          {
+            "id": "B",
+            "text": "Iniciar con `claude --permission-mode plan`, dejar que Claude explore el código de auth y luego pedir un plan.",
+            "why": "Plan mode deja que Claude lea y proponga un plan sin editar código hasta que lo apruebes."
+          },
+          {
+            "id": "C",
+            "text": "Pedirle a Claude que lo implemente directo y usar `/rewind` si el enfoque está mal.",
+            "why": "Rebobinar deshace cambios después de que tocan el disco; no los evita."
+          },
+          {
+            "id": "D",
+            "text": "Agregar \"no edites archivos hasta que apruebe un plan\" a CLAUDE.md y luego pedir la feature.",
+            "why": "CLAUDE.md es un consejo; plan mode es lo que realmente evita ediciones en disco."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son un cambio en varios archivos de código desconocido y ninguna edición antes de ver un enfoque. Plan mode, con `claude --permission-mode plan` o `Shift+Tab`, deja que Claude explore y proponga un plan mientras bloquea ediciones hasta que apruebes. `/rewind` tienta, pero solo restaura después de que los archivos cambiaron. acceptEdits y un pedido en CLAUDE.md no mantienen las ediciones fuera del disco."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-explore-plan-code--3acdca6a",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "You need to fix a typo in one error message in a single file. A teammate insists every change should start in plan mode. You want to follow the best-practices guidance and finish with the least overhead.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Enter plan mode, have Claude plan the fix, then approve it.",
+          "correct": false,
+          "why": "Plan mode adds overhead that a clear, one-sentence change doesn't need."
+        },
+        {
+          "id": "B",
+          "text": "Ask Claude to interview you with `AskUserQuestion` and write a spec first.",
+          "correct": false,
+          "why": "The interview-and-spec flow is meant for larger features."
+        },
+        {
+          "id": "C",
+          "text": "Ask Claude to fix the typo directly.",
+          "correct": true,
+          "why": "When the scope is clear and the fix is small, the guidance is to ask Claude to do it directly."
+        },
+        {
+          "id": "D",
+          "text": "Use a subagent to investigate where the message is defined first.",
+          "correct": false,
+          "why": "Delegated research is for exploration that would fill your context, not a known one-file fix."
+        }
+      ],
+      "explanation": "The requirement is a tiny, clearly scoped change with the least overhead. The guidance says plan mode adds overhead and that if you could describe the diff in one sentence, you should skip the plan and ask Claude directly. Planning pays off when you're uncertain about the approach, the change spans multiple files, or the code is unfamiliar, none of which applies here.",
+      "keywordCues": [
+        "fix a typo",
+        "a single file",
+        "with the least overhead"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "Necesitas corregir un typo en un mensaje de error de un solo archivo. Un compañero insiste en que todo cambio debe empezar en plan mode. Quieres seguir las buenas prácticas y terminar con el menor overhead.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Entrar en plan mode, dejar que Claude planifique el arreglo y aprobarlo.",
+            "why": "Plan mode agrega overhead que un cambio claro de una frase no necesita."
+          },
+          {
+            "id": "B",
+            "text": "Pedirle a Claude que te entreviste con `AskUserQuestion` y escriba un spec primero.",
+            "why": "El flujo de entrevista y spec es para features más grandes."
+          },
+          {
+            "id": "C",
+            "text": "Pedirle a Claude que corrija el typo directamente.",
+            "why": "Cuando el alcance es claro y el arreglo es chico, la guía dice pedírselo directo a Claude."
+          },
+          {
+            "id": "D",
+            "text": "Usar un subagente para investigar primero dónde está definido el mensaje.",
+            "why": "Delegar investigación es para exploraciones que llenarían tu contexto, no para un arreglo conocido en un archivo."
+          }
+        ],
+        "explanation": "El requisito es un cambio mínimo, de alcance claro, con el menor overhead. La guía dice que plan mode agrega overhead y que si puedes describir el diff en una frase, te saltes el plan y se lo pidas directo a Claude. Planificar rinde cuando dudas del enfoque, el cambio abarca varios archivos o no conoces el código; nada de eso aplica aquí."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-explore-plan-code--90165490",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude has written an implementation plan in plan mode. It's mostly right, but you want to rewrite two steps and delete a third yourself before Claude proceeds, without a back-and-forth of chat corrections.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Choose \"No, keep planning\" and describe each change in chat.",
+          "correct": false,
+          "why": "That works, but it is exactly the chat back-and-forth you wanted to avoid."
+        },
+        {
+          "id": "B",
+          "text": "Press `Ctrl+G` to open the plan in your text editor and edit it.",
+          "correct": true,
+          "why": "Ctrl+G opens the plan in your editor for direct editing before Claude proceeds."
+        },
+        {
+          "id": "C",
+          "text": "Press `Shift+Tab` to leave plan mode, then list the changes.",
+          "correct": false,
+          "why": "Shift+Tab leaves plan mode without approving and doesn't let you edit the plan itself."
+        },
+        {
+          "id": "D",
+          "text": "Run `/rewind` to the message before the plan and re-prompt.",
+          "correct": false,
+          "why": "Rewinding discards the plan instead of letting you edit it."
+        }
+      ],
+      "explanation": "The requirement is to edit the plan yourself, directly, without chat corrections. `Ctrl+G` opens the plan in your text editor so you can change it before Claude proceeds. \"No, keep planning\" is the tempting option, but it relies on describing changes in chat. `Shift+Tab` and `/rewind` don't edit the plan.",
+      "keywordCues": [
+        "rewrite two steps and delete a third yourself",
+        "before Claude proceeds",
+        "without a back-and-forth of chat corrections"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "Claude escribió un plan de implementación en plan mode. Está casi bien, pero quieres reescribir dos pasos y borrar un tercero tú mismo antes de que Claude siga, sin un ida y vuelta de correcciones por chat.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Elegir \"No, keep planning\" y describir cada cambio en el chat.",
+            "why": "Funciona, pero es justo el ida y vuelta por chat que querías evitar."
+          },
+          {
+            "id": "B",
+            "text": "Presionar `Ctrl+G` para abrir el plan en tu editor de texto y editarlo.",
+            "why": "Ctrl+G abre el plan en tu editor para editarlo directo antes de que Claude siga."
+          },
+          {
+            "id": "C",
+            "text": "Presionar `Shift+Tab` para salir de plan mode y luego listar los cambios.",
+            "why": "Shift+Tab sale de plan mode sin aprobar y no te deja editar el plan en sí."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/rewind` al mensaje anterior al plan y volver a pedirlo.",
+            "why": "Rebobinar descarta el plan en vez de dejarte editarlo."
+          }
+        ],
+        "explanation": "El requisito es editar el plan tú mismo, directo, sin correcciones por chat. `Ctrl+G` abre el plan en tu editor de texto para cambiarlo antes de que Claude siga. \"No, keep planning\" tienta, pero depende de describir cambios en el chat. `Shift+Tab` y `/rewind` no editan el plan."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-explore-plan-code--4563f0c3",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [
+        "workflow-failure-patterns"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "You're about to investigate a production bug. From your shell you want to hand Claude the exact contents of `error.log`, and in your prompt point it at `src/auth/session.ts`, so it doesn't have to search for either. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Start the session with `cat error.log | claude`.",
+          "correct": true,
+          "why": "Piping sends the file's contents directly into Claude."
+        },
+        {
+          "id": "B",
+          "text": "Paste the log into CLAUDE.md so Claude sees it.",
+          "correct": false,
+          "why": "CLAUDE.md loads every session and should hold broadly useful rules, not one-off data."
+        },
+        {
+          "id": "C",
+          "text": "Reference the file in your prompt as `@src/auth/session.ts`.",
+          "correct": true,
+          "why": "An @ reference includes the file's full content instead of describing where code lives."
+        },
+        {
+          "id": "D",
+          "text": "Ask Claude to investigate the whole repo until it finds the error.",
+          "correct": false,
+          "why": "An unscoped investigation is what makes Claude search and fill context."
+        },
+        {
+          "id": "E",
+          "text": "Run `/compact` first to make room for the log.",
+          "correct": false,
+          "why": "Compacting summarizes history; it doesn't give Claude the log or the file."
+        }
+      ],
+      "explanation": "The requirement is to supply two specific pieces of context directly so Claude doesn't search. Piping with `cat error.log | claude` sends the log's contents, and an `@src/auth/session.ts` reference includes the file's full content. Putting one-off data in CLAUDE.md is tempting but bloats every session. An unscoped investigation or `/compact` doesn't hand over the data.",
+      "keywordCues": [
+        "from your shell",
+        "exact contents of `error.log`",
+        "point it at `src/auth/session.ts`",
+        "doesn't have to search"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "Vas a investigar un bug de producción. Desde tu shell quieres pasarle a Claude el contenido exacto de `error.log`, y en tu prompt apuntarlo a `src/auth/session.ts`, para que no tenga que buscar ninguno. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Iniciar la sesión con `cat error.log | claude`.",
+            "why": "El pipe envía el contenido del archivo directo a Claude."
+          },
+          {
+            "id": "B",
+            "text": "Pegar el log en CLAUDE.md para que Claude lo vea.",
+            "why": "CLAUDE.md se carga en cada sesión y debe tener reglas de uso general, no datos puntuales."
+          },
+          {
+            "id": "C",
+            "text": "Referenciar el archivo en tu prompt como `@src/auth/session.ts`.",
+            "why": "Una referencia @ incluye el contenido completo del archivo en vez de describir dónde está el código."
+          },
+          {
+            "id": "D",
+            "text": "Pedirle a Claude que investigue todo el repo hasta encontrar el error.",
+            "why": "Una investigación sin alcance es justo lo que hace que Claude busque y llene el contexto."
+          },
+          {
+            "id": "E",
+            "text": "Correr `/compact` primero para hacer espacio para el log.",
+            "why": "Compactar resume el historial; no le da a Claude el log ni el archivo."
+          }
+        ],
+        "explanation": "El requisito es entregar dos piezas de contexto concretas para que Claude no busque. El pipe con `cat error.log | claude` envía el contenido del log y la referencia `@src/auth/session.ts` incluye el contenido completo del archivo. Poner datos puntuales en CLAUDE.md tienta, pero infla cada sesión. Una investigación sin alcance o `/compact` no entregan los datos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-explore-plan-code--3024e229",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Put the phases of the recommended workflow in order, from first to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Implement: approve the plan and let Claude code against it",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Explore: read files in plan mode without changes",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Commit: descriptive message and a PR",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "Plan: ask for a detailed implementation plan",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The recommended workflow separates research from execution: explore in plan mode, ask for a detailed plan, switch out of plan mode to implement and verify against the plan, then commit with a descriptive message and open a PR.",
+      "keywordCues": [
+        "recommended workflow",
+        "from first to last"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "Ordena las fases del flujo recomendado, de la primera a la última.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Implementar: aprobar el plan y dejar que Claude programe contra él",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Explorar: leer archivos en plan mode sin cambios",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Commitear: mensaje descriptivo y un PR",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "Planificar: pedir un plan de implementación detallado",
+            "why": ""
+          }
+        ],
+        "explanation": "El flujo recomendado separa la investigación de la ejecución: explorar en plan mode, pedir un plan detallado, salir de plan mode para implementar y verificar contra el plan, y luego commitear con un mensaje descriptivo y abrir un PR."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "D",
+        "A",
+        "C"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-explore-plan-code--53657b19",
+      "conceptId": "workflow-explore-plan-code",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command starts a new Claude Code session already in plan mode?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --permission-mode plan",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude --permission-mode plan` starts the session in plan mode, where Claude reads files and proposes a plan without editing your source until you approve.",
+      "keywordCues": [
+        "starts a new Claude Code session",
+        "already in plan mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando inicia una nueva sesión de Claude Code ya en plan mode?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude --permission-mode plan",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude --permission-mode plan` inicia la sesión en plan mode, donde Claude lee archivos y propone un plan sin editar tu código hasta que lo apruebes."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "workflow-explore-plan-code--r0",
+      "conceptId": "workflow-explore-plan-code",
+      "kind": "recall",
+      "prompt": "Describe the four phases of the recommended workflow, how plan mode fits in, and when you should skip planning.",
+      "promptEs": "Describe las cuatro fases del flujo recomendado, cómo encaja plan mode y cuándo conviene saltarse el plan.",
+      "idealAnswer": "Explore in plan mode, where Claude reads files without making changes; ask for a detailed plan and edit it with Ctrl+G; approve the plan and let Claude implement and verify against it; then commit with a descriptive message and a PR. Skip planning for small, clearly scoped changes you could describe in one sentence.",
+      "rubric": [
+        "Order: explore, plan, implement, commit",
+        "Plan mode reads without editing until you approve",
+        "The plan can be edited (Ctrl+G) before implementing",
+        "Skip the plan when the diff fits in one sentence"
+      ]
+    },
+    {
+      "id": "workflow-explore-plan-code--r1",
+      "conceptId": "workflow-explore-plan-code",
+      "kind": "why-not",
+      "prompt": "Claude keeps building a feature that doesn't match what you meant. Why isn't adding a Stop hook with tests the main fix?",
+      "promptEs": "Claude sigue construyendo una feature que no es lo que querías. ¿Por qué agregar un Stop hook con tests no es el arreglo principal?",
+      "idealAnswer": "A Stop hook checks the result before Claude stops, but it can't tell Claude what the right problem is. The risk here is solving the wrong problem, which explore-then-plan addresses: research in plan mode and agree on a plan before any code is written.",
+      "rubric": [
+        "Stop hook verifies a result, doesn't pick the approach",
+        "The failure is solving the wrong problem",
+        "Explore and plan in plan mode before implementing"
+      ]
+    }
+  ]
+}

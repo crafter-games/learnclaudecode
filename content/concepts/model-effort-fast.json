@@ -1,0 +1,703 @@
+{
+  "conceptId": "model-effort-fast",
+  "card": {
+    "en": {
+      "tldr": "Effort controls how much the same model reasons: low, medium, high, xhigh or max. Writing ultrathink raises reasoning for one turn, and fast mode makes Opus faster at a higher price per token. Use effort to trade quality for speed and cost; use fast mode to buy speed without losing quality.",
+      "whenToUse": [
+        "Lowering effort for short, scoped, cost- or latency-sensitive tasks",
+        "Asking for deeper reasoning on one hard prompt with `ultrathink`",
+        "Turning on `/fast` for live debugging or rapid iteration where latency matters more than cost",
+        "Keeping standard speed for long autonomous tasks, batch jobs or CI"
+      ],
+      "keyFacts": [
+        "Resolution order: explicit choice (`CLAUDE_CODE_EFFORT_LEVEL`, `--effort`, `/effort`) > saved settings (`modelSettings`, `effortLevel`) > the model's default.",
+        "Each model has its own default effort, and defaults differ between models, so check the session header or `/effort` instead of assuming a level.",
+        "`max` applies to the current session only unless set through `CLAUDE_CODE_EFFORT_LEVEL`; `effortLevel` doesn't accept `max`.",
+        "`ultrathink` in a prompt adds an in-context instruction for that turn; the effort level sent to the API is unchanged.",
+        "Fast mode (`/fast` or `\"fastMode\": true`) is the same Opus model with a faster API configuration, at a higher cost per token.",
+        "If the current model doesn't support fast mode, turning it on switches you to Opus."
+      ],
+      "gotchas": [
+        "\"think hard\" or \"think more\" are ordinary prompt text, not keywords.",
+        "Fast mode persists across sessions by default; `fastModePerSessionOptIn: true` makes each session start with it off.",
+        "The first time you enable fast mode in a conversation you pay the fast uncached input price for the whole context, so turn it on at the start.",
+        "On subscription plans, fast mode bills to usage credits, not your plan's included usage."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Switching model",
+          "difference": "`/model` changes which model answers; effort and fast mode keep the model."
+        },
+        {
+          "concept": "Lower effort vs fast mode",
+          "difference": "Lower effort may reduce quality; fast mode keeps quality and costs more."
+        }
+      ],
+      "examCues": [
+        "deeper reasoning on this one prompt",
+        "same quality but lower latency",
+        "willing to pay more per token",
+        "reduce token spend on simple tasks",
+        "without changing the session effort"
+      ]
+    },
+    "es": {
+      "tldr": "El esfuerzo controla cuánto razona el mismo modelo: low, medium, high, xhigh o max. Escribir ultrathink sube el razonamiento en un turno, y fast mode hace a Opus más rápido a mayor precio por token. Usa el esfuerzo para cambiar calidad por velocidad y costo; usa fast mode para comprar velocidad sin perder calidad.",
+      "whenToUse": [
+        "Bajar el esfuerzo en tareas cortas y acotadas, sensibles a costo o latencia",
+        "Pedir razonamiento más profundo en un prompt difícil con `ultrathink`",
+        "Activar `/fast` para depurar en vivo o iterar rápido cuando la latencia importa más que el costo",
+        "Mantener velocidad estándar en tareas autónomas largas, procesos batch o CI"
+      ],
+      "keyFacts": [
+        "Orden de resolución: elección explícita (`CLAUDE_CODE_EFFORT_LEVEL`, `--effort`, `/effort`) > settings guardados (`modelSettings`, `effortLevel`) > default del modelo.",
+        "Cada modelo tiene su propio esfuerzo por defecto y varía entre modelos, así que revisa el encabezado de la sesión o `/effort` en vez de suponer un nivel.",
+        "`max` aplica solo a la sesión actual salvo que lo fijes con `CLAUDE_CODE_EFFORT_LEVEL`; `effortLevel` no acepta `max`.",
+        "`ultrathink` en un prompt agrega una instrucción en contexto para ese turno; el nivel de esfuerzo enviado a la API no cambia.",
+        "Fast mode (`/fast` o `\"fastMode\": true`) es el mismo modelo Opus con una configuración de API más rápida, a mayor costo por token.",
+        "Si el modelo actual no soporta fast mode, activarlo te cambia a Opus."
+      ],
+      "gotchas": [
+        "\"think hard\" o \"think more\" son texto normal del prompt, no palabras clave.",
+        "Fast mode persiste entre sesiones por defecto; `fastModePerSessionOptIn: true` hace que cada sesión arranque sin él.",
+        "La primera vez que activas fast mode en una conversación pagas el precio de input sin caché de fast mode por todo el contexto, así que actívalo al inicio.",
+        "En planes de suscripción, fast mode se cobra de usage credits, no del uso incluido en tu plan."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Cambiar de modelo",
+          "difference": "`/model` cambia qué modelo responde; esfuerzo y fast mode mantienen el modelo."
+        },
+        {
+          "concept": "Menos esfuerzo vs fast mode",
+          "difference": "Menos esfuerzo puede bajar la calidad; fast mode la mantiene y cuesta más."
+        }
+      ],
+      "examCues": [
+        "deeper reasoning on this one prompt",
+        "same quality but lower latency",
+        "willing to pay more per token",
+        "reduce token spend on simple tasks",
+        "without changing the session effort"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/model-config.md",
+      "https://code.claude.com/docs/en/fast-mode.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "model-effort-fast--c74ab7a1",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer on Opus 5.5 at the default effort has one tricky concurrency question. They want deeper reasoning for that single prompt only, and the session's effort level must stay unchanged for the following turns. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/effort max` before the prompt",
+          "correct": false,
+          "why": "It changes the effort for the rest of the session, not just one prompt."
+        },
+        {
+          "id": "B",
+          "text": "Include `ultrathink` in the prompt",
+          "correct": true,
+          "why": "Claude Code recognizes the keyword and requests deeper reasoning on that turn without changing the effort setting."
+        },
+        {
+          "id": "C",
+          "text": "Start the prompt with \"think hard\"",
+          "correct": false,
+          "why": "Claude Code passes it through as ordinary prompt text; it isn't a recognized keyword."
+        },
+        {
+          "id": "D",
+          "text": "Toggle `/fast` on for the prompt",
+          "correct": false,
+          "why": "Fast mode changes latency and price, not how deeply the model reasons."
+        }
+      ],
+      "explanation": "The requirement is deeper reasoning on one turn with the session effort untouched. `ultrathink` anywhere in the prompt does exactly that: Claude Code adds an in-context instruction, and the effort level sent to the API stays the same. `/effort max` would also deepen reasoning, but it applies to the whole session. \"think hard\" is not a keyword.",
+      "keywordCues": [
+        "for that single prompt only",
+        "effort level must stay unchanged"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador en Opus 5.5 con el esfuerzo por defecto tiene una pregunta difícil de concurrencia. Quiere razonamiento más profundo solo para ese prompt, y el nivel de esfuerzo de la sesión debe quedar igual para los turnos siguientes. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/effort max` antes del prompt",
+            "why": "Cambia el esfuerzo para el resto de la sesión, no solo para un prompt."
+          },
+          {
+            "id": "B",
+            "text": "Incluir `ultrathink` en el prompt",
+            "why": "Claude Code reconoce la palabra y pide razonamiento más profundo en ese turno sin cambiar el esfuerzo."
+          },
+          {
+            "id": "C",
+            "text": "Empezar el prompt con \"think hard\"",
+            "why": "Claude Code lo pasa como texto normal; no es una palabra clave reconocida."
+          },
+          {
+            "id": "D",
+            "text": "Activar `/fast` para ese prompt",
+            "why": "Fast mode cambia latencia y precio, no la profundidad del razonamiento."
+          }
+        ],
+        "explanation": "El requisito es más razonamiento en un turno sin tocar el esfuerzo de la sesión. `ultrathink` en cualquier parte del prompt hace eso: Claude Code agrega una instrucción en contexto y el nivel de esfuerzo enviado a la API no cambia. `/effort max` también profundiza, pero aplica a toda la sesión. \"think hard\" no es palabra clave."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--07f1784f",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [
+        "model-select"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "During a live production incident, a developer on Opus needs answers as fast as possible. They can't accept any drop in answer quality, and the team has usage credits enabled and is willing to pay more per token. What should they turn on?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`/effort low`",
+          "correct": false,
+          "why": "Less thinking is faster, but it can lower quality on complex tasks."
+        },
+        {
+          "id": "B",
+          "text": "`/model haiku`",
+          "correct": false,
+          "why": "A smaller model is faster and cheaper, but it isn't the same quality."
+        },
+        {
+          "id": "C",
+          "text": "`/fast`",
+          "correct": true,
+          "why": "Fast mode is the same Opus model with a faster API configuration, at a higher per-token price and with identical quality."
+        },
+        {
+          "id": "D",
+          "text": "The `opusplan` alias",
+          "correct": false,
+          "why": "It switches to Sonnet for execution; it doesn't make responses faster at equal quality."
+        }
+      ],
+      "explanation": "The deciding constraints are lower latency with identical quality, paid for with higher per-token cost. Fast mode is exactly that trade: same Opus model, different API configuration. Lowering effort or switching to Haiku also speeds things up, but each gives up some quality.",
+      "keywordCues": [
+        "as fast as possible",
+        "can't accept any drop in answer quality",
+        "willing to pay more per token"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "Durante un incidente en producción, un desarrollador en Opus necesita respuestas lo más rápido posible. No puede aceptar ninguna baja en la calidad, y el equipo tiene usage credits activados y está dispuesto a pagar más por token. ¿Qué debe activar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`/effort low`",
+            "why": "Menos razonamiento es más rápido, pero puede bajar la calidad en tareas complejas."
+          },
+          {
+            "id": "B",
+            "text": "`/model haiku`",
+            "why": "Un modelo más chico es más rápido y barato, pero no tiene la misma calidad."
+          },
+          {
+            "id": "C",
+            "text": "`/fast`",
+            "why": "Fast mode es el mismo Opus con una configuración de API más rápida, a mayor precio por token y con la misma calidad."
+          },
+          {
+            "id": "D",
+            "text": "El alias `opusplan`",
+            "why": "Cambia a Sonnet al ejecutar; no acelera las respuestas con la misma calidad."
+          }
+        ],
+        "explanation": "Deciden menos latencia con calidad idéntica, pagando más por token. Fast mode es justo ese intercambio: el mismo Opus con otra configuración de API. Bajar el esfuerzo o pasar a Haiku también acelera, pero cada uno sacrifica algo de calidad."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--5162c4b7",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A nightly CI job runs `claude -p` on short, scoped lint-fix tasks that are not intelligence-sensitive. The team wants to cut token spend for this job, keep the same model, and leave developers' interactive sessions in the repo untouched. What should they change?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `--effort low` to the CI command",
+          "correct": true,
+          "why": "The flag sets effort for that launched session only, on the same model."
+        },
+        {
+          "id": "B",
+          "text": "Commit `\"effortLevel\": \"low\"` to `.claude/settings.json`",
+          "correct": false,
+          "why": "Project settings apply to every developer's session in the repo too."
+        },
+        {
+          "id": "C",
+          "text": "Set `\"fastMode\": true` for the CI job",
+          "correct": false,
+          "why": "Fast mode raises the per-token price; it doesn't reduce spend."
+        },
+        {
+          "id": "D",
+          "text": "Add `--model haiku` to the CI command",
+          "correct": false,
+          "why": "It could cut cost, but it changes the model, which the team wants to keep."
+        }
+      ],
+      "explanation": "Three constraints decide it: less token spend, same model, and no effect on interactive sessions. Lower effort reduces token usage, and `--effort` applies only to the session it launches. A project `effortLevel` would reach everyone's sessions, fast mode costs more per token, and Haiku is a different model.",
+      "keywordCues": [
+        "cut token spend",
+        "keep the same model",
+        "leave developers' interactive sessions untouched"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "Un job nocturno de CI corre `claude -p` en tareas cortas y acotadas de arreglo de lint que no exigen mucha inteligencia. El equipo quiere reducir el gasto de tokens de ese job, mantener el mismo modelo y no tocar las sesiones interactivas de los desarrolladores en el repo. ¿Qué deben cambiar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `--effort low` al comando de CI",
+            "why": "El flag fija el esfuerzo solo para la sesión que lanza, con el mismo modelo."
+          },
+          {
+            "id": "B",
+            "text": "Commitear `\"effortLevel\": \"low\"` en `.claude/settings.json`",
+            "why": "Los settings de proyecto también aplican a la sesión de cada desarrollador en el repo."
+          },
+          {
+            "id": "C",
+            "text": "Poner `\"fastMode\": true` para el job de CI",
+            "why": "Fast mode sube el precio por token; no reduce el gasto."
+          },
+          {
+            "id": "D",
+            "text": "Agregar `--model haiku` al comando de CI",
+            "why": "Podría bajar el costo, pero cambia el modelo, y el equipo quiere mantenerlo."
+          }
+        ],
+        "explanation": "Deciden tres restricciones: menos gasto de tokens, mismo modelo y ningún efecto en sesiones interactivas. Menos esfuerzo reduce el uso de tokens, y `--effort` aplica solo a la sesión que lanza. Un `effortLevel` de proyecto llegaría a las sesiones de todos, fast mode cuesta más por token y Haiku es otro modelo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--662ea37c",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer on Opus 5.5 is doing a live demo of straightforward edits. They want lower response latency, staying on Opus, and they accept extra cost and some loss of reasoning depth. Which two changes each reduce latency? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/fast`",
+          "correct": true,
+          "why": "Fast mode runs the same Opus model with a configuration that prioritizes speed, lowering latency."
+        },
+        {
+          "id": "B",
+          "text": "Add `ultrathink` to each prompt",
+          "correct": false,
+          "why": "It asks for deeper reasoning, which tends to slow responses."
+        },
+        {
+          "id": "C",
+          "text": "Run `/effort low`",
+          "correct": true,
+          "why": "Less thinking time gives faster responses on straightforward tasks."
+        },
+        {
+          "id": "D",
+          "text": "Run `/effort xhigh`",
+          "correct": false,
+          "why": "Higher effort means more reasoning and more tokens, not less latency."
+        },
+        {
+          "id": "E",
+          "text": "Run `/advisor opus`",
+          "correct": false,
+          "why": "Advisor calls add a second model's work at decision points; they don't speed up responses."
+        }
+      ],
+      "explanation": "Both fast mode and lower effort reduce latency, in different ways: fast mode keeps quality at a higher price, and lower effort trades some quality for speed. The docs note you can combine them for maximum speed on straightforward tasks. `ultrathink` and `xhigh` push reasoning up, and the advisor adds consultations.",
+      "keywordCues": [
+        "lower response latency",
+        "staying on Opus",
+        "accept extra cost and some loss of reasoning depth"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador en Opus 5.5 hace una demo en vivo de ediciones simples. Quiere menos latencia en las respuestas sin salir de Opus, y acepta costo extra y algo menos de profundidad de razonamiento. ¿Qué dos cambios reducen la latencia? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/fast`",
+            "why": "Fast mode corre el mismo Opus con una configuración que prioriza la velocidad y baja la latencia."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `ultrathink` a cada prompt",
+            "why": "Pide razonamiento más profundo, lo que tiende a hacer más lentas las respuestas."
+          },
+          {
+            "id": "C",
+            "text": "Correr `/effort low`",
+            "why": "Menos tiempo de razonamiento da respuestas más rápidas en tareas simples."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/effort xhigh`",
+            "why": "Más esfuerzo significa más razonamiento y más tokens, no menos latencia."
+          },
+          {
+            "id": "E",
+            "text": "Correr `/advisor opus`",
+            "why": "Las llamadas al advisor suman el trabajo de otro modelo en puntos de decisión; no aceleran."
+          }
+        ],
+        "explanation": "Fast mode y menos esfuerzo reducen la latencia de formas distintas: fast mode mantiene la calidad a mayor precio, y menos esfuerzo cambia algo de calidad por velocidad. La documentación dice que puedes combinarlos para máxima velocidad en tareas simples. `ultrathink` y `xhigh` suben el razonamiento, y el advisor agrega consultas."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--fd4c76f7",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which keyword, written anywhere in a prompt, requests deeper reasoning on that turn without changing the session's effort setting?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ultrathink",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Claude Code recognizes `ultrathink` in a prompt and adds an in-context instruction for that turn. The effort level sent to the API is unchanged, and phrases such as \"think hard\" are passed through as ordinary text.",
+      "keywordCues": [
+        "keyword",
+        "deeper reasoning on that turn",
+        "without changing the session's effort setting"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "¿Qué palabra clave, escrita en cualquier parte del prompt, pide razonamiento más profundo en ese turno sin cambiar el esfuerzo de la sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ultrathink",
+            "why": ""
+          }
+        ],
+        "explanation": "Claude Code reconoce `ultrathink` en un prompt y agrega una instrucción en contexto para ese turno. El nivel de esfuerzo enviado a la API no cambia, y frases como \"think hard\" pasan como texto normal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--eb66cc73",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command toggles fast mode on or off in the Claude Code CLI?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/fast",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/fast` toggles fast mode and saves the choice to your `fastMode` setting. Running it again turns fast mode off, and you stay on Opus; use `/model` to switch to another model.",
+      "keywordCues": [
+        "toggles fast mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando de barra activa o desactiva fast mode en el CLI de Claude Code?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/fast",
+            "why": ""
+          }
+        ],
+        "explanation": "`/fast` activa o desactiva fast mode y guarda la elección en tu setting `fastMode`. Al correrlo de nuevo se apaga y sigues en Opus; usa `/model` para cambiar a otro modelo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--d25a0c05",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude Code resolves the session's effort level by taking the first source that applies. Order these sources from first checked to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "The model's default effort",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "An explicit choice: `CLAUDE_CODE_EFFORT_LEVEL`, `--effort` or `/effort`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "A saved level in settings (`modelSettings` or `effortLevel`)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "With `ultracode` off, an explicit choice wins first: the environment variable, the `--effort` flag or `/effort` in the session. Next come your settings, through a per-model level in `modelSettings` or an `effortLevel` key. Only when neither applies does the model's own default effort apply, and that default can differ from model to model.",
+      "keywordCues": [
+        "first source that applies",
+        "from first checked to last"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "Claude Code resuelve el nivel de esfuerzo de la sesión tomando la primera fuente que aplica. Ordena estas fuentes de la primera revisada a la última.",
+        "options": [
+          {
+            "id": "A",
+            "text": "El esfuerzo por defecto del modelo",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Una elección explícita: `CLAUDE_CODE_EFFORT_LEVEL`, `--effort` o `/effort`",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Un nivel guardado en settings (`modelSettings` o `effortLevel`)",
+            "why": ""
+          }
+        ],
+        "explanation": "Con `ultracode` apagado, primero gana una elección explícita: la variable de entorno, el flag `--effort` o `/effort` en la sesión. Luego vienen tus settings, con un nivel por modelo en `modelSettings` o la clave `effortLevel`. Solo si ninguna aplica se usa el esfuerzo por defecto del modelo, que puede variar de un modelo a otro."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "C",
+        "A"
+      ],
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-effort-fast--aa79e253",
+      "conceptId": "model-effort-fast",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In the project's `.claude/settings.json`, set `high` as the default effort for every model, and make each session start with fast mode off until the person runs `/fast`.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "max",
+          "correct": false,
+          "why": "`effortLevel` doesn't accept `max`."
+        },
+        {
+          "id": "1b",
+          "text": "high",
+          "correct": true,
+          "why": "A top-level `effortLevel` in project settings applies to every model."
+        },
+        {
+          "id": "1c",
+          "text": "ultracode",
+          "correct": false,
+          "why": "`effortLevel` doesn't accept `ultracode`; it has its own `ultracode` key."
+        },
+        {
+          "id": "2a",
+          "text": "fastMode",
+          "correct": false,
+          "why": "`fastMode: true` turns fast mode on, the opposite of the goal."
+        },
+        {
+          "id": "2b",
+          "text": "alwaysThinkingEnabled",
+          "correct": false,
+          "why": "It controls whether thinking is on, not fast mode."
+        },
+        {
+          "id": "2c",
+          "text": "fastModePerSessionOptIn",
+          "correct": true,
+          "why": "It makes each session start with fast mode off, so people must run `/fast` each session."
+        }
+      ],
+      "explanation": "`effortLevel` accepts `low`, `medium`, `high` or `xhigh`, and in project settings it applies to every model. `fastModePerSessionOptIn: true` stops a saved `fastMode: true` from turning fast mode on at session start. `fastMode: true` would do the opposite.",
+      "keywordCues": [
+        "default effort for every model",
+        "start with fast mode off until the person runs /fast"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/fast-mode.md"
+      ],
+      "es": {
+        "stem": "En el `.claude/settings.json` del proyecto, fija `high` como esfuerzo por defecto para todo modelo, y haz que cada sesión arranque con fast mode apagado hasta que la persona corra `/fast`.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "max",
+            "why": "`effortLevel` no acepta `max`."
+          },
+          {
+            "id": "1b",
+            "text": "high",
+            "why": "Un `effortLevel` de nivel superior en settings de proyecto aplica a todos los modelos."
+          },
+          {
+            "id": "1c",
+            "text": "ultracode",
+            "why": "`effortLevel` no acepta `ultracode`; tiene su propia clave `ultracode`."
+          },
+          {
+            "id": "2a",
+            "text": "fastMode",
+            "why": "`fastMode: true` activa fast mode, lo contrario del objetivo."
+          },
+          {
+            "id": "2b",
+            "text": "alwaysThinkingEnabled",
+            "why": "Controla si el thinking está activo, no fast mode."
+          },
+          {
+            "id": "2c",
+            "text": "fastModePerSessionOptIn",
+            "why": "Hace que cada sesión arranque sin fast mode, así que hay que correr `/fast` en cada sesión."
+          }
+        ],
+        "explanation": "`effortLevel` acepta `low`, `medium`, `high` o `xhigh`, y en settings de proyecto aplica a todos los modelos. `fastModePerSessionOptIn: true` impide que un `fastMode: true` guardado active fast mode al iniciar la sesión. `fastMode: true` haría lo contrario."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"effortLevel\": \"{{1}}\",\n  \"{{2}}\": true\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "model-effort-fast--r1",
+      "conceptId": "model-effort-fast",
+      "kind": "why-not",
+      "prompt": "Why is lowering effort not a substitute for fast mode when you need faster answers on a complex bug without losing quality?",
+      "promptEs": "¿Por qué bajar el esfuerzo no reemplaza a fast mode cuando necesitas respuestas más rápidas en un bug complejo sin perder calidad?",
+      "idealAnswer": "Lower effort gives the model less thinking time, so it answers faster but can lose quality on complex tasks. Fast mode keeps the same Opus model and quality and uses a faster API configuration instead. The price of fast mode is a higher cost per token, not lower quality.",
+      "rubric": [
+        "Lower effort means less reasoning and possibly lower quality",
+        "Fast mode keeps the same model and quality",
+        "Fast mode costs more per token"
+      ]
+    }
+  ]
+}

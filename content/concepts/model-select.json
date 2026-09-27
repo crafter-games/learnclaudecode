@@ -1,0 +1,746 @@
+{
+  "conceptId": "model-select",
+  "card": {
+    "en": {
+      "tldr": "You pick the main model with an alias (sonnet, opus, haiku, fable, best, opusplan) or a full model name that pins a version. Several sources can set it, and the highest-priority one wins. To get a stronger model only at key moments, configure an advisor instead of switching the main model.",
+      "whenToUse": [
+        "Switching between Sonnet for routine work and Opus for hard reasoning",
+        "Pinning an exact version so alias updates don't move you",
+        "Planning on Opus and implementing on Sonnet with `opusplan`",
+        "Letting Claude consult a stronger model at decision points with `/advisor`"
+      ],
+      "keyFacts": [
+        "Priority: `/model` in session > `claude --model` > `ANTHROPIC_MODEL` > `model` in settings > `ANTHROPIC_DEFAULT_MODEL`.",
+        "`/model <name>` saves the choice to `model` in your user settings; pressing `s` in the `/model` picker switches for this session only.",
+        "`--model` and `ANTHROPIC_MODEL` apply only to the session you launch with them.",
+        "Aliases resolve to the recommended version per provider and change over time; pin with a full name like `claude-opus-5-5`.",
+        "`opusplan` uses `opus` in plan mode and `sonnet` for execution.",
+        "The advisor is set with `/advisor`, `advisorModel` or `--advisor`; Claude decides when to call it, and it must be at least as capable as the main model."
+      ],
+      "gotchas": [
+        "A `model` in project or managed settings reapplies at every launch and outranks the default you saved with `/model`.",
+        "Resumed sessions keep the model they were using, not your current default.",
+        "`default` is not a model alias: it clears the override and returns to your account's default.",
+        "The advisor requires the Anthropic API; it is not available on Amazon Bedrock, Google Cloud's Agent Platform or Microsoft Foundry."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Effort and fast mode",
+          "difference": "They keep the model and change how much it reasons or how fast it answers."
+        },
+        {
+          "concept": "Subagent with `model` set",
+          "difference": "The other model runs a whole delegated subtask, not just consultations at decision points."
+        }
+      ],
+      "examCues": [
+        "plan with Opus, implement with Sonnet",
+        "pin a specific model version",
+        "for this session only",
+        "consult a stronger model when stuck",
+        "every new session starts on a different model"
+      ]
+    },
+    "es": {
+      "tldr": "Eliges el modelo principal con un alias (sonnet, opus, haiku, fable, best, opusplan) o con un nombre completo que fija una versión. Varias fuentes pueden fijarlo y gana la de mayor prioridad. Para tener un modelo más fuerte solo en momentos clave, configura un advisor en vez de cambiar el modelo principal.",
+      "whenToUse": [
+        "Alternar entre Sonnet para trabajo rutinario y Opus para razonamiento difícil",
+        "Fijar una versión exacta para que los cambios de alias no te muevan",
+        "Planificar con Opus e implementar con Sonnet usando `opusplan`",
+        "Dejar que Claude consulte un modelo más fuerte en puntos de decisión con `/advisor`"
+      ],
+      "keyFacts": [
+        "Prioridad: `/model` en la sesión > `claude --model` > `ANTHROPIC_MODEL` > `model` en settings > `ANTHROPIC_DEFAULT_MODEL`.",
+        "`/model <name>` guarda la elección en `model` de tus settings de usuario; presionar `s` en el selector de `/model` cambia solo esta sesión.",
+        "`--model` y `ANTHROPIC_MODEL` aplican solo a la sesión que lanzas con ellos.",
+        "Los alias apuntan a la versión recomendada por proveedor y cambian con el tiempo; fija una versión con un nombre completo como `claude-opus-5-5`.",
+        "`opusplan` usa `opus` en plan mode y `sonnet` al ejecutar.",
+        "El advisor se configura con `/advisor`, `advisorModel` o `--advisor`; Claude decide cuándo llamarlo y debe ser al menos tan capaz como el modelo principal."
+      ],
+      "gotchas": [
+        "Un `model` en settings de proyecto o managed se vuelve a aplicar en cada arranque y le gana al default que guardaste con `/model`.",
+        "Las sesiones reanudadas conservan el modelo que usaban, no tu default actual.",
+        "`default` no es un alias de modelo: limpia el override y vuelve al default de tu cuenta.",
+        "El advisor requiere la Anthropic API; no está disponible en Amazon Bedrock, Google Cloud's Agent Platform ni Microsoft Foundry."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Esfuerzo y fast mode",
+          "difference": "Mantienen el modelo y cambian cuánto razona o qué tan rápido responde."
+        },
+        {
+          "concept": "Subagente con `model`",
+          "difference": "El otro modelo ejecuta toda una subtarea delegada, no solo consultas en puntos de decisión."
+        }
+      ],
+      "examCues": [
+        "plan with Opus, implement with Sonnet",
+        "pin a specific model version",
+        "for this session only",
+        "consult a stronger model when stuck",
+        "every new session starts on a different model"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/model-config.md",
+      "https://code.claude.com/docs/en/advisor.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "model-select--ce6f4fdd",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team lead wants every developer who clones the repository to start Claude Code sessions planning on Opus and implementing on Sonnet. Developers should not need to run any command or edit their shell profile. What should the lead do so it applies to everyone who clones the repo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask each developer to run `/model opusplan` once",
+          "correct": false,
+          "why": "It saves the choice to each developer's user settings; nothing is shared through the repo, and each person must run it."
+        },
+        {
+          "id": "B",
+          "text": "Commit `\"advisorModel\": \"opus\"` to `.claude/settings.json`",
+          "correct": false,
+          "why": "The advisor is consulted at decision points; the main model stays the same and doesn't switch between plan and execution."
+        },
+        {
+          "id": "C",
+          "text": "Commit `\"model\": \"opusplan\"` to `.claude/settings.json`",
+          "correct": true,
+          "why": "Project settings travel with the repo, and `opusplan` uses Opus in plan mode and Sonnet for execution."
+        },
+        {
+          "id": "D",
+          "text": "Add `export ANTHROPIC_MODEL=opusplan` to the README setup steps",
+          "correct": false,
+          "why": "An environment variable lives in each developer's shell, so it needs manual setup per machine."
+        }
+      ],
+      "explanation": "The requirement is a shared, zero-step default for everyone who clones the repo. A `model` value in the project's `.claude/settings.json` is committed with the code and applies at every launch. `opusplan` is the alias that plans on Opus and executes on Sonnet. `/model opusplan` would also select the right alias, but it saves only to each person's user settings.",
+      "keywordCues": [
+        "everyone who clones the repository",
+        "planning on Opus and implementing on Sonnet",
+        "not need to run any command"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "Un líder de equipo quiere que cada desarrollador que clone el repositorio inicie sus sesiones de Claude Code planificando con Opus e implementando con Sonnet. Nadie debería tener que correr un comando ni editar su perfil de shell. ¿Qué debe hacer el líder para que aplique a todos los que clonan el repo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pedir a cada desarrollador que corra `/model opusplan` una vez",
+            "why": "Guarda la elección en los settings de usuario de cada uno; nada se comparte por el repo y cada persona debe correrlo."
+          },
+          {
+            "id": "B",
+            "text": "Commitear `\"advisorModel\": \"opus\"` en `.claude/settings.json`",
+            "why": "El advisor se consulta en puntos de decisión; el modelo principal no cambia entre plan y ejecución."
+          },
+          {
+            "id": "C",
+            "text": "Commitear `\"model\": \"opusplan\"` en `.claude/settings.json`",
+            "why": "Los settings de proyecto viajan con el repo, y `opusplan` usa Opus en plan mode y Sonnet al ejecutar."
+          },
+          {
+            "id": "D",
+            "text": "Agregar `export ANTHROPIC_MODEL=opusplan` a los pasos del README",
+            "why": "Una variable de entorno vive en la shell de cada desarrollador, así que requiere configuración manual por máquina."
+          }
+        ],
+        "explanation": "El requisito es un default compartido y sin pasos para todos los que clonan el repo. Un `model` en el `.claude/settings.json` del proyecto se commitea con el código y aplica en cada arranque. `opusplan` es el alias que planifica con Opus y ejecuta con Sonnet. `/model opusplan` elige el alias correcto, pero solo lo guarda en los settings de usuario de cada persona."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--85115bca",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Mid-session on Sonnet, a developer wants to try Opus on the current task. Their saved default must stay Sonnet for future sessions, and they don't want to quit the running session. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/model opus`",
+          "correct": false,
+          "why": "Typing `/model <name>` behaves like Enter in the picker: it also saves Opus as the default."
+        },
+        {
+          "id": "B",
+          "text": "Open `/model` and press `s` on the Opus row",
+          "correct": true,
+          "why": "`s` switches the model for this session only and leaves the saved default unchanged."
+        },
+        {
+          "id": "C",
+          "text": "Restart with `claude --model opus`",
+          "correct": false,
+          "why": "It keeps the default, but it requires quitting and relaunching the session."
+        },
+        {
+          "id": "D",
+          "text": "Run `/advisor opus`",
+          "correct": false,
+          "why": "It adds an advisor and saves `advisorModel`; the main model stays on Sonnet."
+        }
+      ],
+      "explanation": "Two constraints decide it: keep the saved default and stay in the running session. In the `/model` picker, `s` switches for this session only. Typing `/model opus` saves Opus as the default, and `--model` needs a new launch. The advisor doesn't change the main model at all.",
+      "keywordCues": [
+        "saved default must stay Sonnet",
+        "don't want to quit the running session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "A mitad de una sesión en Sonnet, un desarrollador quiere probar Opus en la tarea actual. Su default guardado debe seguir siendo Sonnet para sesiones futuras y no quiere salir de la sesión en curso. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/model opus`",
+            "why": "Escribir `/model <name>` equivale a Enter en el selector: también guarda Opus como default."
+          },
+          {
+            "id": "B",
+            "text": "Abrir `/model` y presionar `s` en la fila de Opus",
+            "why": "`s` cambia el modelo solo para esta sesión y deja intacto el default guardado."
+          },
+          {
+            "id": "C",
+            "text": "Reiniciar con `claude --model opus`",
+            "why": "Conserva el default, pero obliga a salir y relanzar la sesión."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/advisor opus`",
+            "why": "Agrega un advisor y guarda `advisorModel`; el modelo principal sigue en Sonnet."
+          }
+        ],
+        "explanation": "Deciden dos restricciones: conservar el default guardado y quedarse en la sesión en curso. En el selector de `/model`, `s` cambia solo esta sesión. Escribir `/model opus` guarda Opus como default, y `--model` exige un nuevo arranque. El advisor no cambia el modelo principal."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--99c37fe8",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer runs a long refactor on Sonnet. Most turns are routine, but they want a stronger model's input before Claude commits to an approach and whenever an error keeps recurring. Claude should decide when to ask, and every other turn should stay on Sonnet to keep cost low. What fits best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set the model to `opusplan`",
+          "correct": false,
+          "why": "Opus runs only while you are in plan mode; it isn't consulted mid-task when an error recurs."
+        },
+        {
+          "id": "B",
+          "text": "Switch the main model with `/model opus`",
+          "correct": false,
+          "why": "Every turn would run on Opus, which raises cost on the routine work."
+        },
+        {
+          "id": "C",
+          "text": "Create a subagent with `model: opus` for the refactor",
+          "correct": false,
+          "why": "Opus would run the entire delegated subtask, not only the decision points."
+        },
+        {
+          "id": "D",
+          "text": "Run `/advisor opus`",
+          "correct": true,
+          "why": "Claude consults the Opus advisor at key moments it chooses, while Sonnet handles the routine turns."
+        }
+      ],
+      "explanation": "The requirement is a second model consulted only at decision points, with Claude choosing when. That is the advisor tool: Sonnet stays the main model and calls Opus before committing to an approach or when stuck. `opusplan` switches only at the plan-mode boundary, and a subagent or `/model` would run Opus for far more than the key moments.",
+      "keywordCues": [
+        "before Claude commits to an approach",
+        "whenever an error keeps recurring",
+        "Claude should decide when to ask"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador hace un refactor largo en Sonnet. La mayoría de los turnos son rutinarios, pero quiere la opinión de un modelo más fuerte antes de que Claude se comprometa con un enfoque y cada vez que un error se repita. Claude debe decidir cuándo preguntar, y el resto de los turnos debe seguir en Sonnet para mantener bajo el costo. ¿Qué encaja mejor?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner el modelo en `opusplan`",
+            "why": "Opus corre solo mientras estás en plan mode; no se consulta a mitad de tarea cuando un error se repite."
+          },
+          {
+            "id": "B",
+            "text": "Cambiar el modelo principal con `/model opus`",
+            "why": "Todos los turnos correrían en Opus, lo que sube el costo del trabajo rutinario."
+          },
+          {
+            "id": "C",
+            "text": "Crear un subagente con `model: opus` para el refactor",
+            "why": "Opus ejecutaría toda la subtarea delegada, no solo los puntos de decisión."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/advisor opus`",
+            "why": "Claude consulta al advisor Opus en los momentos clave que elige, y Sonnet hace los turnos rutinarios."
+          }
+        ],
+        "explanation": "El requisito es un segundo modelo consultado solo en puntos de decisión, con Claude eligiendo cuándo. Eso es el advisor: Sonnet sigue como modelo principal y llama a Opus antes de elegir un enfoque o cuando se atasca. `opusplan` cambia solo en el límite de plan mode, y un subagente o `/model` correrían Opus mucho más allá de los momentos clave."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--0f59db94",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer picks Opus in the `/model` picker and presses Enter. Yet every new session in one repository still starts on Sonnet. Which two causes could explain this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The repo's `.claude/settings.json` sets `\"model\": \"sonnet\"`",
+          "correct": true,
+          "why": "A project `model` reapplies at every launch and outranks the default saved in user settings."
+        },
+        {
+          "id": "B",
+          "text": "`ANTHROPIC_DEFAULT_MODEL=sonnet` is exported in their shell",
+          "correct": false,
+          "why": "It has the lowest priority; a choice saved with `/model` takes precedence over it."
+        },
+        {
+          "id": "C",
+          "text": "`ANTHROPIC_MODEL=sonnet` is exported in their shell",
+          "correct": true,
+          "why": "`ANTHROPIC_MODEL` ranks above the `model` setting, so the shell variable wins at every launch."
+        },
+        {
+          "id": "D",
+          "text": "`advisorModel` is set to `sonnet`",
+          "correct": false,
+          "why": "The advisor setting chooses the consulted model, not the main session model."
+        },
+        {
+          "id": "E",
+          "text": "Pressing Enter applied Opus to that session only",
+          "correct": false,
+          "why": "Enter switches and saves the default; `s` is the session-only key."
+        }
+      ],
+      "explanation": "The saved `/model` choice lives in user settings, so only something with higher priority can override it at launch. `ANTHROPIC_MODEL` ranks above settings, and a `model` in project settings reapplies at every launch and outranks the user value. `ANTHROPIC_DEFAULT_MODEL` sits below any saved `model`. Enter saves rather than applying for one session.",
+      "keywordCues": [
+        "presses Enter",
+        "every new session",
+        "still starts on Sonnet"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador elige Opus en el selector de `/model` y presiona Enter. Aun así, cada sesión nueva en un repositorio sigue empezando en Sonnet. ¿Qué dos causas podrían explicarlo? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El `.claude/settings.json` del repo define `\"model\": \"sonnet\"`",
+            "why": "Un `model` de proyecto se reaplica en cada arranque y le gana al default guardado en settings de usuario."
+          },
+          {
+            "id": "B",
+            "text": "`ANTHROPIC_DEFAULT_MODEL=sonnet` está exportada en su shell",
+            "why": "Tiene la prioridad más baja; una elección guardada con `/model` le gana."
+          },
+          {
+            "id": "C",
+            "text": "`ANTHROPIC_MODEL=sonnet` está exportada en su shell",
+            "why": "`ANTHROPIC_MODEL` está por encima del setting `model`, así que la variable gana en cada arranque."
+          },
+          {
+            "id": "D",
+            "text": "`advisorModel` está en `sonnet`",
+            "why": "Ese setting elige el modelo consultado, no el modelo principal de la sesión."
+          },
+          {
+            "id": "E",
+            "text": "Enter aplicó Opus solo a esa sesión",
+            "why": "Enter cambia y guarda el default; `s` es la tecla de solo esta sesión."
+          }
+        ],
+        "explanation": "La elección guardada con `/model` vive en los settings de usuario, así que solo algo de mayor prioridad la pisa al arrancar. `ANTHROPIC_MODEL` está por encima de settings, y un `model` en settings de proyecto se reaplica en cada arranque y le gana al valor de usuario. `ANTHROPIC_DEFAULT_MODEL` está por debajo de cualquier `model` guardado. Enter guarda, no aplica solo a una sesión."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--6a443e0d",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which CLI flag launches Claude Code on a given model for that session only, without changing your saved default?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--model",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "claude --model",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude --model <alias|name>` sets the model at startup for the session you launch with it. It ranks just below `/model` in priority and doesn't write to your settings, so it is also how you run different models in different terminals at the same time.",
+      "keywordCues": [
+        "CLI flag",
+        "for that session only",
+        "without changing your saved default"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag del CLI lanza Claude Code con un modelo dado solo para esa sesión, sin cambiar tu default guardado?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--model",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "claude --model",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude --model <alias|name>` fija el modelo al arrancar para la sesión que lanzas con él. Está justo debajo de `/model` en prioridad y no escribe en tus settings, por eso es también la forma de correr modelos distintos en terminales distintas a la vez."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--e3acb62c",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Order these ways of setting the model from highest to lowest priority.",
+      "options": [
+        {
+          "id": "A",
+          "text": "`ANTHROPIC_MODEL` environment variable",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "`/model` during the session",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "`model` field in a settings file",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`claude --model` at startup",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "E",
+          "text": "`ANTHROPIC_DEFAULT_MODEL` environment variable",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The docs list the sources in priority order: `/model` during the session, then `claude --model` at startup, then `ANTHROPIC_MODEL`, then the `model` setting, and finally `ANTHROPIC_DEFAULT_MODEL`, which applies only when none of the others selects a model.",
+      "keywordCues": [
+        "from highest to lowest priority"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "Ordena estas formas de fijar el modelo de mayor a menor prioridad.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Variable de entorno `ANTHROPIC_MODEL`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "`/model` durante la sesión",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Campo `model` en un archivo de settings",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`claude --model` al arrancar",
+            "why": ""
+          },
+          {
+            "id": "E",
+            "text": "Variable de entorno `ANTHROPIC_DEFAULT_MODEL`",
+            "why": ""
+          }
+        ],
+        "explanation": "La documentación lista las fuentes por prioridad: `/model` durante la sesión, luego `claude --model` al arrancar, luego `ANTHROPIC_MODEL`, luego el setting `model` y por último `ANTHROPIC_DEFAULT_MODEL`, que aplica solo cuando ninguna otra fuente elige modelo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "D",
+        "A",
+        "C",
+        "E"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-select--8cd94617",
+      "conceptId": "model-select",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Configure your user settings so sessions plan on Opus and execute on Sonnet, and Claude can also consult Opus at decision points mid-task.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "model",
+          "correct": true,
+          "why": "`model` sets the main model that sessions start on."
+        },
+        {
+          "id": "1b",
+          "text": "advisorModel",
+          "correct": false,
+          "why": "It picks the consulted model, not the main one; the plan/execute split needs the main model."
+        },
+        {
+          "id": "1c",
+          "text": "availableModels",
+          "correct": false,
+          "why": "It is an allowlist of models, and it takes an array, not a single alias."
+        },
+        {
+          "id": "2a",
+          "text": "opus",
+          "correct": false,
+          "why": "Opus would run in execution too, not only in plan mode."
+        },
+        {
+          "id": "2b",
+          "text": "opusplan",
+          "correct": true,
+          "why": "It uses Opus in plan mode and Sonnet for execution."
+        },
+        {
+          "id": "2c",
+          "text": "best",
+          "correct": false,
+          "why": "It resolves to one model for every phase."
+        },
+        {
+          "id": "3a",
+          "text": "fallbackModel",
+          "correct": false,
+          "why": "It lists models to try when the primary is overloaded or unavailable, not an advisor."
+        },
+        {
+          "id": "3b",
+          "text": "model",
+          "correct": false,
+          "why": "The key is already used for the main model."
+        },
+        {
+          "id": "3c",
+          "text": "advisorModel",
+          "correct": true,
+          "why": "It sets the advisor that Claude consults at decision points."
+        }
+      ],
+      "explanation": "The main model goes in `model`, and `opusplan` gives Opus for planning and Sonnet for execution. The advisor is a separate key, `advisorModel`, which Claude consults when it decides it needs guidance. `fallbackModel` covers availability failures, and `availableModels` restricts which models can be selected.",
+      "keywordCues": [
+        "plan on Opus and execute on Sonnet",
+        "consult Opus at decision points"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/model-config.md",
+        "https://code.claude.com/docs/en/advisor.md"
+      ],
+      "es": {
+        "stem": "Configura tus settings de usuario para que las sesiones planifiquen con Opus y ejecuten con Sonnet, y además Claude pueda consultar a Opus en puntos de decisión a mitad de tarea.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "model",
+            "why": "`model` fija el modelo principal con el que arrancan las sesiones."
+          },
+          {
+            "id": "1b",
+            "text": "advisorModel",
+            "why": "Elige el modelo consultado, no el principal; la división plan/ejecución necesita el modelo principal."
+          },
+          {
+            "id": "1c",
+            "text": "availableModels",
+            "why": "Es una lista de modelos permitidos y recibe un array, no un solo alias."
+          },
+          {
+            "id": "2a",
+            "text": "opus",
+            "why": "Opus correría también al ejecutar, no solo en plan mode."
+          },
+          {
+            "id": "2b",
+            "text": "opusplan",
+            "why": "Usa Opus en plan mode y Sonnet al ejecutar."
+          },
+          {
+            "id": "2c",
+            "text": "best",
+            "why": "Resuelve a un solo modelo para todas las fases."
+          },
+          {
+            "id": "3a",
+            "text": "fallbackModel",
+            "why": "Lista modelos a probar si el principal está sobrecargado o no disponible; no es un advisor."
+          },
+          {
+            "id": "3b",
+            "text": "model",
+            "why": "Esa clave ya se usa para el modelo principal."
+          },
+          {
+            "id": "3c",
+            "text": "advisorModel",
+            "why": "Fija el advisor que Claude consulta en puntos de decisión."
+          }
+        ],
+        "explanation": "El modelo principal va en `model`, y `opusplan` da Opus para planificar y Sonnet para ejecutar. El advisor es una clave aparte, `advisorModel`, que Claude consulta cuando decide que necesita guía. `fallbackModel` cubre fallas de disponibilidad y `availableModels` restringe qué modelos se pueden elegir."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": \"{{2}}\",\n  \"{{3}}\": \"opus\"\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "model-select--r0",
+      "conceptId": "model-select",
+      "kind": "recall",
+      "prompt": "List the ways to set the model from highest to lowest priority, and explain how /model differs from pressing s in its picker.",
+      "promptEs": "Enumera las formas de fijar el modelo de mayor a menor prioridad y explica en qué se diferencia /model de presionar s en su selector.",
+      "idealAnswer": "Priority is /model in the session, then claude --model, then ANTHROPIC_MODEL, then the model field in settings, then ANTHROPIC_DEFAULT_MODEL. /model with a name, or Enter in the picker, switches and saves the choice as your default in user settings. Pressing s in the picker switches for this session only and leaves the default unchanged.",
+      "rubric": [
+        "Order: /model > --model > ANTHROPIC_MODEL > settings model > ANTHROPIC_DEFAULT_MODEL",
+        "/model saves the choice as the default in user settings",
+        "s in the picker switches for this session only"
+      ]
+    },
+    {
+      "id": "model-select--r1",
+      "conceptId": "model-select",
+      "kind": "why-not",
+      "prompt": "Why does opusplan not fit when you want Claude to consult Opus only when it gets stuck on a recurring error mid-task?",
+      "promptEs": "¿Por qué opusplan no sirve si quieres que Claude consulte a Opus solo cuando se atasca con un error recurrente a mitad de tarea?",
+      "idealAnswer": "opusplan switches models at the plan-mode boundary: Opus while you are in plan mode, Sonnet during execution. It never brings Opus back mid-execution when an error recurs. The advisor fits instead, because Claude calls it at decision points it chooses while the main model stays the same.",
+      "rubric": [
+        "opusplan uses Opus only in plan mode and Sonnet for execution",
+        "It does not consult Opus mid-task",
+        "The advisor is called by Claude at decision points"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,635 @@
+{
+  "conceptId": "debug-clean-config",
+  "card": {
+    "en": {
+      "tldr": "When your own customizations are the suspect, rule them out. claude --safe-mode disables CLAUDE.md, skills, plugins, hooks, MCP servers and custom commands and agents; CLAUDE_CONFIG_DIR pointed at an empty directory, launched outside any project, bypasses all user and project config. Then check the common location and syntax mistakes.",
+      "whenToUse": [
+        "You can't tell which customization causes a problem.",
+        "The problem persists in safe mode, or your settings files themselves are suspect.",
+        "A hook, skill or MCP server never loads even though it looks right."
+      ],
+      "keyFacts": [
+        "In --safe-mode, authentication, model selection, built-in tools and permissions work normally; managed hooks and settings policy still apply.",
+        "CLAUDE_CONFIG_DIR overrides the configuration directory (default ~/.claude); use an empty one and launch from a directory with no .claude folder, .mcp.json or CLAUDE.md.",
+        "A clean config directory shows the first-run setup screens and asks you to log in again; managed settings still apply.",
+        "~/.claude.json holds app state and UI toggles; permissions, hooks and env belong in ~/.claude/settings.json.",
+        "A skill lives at .claude/skills/name/SKILL.md; project MCP config is .mcp.json at the repository root, with servers under mcpServers.",
+        "A hook matcher is a single case-sensitive string, such as \"Edit|Write\"; an array is a schema error."
+      ],
+      "gotchas": [
+        "A lowercase matcher such as \"bash\" matches nothing: tool names are capitalized.",
+        "An array matcher makes Claude Code reject the whole user, project or local settings file, so none of its hooks appear.",
+        "settings.json does not read an mcpServers key, and there is no standalone hooks file outside plugins.",
+        "If the problem persists in the clean session, check managed settings with /status and look for environment variables."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Inspection commands (/context, /status)",
+          "difference": "They show what loaded; bisecting removes your configuration to prove whether it is the cause."
+        }
+      ],
+      "examCues": [
+        "rule out my customizations",
+        "all customizations disabled",
+        "bypass everything under ~/.claude",
+        "permissions set globally are ignored",
+        "skill doesn't appear in /skills"
+      ]
+    },
+    "es": {
+      "tldr": "Cuando sospechas de tus propias personalizaciones, descártalas. claude --safe-mode desactiva CLAUDE.md, skills, plugins, hooks, servidores MCP y comandos y agentes personalizados; CLAUDE_CONFIG_DIR apuntando a un directorio vacío, lanzado fuera de cualquier proyecto, ignora toda la config de usuario y de proyecto. Luego revisa los errores comunes de ubicación y sintaxis.",
+      "whenToUse": [
+        "No sabes qué personalización causa un problema.",
+        "El problema sigue en safe mode, o sospechas de tus archivos de settings.",
+        "Un hook, una skill o un servidor MCP nunca carga aunque parece correcto."
+      ],
+      "keyFacts": [
+        "En --safe-mode, autenticación, selección de modelo, tools integradas y permisos funcionan normal; los hooks y la política de settings administrados siguen aplicando.",
+        "CLAUDE_CONFIG_DIR cambia el directorio de configuración (por defecto ~/.claude); usa uno vacío y lanza desde un directorio sin carpeta .claude, .mcp.json ni CLAUDE.md.",
+        "Un directorio de config limpio muestra las pantallas de primer uso y pide iniciar sesión de nuevo; los settings administrados siguen aplicando.",
+        "~/.claude.json guarda estado de la app y toggles de UI; permissions, hooks y env van en ~/.claude/settings.json.",
+        "Una skill vive en .claude/skills/name/SKILL.md; la config MCP de proyecto es .mcp.json en la raíz del repo, con los servidores bajo mcpServers.",
+        "El matcher de un hook es un solo string sensible a mayúsculas, como \"Edit|Write\"; un array es un error de esquema."
+      ],
+      "gotchas": [
+        "Un matcher en minúsculas como \"bash\" no coincide con nada: los nombres de tools van con mayúscula.",
+        "Un matcher como array hace que Claude Code rechace todo el archivo de settings de usuario, proyecto o local, así que ninguno de sus hooks aparece.",
+        "settings.json no lee una key mcpServers, y no existe un archivo de hooks independiente fuera de los plugins.",
+        "Si el problema sigue en la sesión limpia, revisa los settings administrados con /status y busca variables de entorno."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Comandos de inspección (/context, /status)",
+          "difference": "Muestran qué cargó; aislar quita tu configuración para probar si es la causa."
+        }
+      ],
+      "examCues": [
+        "rule out my customizations",
+        "all customizations disabled",
+        "bypass everything under ~/.claude",
+        "permissions set globally are ignored",
+        "skill doesn't appear in /skills"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/debug-your-config.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "debug-clean-config--b4643619",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [
+        "debug-inspect-commands"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "After adding several plugins, hooks and MCP servers, a developer finds Claude Code misbehaving in every project. She wants to test in one step whether any of her customizations is the cause, while her login, model selection and permissions keep working normally, with the least setup. What should she do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Launch with CLAUDE_CONFIG_DIR pointed at an empty directory",
+          "correct": false,
+          "why": "It bypasses her config, but she must log in again and go through first-run setup, so it is not the least setup."
+        },
+        {
+          "id": "B",
+          "text": "Launch with claude --safe-mode",
+          "correct": true,
+          "why": "It disables CLAUDE.md, skills, plugins, hooks and MCP servers while authentication, model selection and permissions work normally."
+        },
+        {
+          "id": "C",
+          "text": "Open /hooks and /mcp and remove entries one by one",
+          "correct": false,
+          "why": "It edits the configuration piece by piece instead of testing all customizations in one step."
+        },
+        {
+          "id": "D",
+          "text": "Launch with claude --debug and read the log",
+          "correct": false,
+          "why": "It records what happens with all customizations still active, so it can't rule them out."
+        }
+      ],
+      "explanation": "The requirements are one step, all customizations off, and login, model and permissions still working. claude --safe-mode does exactly that and is the documented starting point. An empty CLAUDE_CONFIG_DIR is the tempting alternative, but it forces a new login and first-run setup, so it is the next step only if safe mode doesn't settle it. --debug keeps every customization active.",
+      "keywordCues": [
+        "in one step",
+        "login, model selection and permissions keep working normally",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Después de agregar varios plugins, hooks y servidores MCP, una desarrolladora nota que Claude Code se comporta mal en todos sus proyectos. Quiere probar en un solo paso si alguna de sus personalizaciones es la causa, mientras su login, la selección de modelo y los permisos siguen funcionando normal, con la menor configuración. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Launch with CLAUDE_CONFIG_DIR pointed at an empty directory",
+            "why": "Ignora su config, pero debe iniciar sesión de nuevo y pasar por el setup de primer uso, así que no es la menor configuración."
+          },
+          {
+            "id": "B",
+            "text": "Launch with claude --safe-mode",
+            "why": "Desactiva CLAUDE.md, skills, plugins, hooks y servidores MCP mientras autenticación, selección de modelo y permisos funcionan normal."
+          },
+          {
+            "id": "C",
+            "text": "Open /hooks and /mcp and remove entries one by one",
+            "why": "Edita la configuración pieza por pieza en vez de probar todas las personalizaciones en un paso."
+          },
+          {
+            "id": "D",
+            "text": "Launch with claude --debug and read the log",
+            "why": "Registra lo que pasa con todas las personalizaciones aún activas, así que no puede descartarlas."
+          }
+        ],
+        "explanation": "Los requisitos son un solo paso, todas las personalizaciones apagadas, y login, modelo y permisos funcionando. claude --safe-mode hace justo eso y es el punto de partida documentado. Un CLAUDE_CONFIG_DIR vacío es la alternativa tentadora, pero obliga a iniciar sesión otra vez y al setup de primer uso, así que es el siguiente paso solo si safe mode no lo resuelve. --debug deja activas todas las personalizaciones."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--d2f48a88",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer added permissions deny rules and a PreToolUse hook to ~/.claude.json so they would apply in every project on his machine. Neither takes effect. What should he change so they apply globally for his user?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Restart Claude Code so ~/.claude.json is re-read",
+          "correct": false,
+          "why": "~/.claude.json holds app state and UI toggles; permissions and hooks there are ignored no matter how often it is read."
+        },
+        {
+          "id": "B",
+          "text": "Move the hook to a standalone ~/.claude/hooks.json",
+          "correct": false,
+          "why": "There is no standalone hooks file for user or project config; only plugins load hooks/hooks.json."
+        },
+        {
+          "id": "C",
+          "text": "Move both blocks into ~/.claude/settings.json",
+          "correct": true,
+          "why": "permissions, hooks and env belong in the user settings file ~/.claude/settings.json."
+        },
+        {
+          "id": "D",
+          "text": "Move both blocks into .claude/settings.local.json in each repository",
+          "correct": false,
+          "why": "That is local project scope, per repository, so it is not a single user-wide configuration."
+        }
+      ],
+      "explanation": "~/.claude.json and ~/.claude/settings.json are two different files: the first holds app state and UI toggles, while permissions, hooks and env belong in the second. Moving both blocks to ~/.claude/settings.json makes them apply for the user across projects. A standalone hooks file is tempting but only exists for plugins, and settings.local.json is per project.",
+      "keywordCues": [
+        "~/.claude.json",
+        "apply globally for his user"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador agregó reglas deny de permissions y un hook PreToolUse a ~/.claude.json para que aplicaran en todos los proyectos de su máquina. Ninguno tiene efecto. ¿Qué debe cambiar para que apliquen globalmente para su usuario?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Restart Claude Code so ~/.claude.json is re-read",
+            "why": "~/.claude.json guarda estado de la app y toggles de UI; permissions y hooks ahí se ignoran sin importar cuántas veces se lea."
+          },
+          {
+            "id": "B",
+            "text": "Move the hook to a standalone ~/.claude/hooks.json",
+            "why": "No existe un archivo de hooks independiente para config de usuario o proyecto; solo los plugins cargan hooks/hooks.json."
+          },
+          {
+            "id": "C",
+            "text": "Move both blocks into ~/.claude/settings.json",
+            "why": "permissions, hooks y env van en el archivo de settings de usuario ~/.claude/settings.json."
+          },
+          {
+            "id": "D",
+            "text": "Move both blocks into .claude/settings.local.json in each repository",
+            "why": "Es el scope local de cada proyecto, por repositorio, así que no es una config única de usuario."
+          }
+        ],
+        "explanation": "~/.claude.json y ~/.claude/settings.json son dos archivos distintos: el primero guarda estado de la app y toggles de UI, y permissions, hooks y env van en el segundo. Mover ambos bloques a ~/.claude/settings.json hace que apliquen para el usuario en todos los proyectos. Un archivo de hooks independiente tienta, pero solo existe para plugins, y settings.local.json es por proyecto."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--8e0172c6",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A teammate reports two problems in her repository: the skill she wrote never appears in /skills, and the project's MCP servers never load. The repo contains .claude/skills/release.md and .claude/.mcp.json, whose servers are under mcpServers. Which two changes fix these problems? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the skill to .claude/skills/release/SKILL.md",
+          "correct": true,
+          "why": "A skill must be a folder containing SKILL.md; a loose .md file in skills/ is not picked up."
+        },
+        {
+          "id": "B",
+          "text": "Add an mcpServers key to .claude/settings.json",
+          "correct": false,
+          "why": "settings.json does not read an mcpServers key, so the servers still would not appear."
+        },
+        {
+          "id": "C",
+          "text": "Move .mcp.json to the repository root",
+          "correct": true,
+          "why": "Project MCP config goes at the repository root as .mcp.json, not inside .claude/."
+        },
+        {
+          "id": "D",
+          "text": "Add disable-model-invocation: true to the skill",
+          "correct": false,
+          "why": "That makes a skill user-only; it doesn't make a misplaced skill file appear in /skills."
+        },
+        {
+          "id": "E",
+          "text": "Approve the servers from /mcp and restart",
+          "correct": false,
+          "why": "Approval only matters once the file is read; a .mcp.json inside .claude/ is never loaded."
+        }
+      ],
+      "explanation": "Both failures are location mistakes. Skills must be folders with SKILL.md inside, so .claude/skills/release/SKILL.md fixes the first; project MCP config must be .mcp.json at the repository root, which fixes the second. Adding mcpServers to settings.json is tempting but that key isn't read there. Approval via /mcp only applies to servers that are defined in a file Claude Code actually reads.",
+      "keywordCues": [
+        "never appears in /skills",
+        ".claude/skills/release.md",
+        ".claude/.mcp.json"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Una compañera reporta dos problemas en su repositorio: la skill que escribió nunca aparece en /skills, y los servidores MCP del proyecto nunca cargan. El repo contiene .claude/skills/release.md y .claude/.mcp.json, con sus servidores bajo mcpServers. ¿Qué dos cambios resuelven estos problemas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Move the skill to .claude/skills/release/SKILL.md",
+            "why": "Una skill debe ser una carpeta con SKILL.md dentro; un .md suelto en skills/ no se detecta."
+          },
+          {
+            "id": "B",
+            "text": "Add an mcpServers key to .claude/settings.json",
+            "why": "settings.json no lee una key mcpServers, así que los servidores seguirían sin aparecer."
+          },
+          {
+            "id": "C",
+            "text": "Move .mcp.json to the repository root",
+            "why": "La config MCP de proyecto va en la raíz del repositorio como .mcp.json, no dentro de .claude/."
+          },
+          {
+            "id": "D",
+            "text": "Add disable-model-invocation: true to the skill",
+            "why": "Eso hace que una skill sea solo de usuario; no hace aparecer en /skills un archivo mal ubicado."
+          },
+          {
+            "id": "E",
+            "text": "Approve the servers from /mcp and restart",
+            "why": "La aprobación solo importa si el archivo se lee; un .mcp.json dentro de .claude/ nunca carga."
+          }
+        ],
+        "explanation": "Ambas fallas son errores de ubicación. Las skills deben ser carpetas con SKILL.md dentro, así que .claude/skills/release/SKILL.md resuelve la primera; la config MCP de proyecto debe ser .mcp.json en la raíz del repositorio, lo que resuelve la segunda. Agregar mcpServers a settings.json tienta, pero esa key no se lee ahí. Aprobar desde /mcp solo aplica a servidores definidos en un archivo que Claude Code realmente lee."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--baef7beb",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which flag starts Claude Code with all customizations disabled to troubleshoot a broken configuration?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--safe-mode",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "claude --safe-mode",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "--safe-mode launches a session with CLAUDE.md, skills, plugins, hooks, MCP servers and custom commands and agents disabled, while authentication, model selection, built-in tools and permissions work normally. Managed settings policy still applies.",
+      "keywordCues": [
+        "all customizations disabled",
+        "troubleshoot a broken configuration"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag inicia Claude Code con todas las personalizaciones desactivadas para diagnosticar una configuración rota?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--safe-mode",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "claude --safe-mode",
+            "why": ""
+          }
+        ],
+        "explanation": "--safe-mode abre una sesión con CLAUDE.md, skills, plugins, hooks, servidores MCP y comandos y agentes personalizados desactivados, mientras autenticación, selección de modelo, tools integradas y permisos funcionan normal. La política de settings administrados sigue aplicando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--1b15e875",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable do you point at an empty directory to bypass everything under ~/.claude for one session?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CONFIG_DIR",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "CLAUDE_CONFIG_DIR overrides the configuration directory, which defaults to ~/.claude. Pointing it at an empty directory and launching from a folder with no project configuration gives a session with no user or project settings, hooks, MCP servers, plugins or memory.",
+      "keywordCues": [
+        "environment variable",
+        "bypass everything under ~/.claude"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno apuntas a un directorio vacío para ignorar todo lo que hay bajo ~/.claude en una sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CONFIG_DIR",
+            "why": ""
+          }
+        ],
+        "explanation": "CLAUDE_CONFIG_DIR cambia el directorio de configuración, que por defecto es ~/.claude. Apuntarla a un directorio vacío y lanzar desde una carpeta sin config de proyecto da una sesión sin settings de usuario ni de proyecto, hooks, servidores MCP, plugins ni memoria."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--6921f480",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [
+        "debug-inspect-commands"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Put the documented steps for ruling out your configuration in order, from the first thing to try to the last, moving on only when the problem persists.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Launch claude --safe-mode",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Launch with CLAUDE_CONFIG_DIR set to an empty directory, outside any project",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Run /status to check for managed settings and look for environment variables",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Start with safe mode: if the problem disappears, one of your customizations is the cause. If it persists, or your settings themselves are suspect, compare against a clean CLAUDE_CONFIG_DIR launched outside any project. If it persists even there, the cause is outside your user and project config, so check managed settings with /status and environment variables.",
+      "keywordCues": [
+        "from the first thing to try to the last",
+        "only when the problem persists"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Ordena los pasos documentados para descartar tu configuración, desde lo primero que pruebas hasta lo último, avanzando solo si el problema persiste.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Lanzar claude --safe-mode",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Lanzar con CLAUDE_CONFIG_DIR en un directorio vacío, fuera de cualquier proyecto",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Correr /status para ver settings administrados y buscar variables de entorno",
+            "why": ""
+          }
+        ],
+        "explanation": "Empieza con safe mode: si el problema desaparece, la causa es una de tus personalizaciones. Si persiste, o sospechas de tus settings, compara con un CLAUDE_CONFIG_DIR limpio lanzado fuera de cualquier proyecto. Si aún persiste, la causa está fuera de tu config de usuario y proyecto, así que revisa los settings administrados con /status y las variables de entorno."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "A",
+        "B",
+        "C"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-clean-config--3a382c0b",
+      "conceptId": "debug-clean-config",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make this hook run a formatter after every Edit or Write tool call, in all of your projects.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "~/.claude.json",
+          "correct": false,
+          "why": "It holds app state and UI toggles; hooks placed there are ignored."
+        },
+        {
+          "id": "1b",
+          "text": "~/.claude/settings.json",
+          "correct": true,
+          "why": "User settings apply across all your projects, and hooks go under its \"hooks\" key."
+        },
+        {
+          "id": "1c",
+          "text": "~/.claude/hooks.json",
+          "correct": false,
+          "why": "There is no standalone hooks file for user config; only plugins load hooks/hooks.json."
+        },
+        {
+          "id": "2a",
+          "text": "[\"Edit\", \"Write\"]",
+          "correct": false,
+          "why": "An array is a schema error that makes Claude Code reject the whole settings file."
+        },
+        {
+          "id": "2b",
+          "text": "\"edit|write\"",
+          "correct": false,
+          "why": "Matching is case-sensitive and tool names are capitalized, so this matches nothing."
+        },
+        {
+          "id": "2c",
+          "text": "\"Edit|Write\"",
+          "correct": true,
+          "why": "A single string with | matches both tools, with their exact capitalized names."
+        }
+      ],
+      "explanation": "The hook must apply in all projects, so it belongs under the \"hooks\" key of ~/.claude/settings.json, not in ~/.claude.json or a standalone file. The matcher is one case-sensitive string using | to match several tools. An array matcher is a schema error, and lowercase names match nothing, so the hook would never fire.",
+      "keywordCues": [
+        "after every Edit or Write",
+        "in all of your projects"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Haz que este hook ejecute un formateador después de cada tool call de Edit o Write, en todos tus proyectos.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "~/.claude.json",
+            "why": "Guarda estado de la app y toggles de UI; los hooks puestos ahí se ignoran."
+          },
+          {
+            "id": "1b",
+            "text": "~/.claude/settings.json",
+            "why": "Los settings de usuario aplican en todos tus proyectos, y los hooks van bajo su key \"hooks\"."
+          },
+          {
+            "id": "1c",
+            "text": "~/.claude/hooks.json",
+            "why": "No hay archivo de hooks independiente para la config de usuario; solo los plugins cargan hooks/hooks.json."
+          },
+          {
+            "id": "2a",
+            "text": "[\"Edit\", \"Write\"]",
+            "why": "Un array es un error de esquema que hace que Claude Code rechace todo el archivo de settings."
+          },
+          {
+            "id": "2b",
+            "text": "\"edit|write\"",
+            "why": "El matching distingue mayúsculas y los nombres de tools van con mayúscula, así que no coincide con nada."
+          },
+          {
+            "id": "2c",
+            "text": "\"Edit|Write\"",
+            "why": "Un solo string con | coincide con ambas tools, con sus nombres exactos en mayúscula."
+          }
+        ],
+        "explanation": "El hook debe aplicar en todos los proyectos, así que va bajo la key \"hooks\" de ~/.claude/settings.json, no en ~/.claude.json ni en un archivo aparte. El matcher es un solo string sensible a mayúsculas que usa | para varias tools. Un matcher como array es un error de esquema y los nombres en minúscula no coinciden con nada, así que el hook nunca se dispararía."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "// file: {{1}}\n{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": {{2}},\n        \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/format.sh\" }]\n      }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "debug-clean-config--r0",
+      "conceptId": "debug-clean-config",
+      "kind": "recall",
+      "prompt": "How do you rule out your own configuration as the cause of a problem? Name both techniques, what each disables, and what still applies.",
+      "promptEs": "¿Cómo descartas tu propia configuración como causa de un problema? Nombra ambas técnicas, qué desactiva cada una y qué sigue aplicando.",
+      "idealAnswer": "First run claude --safe-mode, which disables CLAUDE.md, skills, plugins, hooks, MCP servers and custom commands and agents while auth, model, built-in tools and permissions keep working. If needed, point CLAUDE_CONFIG_DIR at an empty directory and launch outside any project to skip all user and project config, at the cost of logging in again. Managed settings still apply in both cases.",
+      "rubric": [
+        "claude --safe-mode disables customizations but keeps auth, model, tools and permissions",
+        "Empty CLAUDE_CONFIG_DIR plus launching outside a project skips user and project config",
+        "Managed settings still apply in both",
+        "If it persists, check /status and environment variables"
+      ]
+    },
+    {
+      "id": "debug-clean-config--r1",
+      "conceptId": "debug-clean-config",
+      "kind": "why-not",
+      "prompt": "Why isn't an empty CLAUDE_CONFIG_DIR the best first step when you just want to test whether a customization causes a problem?",
+      "promptEs": "¿Por qué un CLAUDE_CONFIG_DIR vacío no es el mejor primer paso cuando solo quieres probar si una personalización causa un problema?",
+      "idealAnswer": "It bypasses everything under ~/.claude, so you must log in again and go through first-run setup, and it only skips project config if you launch outside the project. claude --safe-mode disables the customizations with one flag while authentication, model, built-in tools and permissions keep working, so the docs start there.",
+      "rubric": [
+        "Clean config dir forces a new login and first-run setup",
+        "It needs launching outside the project to skip project config",
+        "--safe-mode is one flag that keeps auth and permissions working"
+      ]
+    }
+  ]
+}

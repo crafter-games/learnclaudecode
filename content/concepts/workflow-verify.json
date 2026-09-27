@@ -1,0 +1,598 @@
+{
+  "conceptId": "workflow-verify",
+  "card": {
+    "en": {
+      "tldr": "Claude stops when the work looks done; without a check it can run, you become the verification loop. Give it something that returns pass or fail and ask for evidence, then decide how hard that check gates the stop: in the prompt, with /goal, with a Stop hook, or with a second opinion.",
+      "whenToUse": [
+        "Any task where \"looks done\" isn't proof: features, bug fixes, UI changes",
+        "Runs you want to leave unattended and trust when you come back",
+        "A team that wants a check enforced on every session, not just requested",
+        "Wanting an independent reviewer instead of the agent grading its own work"
+      ],
+      "keyFacts": [
+        "A check is anything that returns a signal Claude can read: a test suite, a build exit code, a linter, a script that diffs output against a fixture, or a screenshot compared to a design.",
+        "`/goal <condition>` is session-scoped: a separate evaluator model checks the condition after every turn and Claude keeps working until it resolves.",
+        "A Stop hook lives in your settings file, applies to every session in its scope, and can run a script that blocks the turn from ending until the check passes.",
+        "`/goal` is a built-in shortcut for a session-scoped prompt-based Stop hook.",
+        "A verification subagent or a dynamic workflow has a fresh model try to refute the result, so the agent doing the work isn't grading it.",
+        "Ask Claude for evidence (test output, the command it ran and what it returned, a screenshot) rather than a claim of success."
+      ],
+      "gotchas": [
+        "The /goal evaluator doesn't run commands or read files; it judges only what Claude surfaced in the conversation, so phrase the condition as something Claude's output can show.",
+        "Stop hooks have a cap on consecutive blocks; after it, Claude Code ends the turn anyway.",
+        "Auto mode removes per-tool prompts but doesn't start new turns or verify anything.",
+        "Address root causes: ask Claude to fix the error and verify the build, not suppress it."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Explore, plan, implement, commit",
+          "difference": "Planning prevents solving the wrong problem; verification proves the chosen solution actually works."
+        },
+        {
+          "concept": "/loop",
+          "difference": "/loop starts the next turn on a time interval; /goal starts it after each turn until a condition holds."
+        }
+      ],
+      "examCues": [
+        "Claude says it's done but it isn't",
+        "run unattended overnight",
+        "deterministically, every time",
+        "the agent doing the work shouldn't grade it",
+        "until the tests pass"
+      ]
+    },
+    "es": {
+      "tldr": "Claude se detiene cuando el trabajo parece terminado; sin un check que pueda correr, tú terminas siendo el ciclo de verificación. Dale algo que devuelva pasa o falla y pide evidencia; luego decide qué tan fuerte ese check bloquea el final: en el prompt, con /goal, con un Stop hook o con una segunda opinión.",
+      "whenToUse": [
+        "Cualquier tarea donde \"parece terminado\" no es prueba: features, bugs, cambios de UI",
+        "Ejecuciones que quieres dejar sin supervisión y confiar al volver",
+        "Un equipo que quiere que el check se imponga en toda sesión, no solo pedirlo",
+        "Querer un revisor independiente en vez de que el agente califique su propio trabajo"
+      ],
+      "keyFacts": [
+        "Un check es cualquier cosa que devuelve una señal que Claude puede leer: una suite de tests, el código de salida del build, un linter, un script que compara la salida con un fixture o una captura comparada con un diseño.",
+        "`/goal <condition>` es de la sesión: un modelo evaluador aparte revisa la condición tras cada turno y Claude sigue trabajando hasta que se resuelve.",
+        "Un Stop hook vive en tu archivo de settings, aplica a toda sesión de su scope y puede correr un script que impide que el turno termine hasta que pase el check.",
+        "`/goal` es un atajo integrado para un Stop hook basado en prompt, limitado a la sesión.",
+        "Un subagente verificador o un workflow dinámico hace que un modelo nuevo intente refutar el resultado, así el agente que hizo el trabajo no lo califica.",
+        "Pídele a Claude evidencia (salida de tests, el comando que corrió y qué devolvió, una captura) en vez de una afirmación de éxito."
+      ],
+      "gotchas": [
+        "El evaluador de /goal no corre comandos ni lee archivos; solo juzga lo que Claude mostró en la conversación, así que escribe la condición como algo que la salida de Claude pueda demostrar.",
+        "Los Stop hooks tienen un tope de bloqueos consecutivos; al alcanzarlo, Claude Code termina el turno igual.",
+        "Auto mode quita prompts por herramienta, pero no inicia turnos nuevos ni verifica nada.",
+        "Ataca la causa raíz: pide arreglar el error y verificar que el build pase, no suprimirlo."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Explorar, planificar, implementar, commitear",
+          "difference": "Planificar evita resolver el problema equivocado; verificar prueba que la solución elegida funciona."
+        },
+        {
+          "concept": "/loop",
+          "difference": "/loop inicia el siguiente turno por intervalo de tiempo; /goal lo inicia tras cada turno hasta que se cumple una condición."
+        }
+      ],
+      "examCues": [
+        "Claude says it's done but it isn't",
+        "run unattended overnight",
+        "deterministically, every time",
+        "the agent doing the work shouldn't grade it",
+        "until the tests pass"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/best-practices.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "workflow-verify--0d5786b1",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your team runs long Claude Code sessions unattended in a shared repository. Claude sometimes ends its turn while `npm test` is still failing. You want every session in this project to be kept from ending its turn until the test script passes, deterministically, every time.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/goal npm test exits 0` at the start of each session.",
+          "correct": false,
+          "why": "/goal is session-scoped and must be typed each time, and a model judges the condition rather than a script."
+        },
+        {
+          "id": "B",
+          "text": "Add a Stop hook to `.claude/settings.json` that runs the test script and blocks the turn from ending until it passes.",
+          "correct": true,
+          "why": "A Stop hook in project settings applies to every session in that scope and runs your check as a script."
+        },
+        {
+          "id": "C",
+          "text": "Add \"always run npm test before finishing\" to the project CLAUDE.md.",
+          "correct": false,
+          "why": "CLAUDE.md instructions are advisory; they don't guarantee the check runs or gate the stop."
+        },
+        {
+          "id": "D",
+          "text": "Start sessions in auto mode so Claude isn't interrupted by permission prompts.",
+          "correct": false,
+          "why": "Auto mode removes per-tool prompts within a turn but doesn't verify anything or keep Claude working."
+        }
+      ],
+      "explanation": "The requirements are every session in the project and a deterministic check. A Stop hook lives in the settings file, applies to every session in its scope, and runs your check as a script that blocks the turn from ending until it passes. `/goal` is the tempting choice, but it is session-scoped, typed per session, and evaluated by a model. CLAUDE.md is advisory and auto mode only removes permission prompts.",
+      "keywordCues": [
+        "every session in this project",
+        "deterministically, every time",
+        "until the test script passes"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Tu equipo corre sesiones largas de Claude Code sin supervisión en un repositorio compartido. A veces Claude termina su turno con `npm test` todavía fallando. Quieres que ninguna sesión de este proyecto pueda terminar su turno hasta que pase el script de tests, de forma determinista, siempre.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/goal npm test exits 0` al inicio de cada sesión.",
+            "why": "/goal es de la sesión y hay que escribirlo cada vez, y la condición la juzga un modelo, no un script."
+          },
+          {
+            "id": "B",
+            "text": "Agregar un Stop hook en `.claude/settings.json` que corra el script de tests y bloquee el fin del turno hasta que pase.",
+            "why": "Un Stop hook en los settings del proyecto aplica a toda sesión de ese scope y corre tu check como script."
+          },
+          {
+            "id": "C",
+            "text": "Agregar \"siempre corre npm test antes de terminar\" al CLAUDE.md del proyecto.",
+            "why": "Las instrucciones de CLAUDE.md son un consejo; no garantizan que el check corra ni bloquean el final."
+          },
+          {
+            "id": "D",
+            "text": "Iniciar las sesiones en auto mode para que los prompts de permisos no interrumpan a Claude.",
+            "why": "Auto mode quita prompts por herramienta dentro de un turno, pero no verifica nada ni mantiene a Claude trabajando."
+          }
+        ],
+        "explanation": "Los requisitos son toda sesión del proyecto y un check determinista. Un Stop hook vive en el archivo de settings, aplica a toda sesión de su scope y corre tu check como un script que impide terminar el turno hasta que pase. `/goal` tienta, pero es de la sesión, se escribe en cada una y lo evalúa un modelo. CLAUDE.md es solo un consejo y auto mode solo quita prompts de permisos."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-verify--880305ab",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [
+        "workflow-failure-patterns"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "You asked Claude to \"implement a function that validates email addresses\". It reported success, but you found bugs each time you tested it by hand. For the next attempt on this one task, you want Claude to catch its own mistakes with the least setup.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write a Stop hook that runs the email tests before every turn ends.",
+          "correct": false,
+          "why": "It works, but it needs hook configuration and is more setup than this one task requires."
+        },
+        {
+          "id": "B",
+          "text": "Create a custom verification subagent in `.claude/agents/` to review the function.",
+          "correct": false,
+          "why": "A second opinion adds a file and a review pass; it's more setup than giving a check in the prompt."
+        },
+        {
+          "id": "C",
+          "text": "Ask for a `validateEmail` function with example test cases, and tell Claude to run the tests after implementing.",
+          "correct": true,
+          "why": "Putting the check in the prompt works on any task today with no configuration."
+        },
+        {
+          "id": "D",
+          "text": "Enter plan mode and ask Claude for a plan before it writes the function.",
+          "correct": false,
+          "why": "Planning helps choose the approach but gives Claude no pass or fail signal to iterate on."
+        }
+      ],
+      "explanation": "The requirement is catching mistakes on a single task with the least setup. Giving verification criteria in the prompt, such as example test cases plus \"run the tests after implementing\", closes the loop with no configuration. A Stop hook or a verification subagent would also verify, but each needs setup that this one task doesn't justify. Plan mode doesn't give Claude a check to run.",
+      "keywordCues": [
+        "for the next attempt on this one task",
+        "catch its own mistakes",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Le pediste a Claude \"implementa una función que valide direcciones de email\". Dijo que estaba listo, pero cada vez que probaste a mano encontraste bugs. Para el próximo intento en esta única tarea, quieres que Claude detecte sus propios errores con la menor configuración.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Escribir un Stop hook que corra los tests de email antes de que termine cada turno.",
+            "why": "Funciona, pero requiere configurar un hook y es más de lo que pide esta tarea."
+          },
+          {
+            "id": "B",
+            "text": "Crear un subagente verificador en `.claude/agents/` que revise la función.",
+            "why": "Una segunda opinión agrega un archivo y una revisión; es más configuración que dar un check en el prompt."
+          },
+          {
+            "id": "C",
+            "text": "Pedir una función `validateEmail` con casos de prueba de ejemplo e indicarle a Claude que corra los tests al implementar.",
+            "why": "Poner el check en el prompt funciona hoy en cualquier tarea sin configuración."
+          },
+          {
+            "id": "D",
+            "text": "Entrar en plan mode y pedirle a Claude un plan antes de escribir la función.",
+            "why": "Planificar ayuda a elegir el enfoque, pero no le da a Claude una señal de pasa o falla para iterar."
+          }
+        ],
+        "explanation": "El requisito es detectar errores en una sola tarea con la menor configuración. Dar criterios de verificación en el prompt, como casos de prueba de ejemplo más \"corre los tests al implementar\", cierra el ciclo sin configurar nada. Un Stop hook o un subagente verificador también verificarían, pero cada uno requiere configuración que esta tarea no justifica. Plan mode no le da a Claude un check que correr."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-verify--838ad5f1",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You're starting a large migration in your current interactive session. You want Claude to keep taking turns on its own until all tests in `test/auth` pass and lint is clean, with a separate model deciding when that's true. You don't want to write any hook configuration or affect other sessions.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add a Stop hook to `~/.claude/settings.json` that checks the tests.",
+          "correct": false,
+          "why": "It requires hook configuration and applies to every session in that scope, not just this one."
+        },
+        {
+          "id": "B",
+          "text": "Run `/loop` with the migration prompt on a short interval.",
+          "correct": false,
+          "why": "/loop starts turns on a time interval, not when a condition is judged unmet."
+        },
+        {
+          "id": "C",
+          "text": "Switch to auto mode and ask Claude to keep going until the tests pass.",
+          "correct": false,
+          "why": "Auto mode doesn't start new turns; Claude stops when it judges the work done itself."
+        },
+        {
+          "id": "D",
+          "text": "Run `/goal all tests in test/auth pass and the lint step is clean`.",
+          "correct": true,
+          "why": "/goal sets a session-only condition that a separate evaluator checks after every turn."
+        }
+      ],
+      "explanation": "The requirements are this session only, no hook configuration, and a separate model deciding completion. `/goal` is exactly that: a session-scoped condition that a small fast model evaluates after each turn, and Claude keeps working until it's met. A Stop hook in user settings needs configuration and affects every session. `/loop` is time-driven and auto mode lets the working model decide when it's done.",
+      "keywordCues": [
+        "current interactive session",
+        "a separate model deciding",
+        "don't want to write any hook configuration"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Vas a empezar una migración grande en tu sesión interactiva actual. Quieres que Claude siga tomando turnos solo hasta que pasen todos los tests en `test/auth` y el lint esté limpio, con un modelo aparte decidiendo cuándo se cumple. No quieres escribir configuración de hooks ni afectar otras sesiones.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar un Stop hook a `~/.claude/settings.json` que revise los tests.",
+            "why": "Requiere configurar un hook y aplica a toda sesión de ese scope, no solo a esta."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/loop` con el prompt de migración en un intervalo corto.",
+            "why": "/loop inicia turnos por intervalo de tiempo, no cuando se juzga que la condición no se cumple."
+          },
+          {
+            "id": "C",
+            "text": "Pasar a auto mode y pedirle a Claude que siga hasta que pasen los tests.",
+            "why": "Auto mode no inicia turnos nuevos; Claude se detiene cuando él mismo juzga que terminó."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/goal all tests in test/auth pass and the lint step is clean`.",
+            "why": "/goal fija una condición solo de la sesión que un evaluador aparte revisa tras cada turno."
+          }
+        ],
+        "explanation": "Los requisitos son solo esta sesión, sin configurar hooks y un modelo aparte decidiendo el final. `/goal` es exactamente eso: una condición de la sesión que un modelo pequeño y rápido evalúa tras cada turno, y Claude sigue hasta que se cumple. Un Stop hook en settings de usuario requiere configuración y afecta a toda sesión. `/loop` se guía por tiempo y en auto mode decide el mismo modelo que trabaja."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-verify--30ed6726",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Claude just finished a long unattended change. Before counting it as done, you want an independent check for bugs from a reviewer that sees the diff but not the reasoning that produced it, and that reports findings back to the session. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask a subagent to review the diff in a fresh context and report gaps.",
+          "correct": true,
+          "why": "A subagent reviewer sees only the diff and your criteria, not the reasoning, and returns findings to the session."
+        },
+        {
+          "id": "B",
+          "text": "Run the bundled `/code-review` skill on the current diff.",
+          "correct": true,
+          "why": "It reviews the current diff for bugs in a fresh subagent and returns findings to the session."
+        },
+        {
+          "id": "C",
+          "text": "Set a `/goal` condition stating that the code has no bugs.",
+          "correct": false,
+          "why": "The /goal evaluator judges from the conversation so far, including Claude's reasoning, and doesn't read files itself."
+        },
+        {
+          "id": "D",
+          "text": "Ask the same session to re-read its diff and double-check it.",
+          "correct": false,
+          "why": "The agent that did the work would be grading its own result, biased toward code it just wrote."
+        },
+        {
+          "id": "E",
+          "text": "Add \"always double-check your work\" to CLAUDE.md.",
+          "correct": false,
+          "why": "An advisory instruction to the same agent is not an independent reviewer."
+        }
+      ],
+      "explanation": "The requirement is an independent bug check by a reviewer that sees the diff but not the reasoning. A subagent reviewer runs in a fresh context with only the diff and the criteria, and the bundled `/code-review` skill does the same for correctness, both returning findings to the session. `/goal` is tempting because a separate model evaluates it, but that model reads the conversation, reasoning included, and doesn't inspect files. Asking the same session or CLAUDE.md keeps the worker grading itself.",
+      "keywordCues": [
+        "independent check for bugs",
+        "sees the diff but not the reasoning",
+        "reports findings back to the session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Claude acaba de terminar un cambio largo sin supervisión. Antes de darlo por hecho, quieres una revisión independiente de bugs, hecha por un revisor que vea el diff pero no el razonamiento que lo produjo, y que devuelva los hallazgos a la sesión. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pedir a un subagente que revise el diff en un contexto nuevo y reporte brechas.",
+            "why": "Un subagente revisor ve solo el diff y tus criterios, no el razonamiento, y devuelve hallazgos a la sesión."
+          },
+          {
+            "id": "B",
+            "text": "Correr el skill incluido `/code-review` sobre el diff actual.",
+            "why": "Revisa el diff actual buscando bugs en un subagente nuevo y devuelve los hallazgos a la sesión."
+          },
+          {
+            "id": "C",
+            "text": "Fijar una condición `/goal` que diga que el código no tiene bugs.",
+            "why": "El evaluador de /goal juzga con la conversación, razonamiento incluido, y no lee archivos por su cuenta."
+          },
+          {
+            "id": "D",
+            "text": "Pedirle a la misma sesión que relea su diff y lo revise de nuevo.",
+            "why": "El agente que hizo el trabajo estaría calificando su propio resultado, sesgado hacia el código que acaba de escribir."
+          },
+          {
+            "id": "E",
+            "text": "Agregar \"siempre revisa dos veces tu trabajo\" a CLAUDE.md.",
+            "why": "Una instrucción consultiva al mismo agente no es un revisor independiente."
+          }
+        ],
+        "explanation": "El requisito es una revisión independiente de bugs hecha por alguien que ve el diff pero no el razonamiento. Un subagente revisor corre en un contexto nuevo con solo el diff y los criterios, y el skill incluido `/code-review` hace lo mismo para correctitud; ambos devuelven hallazgos a la sesión. `/goal` tienta porque lo evalúa otro modelo, pero ese modelo lee la conversación con el razonamiento y no inspecciona archivos. Pedírselo a la misma sesión o a CLAUDE.md deja que quien trabajó se califique a sí mismo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-verify--9df080ce",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command sets a completion condition that a separate evaluator re-checks after every turn in the current session?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/goal",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/goal` followed by a condition sets a session-scoped goal. After each turn a small fast model checks whether the condition holds, and Claude keeps working until it's met, judged impossible, or cleared.",
+      "keywordCues": [
+        "completion condition",
+        "re-checks after every turn",
+        "current session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "¿Qué slash command fija una condición de término que un evaluador aparte vuelve a revisar tras cada turno en la sesión actual?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/goal",
+            "why": ""
+          }
+        ],
+        "explanation": "`/goal` seguido de una condición fija un objetivo de la sesión. Tras cada turno, un modelo pequeño y rápido revisa si la condición se cumple, y Claude sigue trabajando hasta que se cumple, se juzga imposible o se limpia."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "workflow-verify--7c5158ae",
+      "conceptId": "workflow-verify",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete `.claude/settings.json` so Claude Code runs your test script every time Claude finishes responding, as a deterministic gate that can block the turn from ending.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "PostToolUse",
+          "correct": false,
+          "why": "Fires after each tool call, not when Claude finishes responding."
+        },
+        {
+          "id": "1b",
+          "text": "Stop",
+          "correct": true,
+          "why": "Stop runs when the main agent finishes responding and can block it from stopping."
+        },
+        {
+          "id": "1c",
+          "text": "SessionStart",
+          "correct": false,
+          "why": "Fires once when a session starts; it can't gate the end of a turn."
+        },
+        {
+          "id": "2a",
+          "text": "prompt",
+          "correct": false,
+          "why": "A prompt hook asks a model to evaluate; it isn't a deterministic script."
+        },
+        {
+          "id": "2b",
+          "text": "agent",
+          "correct": false,
+          "why": "An agent hook runs a model-driven verifier, not your script deterministically."
+        },
+        {
+          "id": "2c",
+          "text": "command",
+          "correct": true,
+          "why": "A command hook runs your script, which gives a deterministic pass or fail."
+        }
+      ],
+      "explanation": "The goal is to run a script whenever Claude finishes responding and to block the stop deterministically. The `Stop` event fires when the main agent finishes and can prevent it from stopping, and a `command` hook runs your script. `prompt` and `agent` hooks are model-evaluated, which is not deterministic, and the `command` field only fits the `command` type.",
+      "keywordCues": [
+        "every time Claude finishes responding",
+        "deterministic gate",
+        "block the turn from ending"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Completa `.claude/settings.json` para que Claude Code corra tu script de tests cada vez que Claude termina de responder, como un gate determinista que puede impedir que el turno termine.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "PostToolUse",
+            "why": "Se dispara después de cada llamada a herramienta, no cuando Claude termina de responder."
+          },
+          {
+            "id": "1b",
+            "text": "Stop",
+            "why": "Stop corre cuando el agente principal termina de responder y puede impedir que se detenga."
+          },
+          {
+            "id": "1c",
+            "text": "SessionStart",
+            "why": "Se dispara una vez al iniciar la sesión; no puede bloquear el fin de un turno."
+          },
+          {
+            "id": "2a",
+            "text": "prompt",
+            "why": "Un hook prompt le pide a un modelo que evalúe; no es un script determinista."
+          },
+          {
+            "id": "2b",
+            "text": "agent",
+            "why": "Un hook agent corre un verificador guiado por un modelo, no tu script de forma determinista."
+          },
+          {
+            "id": "2c",
+            "text": "command",
+            "why": "Un hook command corre tu script, que da un pasa o falla determinista."
+          }
+        ],
+        "explanation": "El objetivo es correr un script cada vez que Claude termina de responder y bloquear el final de forma determinista. El evento `Stop` se dispara cuando el agente principal termina y puede impedir que se detenga, y un hook `command` corre tu script. Los hooks `prompt` y `agent` los evalúa un modelo, así que no son deterministas, y el campo `command` solo encaja con el tipo `command`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"hooks\": {\n    \"{{1}}\": [\n      {\n        \"hooks\": [\n          { \"type\": \"{{2}}\", \"command\": \".claude/hooks/run-tests.sh\" }\n        ]\n      }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "workflow-verify--r0",
+      "conceptId": "workflow-verify",
+      "kind": "recall",
+      "prompt": "Why does a runnable check change how a Claude Code session ends, and what are the ways to gate the stop with increasing rigor?",
+      "promptEs": "¿Por qué un check ejecutable cambia cómo termina una sesión de Claude Code, y cuáles son las formas de bloquear el final con rigor creciente?",
+      "idealAnswer": "Claude stops when work looks done, so without a check you become the verification loop; a test, build exit code, linter or screenshot gives a pass or fail it can iterate on. You can gate the stop in the prompt, across the session with a /goal condition, deterministically with a Stop hook, or with a second opinion from a verification subagent or workflow. Ask for evidence, not claims.",
+      "rubric": [
+        "Without a check, Claude stops when work looks done and you verify",
+        "Examples of checks: tests, build exit code, linter, screenshot",
+        "Gates: prompt, /goal, Stop hook, verification subagent or workflow",
+        "Ask for evidence rather than a claim of success"
+      ]
+    },
+    {
+      "id": "workflow-verify--r1",
+      "conceptId": "workflow-verify",
+      "kind": "why-not",
+      "prompt": "A team wants every session in a repo blocked from ending until tests pass, deterministically. Why is /goal not the right fit?",
+      "promptEs": "Un equipo quiere que toda sesión del repo no pueda terminar hasta que pasen los tests, de forma determinista. ¿Por qué /goal no es lo adecuado?",
+      "idealAnswer": "/goal is session-scoped: you type it in each session and it lasts only for that session, and a model evaluates the condition from the conversation. A Stop hook lives in the settings file, applies to every session in its scope, and can run the test script as a deterministic check.",
+      "rubric": [
+        "/goal is session-scoped and typed per session",
+        "/goal is evaluated by a model, not a script",
+        "A Stop hook in settings applies to every session and runs a script"
+      ]
+    }
+  ]
+}

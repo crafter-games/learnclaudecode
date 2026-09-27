@@ -1,0 +1,586 @@
+{
+  "conceptId": "tools-builtin-names",
+  "card": {
+    "en": {
+      "tldr": "Built-in tool names such as Read, Edit, Write, Bash, Glob, Grep and WebFetch are the exact strings you use in permission rules, CLI flags, skills, subagents and hooks. Rules use the ToolName(specifier) format; hook matchers use bare names. Knowing both decides whether your rule or hook ever matches.",
+      "whenToUse": [
+        "Writing permissions.allow or permissions.deny rules",
+        "Passing --allowedTools or --disallowedTools, or a skill's allowed-tools",
+        "Choosing a hook matcher for file edits or shell commands",
+        "Debugging a rule or hook that never matches"
+      ],
+      "keyFacts": [
+        "Rule formats: `Bash(npm run *)`, `Read(~/secrets/**)`, `Edit(/src/**)`, `WebFetch(domain:example.com)`; `WebSearch` takes no specifier.",
+        "File path rules are checked only as `Read(...)` and `Edit(...)`; a path rule on `Write` or `Glob` is accepted but never consulted.",
+        "An `Edit(...)` allow also grants read access to that path; a `Read(...)` deny also blocks Edit and Write there.",
+        "Hook `matcher` fields take bare tool names such as `Edit|Write`, not the parenthesized rule format.",
+        "On macOS, Linux and WSL, Glob and Grep are absent by default; searches run as `find` and `grep` through `Bash`.",
+        "Hooks that inspect shell commands should match `Bash|PowerShell`."
+      ],
+      "gotchas": [
+        "`Write(docs/**)` never blocks anything; use `Edit(docs/**)`.",
+        "A settings allow rule for `Glob` does not bring Glob back on Linux; naming it in `--tools` or `--allowedTools` does.",
+        "A hook matching `Glob|Grep` may never fire on macOS or Linux because searches arrive as `Bash`.",
+        "`Bash(command:rm *)` is ignored; use `Bash(rm *)`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Hook matchers",
+          "difference": "Matchers take bare, case-sensitive tool names; permission rules add a specifier in parentheses."
+        },
+        {
+          "concept": "MCP tools",
+          "difference": "Custom tools come from MCP servers with their own names; built-in names are fixed by Claude Code."
+        }
+      ],
+      "examCues": [
+        "the deny rule on Write has no effect",
+        "the hook never fires for Glob",
+        "allow only this domain",
+        "every shell command on every machine",
+        "exact tool name in the rule"
+      ]
+    },
+    "es": {
+      "tldr": "Los nombres de herramientas integradas como Read, Edit, Write, Bash, Glob, Grep y WebFetch son los strings exactos que usas en reglas de permisos, flags de CLI, skills, subagentes y hooks. Las reglas usan el formato ToolName(especificador); los matchers de hooks usan nombres pelados. Saber ambos decide si tu regla o hook llega a coincidir.",
+      "whenToUse": [
+        "Escribir reglas en permissions.allow o permissions.deny",
+        "Pasar --allowedTools o --disallowedTools, o el allowed-tools de una skill",
+        "Elegir el matcher de un hook para ediciones o comandos de shell",
+        "Depurar una regla o un hook que nunca coincide"
+      ],
+      "keyFacts": [
+        "Formatos de regla: `Bash(npm run *)`, `Read(~/secrets/**)`, `Edit(/src/**)`, `WebFetch(domain:example.com)`; `WebSearch` no lleva especificador.",
+        "Las reglas de ruta solo se revisan como `Read(...)` y `Edit(...)`; una regla de ruta en `Write` o `Glob` se acepta pero nunca se consulta.",
+        "Un allow `Edit(...)` también da lectura a esa ruta; un deny `Read(...)` también bloquea Edit y Write ahí.",
+        "Los campos `matcher` de hooks usan nombres pelados como `Edit|Write`, no el formato con paréntesis.",
+        "En macOS, Linux y WSL, Glob y Grep faltan por defecto; las búsquedas corren como `find` y `grep` vía `Bash`.",
+        "Los hooks que inspeccionan comandos de shell deben usar `Bash|PowerShell`."
+      ],
+      "gotchas": [
+        "`Write(docs/**)` nunca bloquea nada; usa `Edit(docs/**)`.",
+        "Un allow de `Glob` en settings no trae Glob de vuelta en Linux; nombrarlo en `--tools` o `--allowedTools` sí.",
+        "Un hook con `Glob|Grep` puede no dispararse nunca en macOS o Linux porque las búsquedas llegan como `Bash`.",
+        "`Bash(command:rm *)` se ignora; usa `Bash(rm *)`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Matchers de hooks",
+          "difference": "Los matchers usan nombres pelados y sensibles a mayúsculas; las reglas de permisos agregan un especificador entre paréntesis."
+        },
+        {
+          "concept": "Herramientas MCP",
+          "difference": "Las herramientas propias vienen de servidores MCP con sus nombres; los nombres integrados los fija Claude Code."
+        }
+      ],
+      "examCues": [
+        "the deny rule on Write has no effect",
+        "the hook never fires for Glob",
+        "allow only this domain",
+        "every shell command on every machine",
+        "exact tool name in the rule"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/tools-reference.md",
+      "https://code.claude.com/docs/en/how-claude-code-works.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "tools-builtin-names--2ffbba0b",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team added `Write(docs/**)` to `permissions.deny` in `.claude/settings.json`, but Claude still changes files under `docs/`. They want every built-in file-editing tool blocked on that path while Claude can still read the docs. Which change meets the requirement?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Replace it with a deny rule `Edit(docs/**)`",
+          "correct": true,
+          "why": "Edit rules apply to all built-in tools that edit files, and path rules are only checked as Edit or Read."
+        },
+        {
+          "id": "B",
+          "text": "Replace it with a deny rule `Read(docs/**)`",
+          "correct": false,
+          "why": "It blocks Edit and Write there, but also stops Claude from reading the docs."
+        },
+        {
+          "id": "C",
+          "text": "Change it to `Write(/docs/**)` so it anchors at the project",
+          "correct": false,
+          "why": "A path rule on Write is never consulted, whatever the anchor."
+        },
+        {
+          "id": "D",
+          "text": "Add a PreToolUse hook with matcher `Write` that blocks the call",
+          "correct": false,
+          "why": "It misses Edit, which Claude uses for partial changes."
+        }
+      ],
+      "explanation": "Claude Code checks file permissions only against `Edit(path)` and `Read(path)` rules, so a `Write(docs/**)` rule is accepted but never consulted. An `Edit(docs/**)` deny covers every built-in tool that edits files. A `Read(docs/**)` deny would also block edits, but it breaks the requirement that Claude can still read the docs.",
+      "keywordCues": [
+        "every built-in file-editing tool",
+        "while Claude can still read the docs",
+        "Claude still changes files"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Un equipo agregó `Write(docs/**)` a `permissions.deny` en `.claude/settings.json`, pero Claude sigue cambiando archivos bajo `docs/`. Quieren bloquear toda herramienta integrada de edición en esa ruta mientras Claude aún puede leer los docs. ¿Qué cambio cumple el requisito?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reemplazarla por un deny `Edit(docs/**)`",
+            "why": "Las reglas Edit aplican a todas las herramientas integradas que editan archivos, y las reglas de ruta solo se revisan como Edit o Read."
+          },
+          {
+            "id": "B",
+            "text": "Reemplazarla por un deny `Read(docs/**)`",
+            "why": "Bloquea Edit y Write ahí, pero también impide que Claude lea los docs."
+          },
+          {
+            "id": "C",
+            "text": "Cambiarla a `Write(/docs/**)` para anclarla al proyecto",
+            "why": "Una regla de ruta en Write nunca se consulta, sin importar el ancla."
+          },
+          {
+            "id": "D",
+            "text": "Agregar un hook PreToolUse con matcher `Write` que bloquee la llamada",
+            "why": "No cubre Edit, que Claude usa para cambios parciales."
+          }
+        ],
+        "explanation": "Claude Code revisa permisos de archivos solo contra reglas `Edit(path)` y `Read(path)`, así que `Write(docs/**)` se acepta pero nunca se consulta. Un deny `Edit(docs/**)` cubre toda herramienta integrada que edita archivos. Un deny `Read(docs/**)` también bloquearía ediciones, pero rompe el requisito de que Claude pueda seguir leyendo los docs."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-builtin-names--e07cd95a",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "On macOS, a developer adds a PreToolUse hook with matcher `Glob|Grep` to log every file search Claude runs, but it never fires even though Claude clearly searches the repo. They want the searches logged without changing how Claude Code is launched. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change the matcher to `glob|grep` in lowercase",
+          "correct": false,
+          "why": "Matchers are case-sensitive, and the tools are absent anyway."
+        },
+        {
+          "id": "B",
+          "text": "Match `Bash` and inspect the command for find or grep",
+          "correct": true,
+          "why": "Without Glob and Grep, searches run as find and grep through Bash and reach hooks as Bash calls."
+        },
+        {
+          "id": "C",
+          "text": "Add `Glob` and `Grep` to `permissions.allow` in settings",
+          "correct": false,
+          "why": "An allow rule in a settings file does not bring the tools back."
+        },
+        {
+          "id": "D",
+          "text": "Use the matcher `Glob(*)|Grep(*)`",
+          "correct": false,
+          "why": "Matchers take bare names, and those tools still aren't in the session."
+        }
+      ],
+      "explanation": "On macOS, Linux and WSL, Glob and Grep are left out of the default tool set, and Claude searches with `find` and `grep` through Bash. Those searches reach hooks and permission rules as `Bash` calls, so a `Bash` matcher that inspects the command catches them. Adding an allow rule in settings is tempting but does not restore the tools; only `--tools`, `--allowedTools` and similar launch-time options do, which the requirement rules out.",
+      "keywordCues": [
+        "On macOS",
+        "it never fires",
+        "without changing how Claude Code is launched"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "En macOS, un desarrollador agrega un hook PreToolUse con matcher `Glob|Grep` para registrar cada búsqueda de archivos de Claude, pero nunca se dispara aunque Claude claramente busca en el repo. Quiere registrar las búsquedas sin cambiar cómo se lanza Claude Code. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cambiar el matcher a `glob|grep` en minúsculas",
+            "why": "Los matchers distinguen mayúsculas, y además esas herramientas no están."
+          },
+          {
+            "id": "B",
+            "text": "Hacer match con `Bash` e inspeccionar si el comando es find o grep",
+            "why": "Sin Glob ni Grep, las búsquedas corren como find y grep vía Bash y llegan a los hooks como llamadas Bash."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `Glob` y `Grep` a `permissions.allow` en settings",
+            "why": "Una regla allow en un archivo de settings no trae de vuelta las herramientas."
+          },
+          {
+            "id": "D",
+            "text": "Usar el matcher `Glob(*)|Grep(*)`",
+            "why": "Los matchers usan nombres pelados, y esas herramientas siguen fuera de la sesión."
+          }
+        ],
+        "explanation": "En macOS, Linux y WSL, Glob y Grep quedan fuera del set por defecto, y Claude busca con `find` y `grep` vía Bash. Esas búsquedas llegan a hooks y reglas como llamadas `Bash`, así que un matcher `Bash` que inspeccione el comando las captura. Agregar un allow en settings es tentador, pero no restaura las herramientas; solo lo hacen `--tools`, `--allowedTools` y opciones de lanzamiento similares, que el requisito descarta."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-builtin-names--f5043680",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A team wants Claude to run the project's npm scripts and fetch pages from their internal docs host `docs.acme.dev` without permission prompts. Which two entries in `permissions.allow` do this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Bash(npm run *)`",
+          "correct": true,
+          "why": "Bash rules match command patterns, and the wildcard covers every npm script."
+        },
+        {
+          "id": "B",
+          "text": "`WebFetch(domain:docs.acme.dev)`",
+          "correct": true,
+          "why": "WebFetch rules use the domain: prefix and match the requested hostname."
+        },
+        {
+          "id": "C",
+          "text": "`Bash(command:npm run *)`",
+          "correct": false,
+          "why": "Bash's primary field can't be matched by parameter; Claude Code ignores this rule."
+        },
+        {
+          "id": "D",
+          "text": "`WebFetch(https://docs.acme.dev/*)`",
+          "correct": false,
+          "why": "WebFetch rules take domain:host, not a URL."
+        },
+        {
+          "id": "E",
+          "text": "`Bash(npm run build)`",
+          "correct": false,
+          "why": "Without a wildcard it matches only the exact command npm run build."
+        }
+      ],
+      "explanation": "Each tool has its own specifier: Bash takes a command pattern such as `Bash(npm run *)`, and WebFetch takes `domain:` plus a hostname. `Bash(command:...)` looks like parameter matching, but the primary content field can't be matched that way, so Claude Code ignores it. `Bash(npm run build)` has no wildcard, so it matches only that exact command.",
+      "keywordCues": [
+        "run the project's npm scripts",
+        "fetch pages from their internal docs host",
+        "without permission prompts"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que Claude corra los scripts npm del proyecto y traiga páginas de su host interno de docs `docs.acme.dev` sin prompts de permisos. ¿Qué dos entradas en `permissions.allow` lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Bash(npm run *)`",
+            "why": "Las reglas Bash comparan patrones de comando, y el comodín cubre todo script npm."
+          },
+          {
+            "id": "B",
+            "text": "`WebFetch(domain:docs.acme.dev)`",
+            "why": "Las reglas WebFetch usan el prefijo domain: y comparan el hostname pedido."
+          },
+          {
+            "id": "C",
+            "text": "`Bash(command:npm run *)`",
+            "why": "El campo principal de Bash no se puede comparar por parámetro; Claude Code ignora esta regla."
+          },
+          {
+            "id": "D",
+            "text": "`WebFetch(https://docs.acme.dev/*)`",
+            "why": "Las reglas WebFetch llevan domain:host, no una URL."
+          },
+          {
+            "id": "E",
+            "text": "`Bash(npm run build)`",
+            "why": "Sin comodín solo coincide con el comando exacto npm run build."
+          }
+        ],
+        "explanation": "Cada herramienta tiene su especificador: Bash lleva un patrón de comando como `Bash(npm run *)`, y WebFetch lleva `domain:` más un hostname. `Bash(command:...)` parece comparación por parámetro, pero el campo principal no se puede comparar así, por lo que Claude Code la ignora. `Bash(npm run build)` no tiene comodín, así que solo coincide con ese comando exacto."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-builtin-names--7df2199f",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "The team's `.claude/settings.json` has a PreToolUse hook with matcher `Bash` that logs every shell command. On a teammate's Windows laptop without Git Bash, nothing gets logged. The hook must log every shell command on every machine. What should the matcher be?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Bash(*)`",
+          "correct": false,
+          "why": "That is permission-rule format; matchers take bare names, and it still ignores PowerShell."
+        },
+        {
+          "id": "B",
+          "text": "`bash`",
+          "correct": false,
+          "why": "Matchers are case-sensitive, and it would still miss PowerShell."
+        },
+        {
+          "id": "C",
+          "text": "`Bash|PowerShell`",
+          "correct": true,
+          "why": "Without Git Bash, Windows enables the PowerShell tool, so shell hooks must match both names."
+        },
+        {
+          "id": "D",
+          "text": "`Shell`",
+          "correct": false,
+          "why": "No built-in tool has that name."
+        }
+      ],
+      "explanation": "On Windows without Git Bash, the PowerShell tool is enabled automatically and shell commands run through it, not Bash. The docs say to match `Bash|PowerShell` in hooks that inspect shell commands, because matching `Bash` alone misses them. `Bash(*)` is tempting, but hook matchers use bare tool names, and it still names only one tool.",
+      "keywordCues": [
+        "Windows laptop without Git Bash",
+        "every shell command on every machine"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "El `.claude/settings.json` del equipo tiene un hook PreToolUse con matcher `Bash` que registra cada comando de shell. En la laptop Windows de un compañero sin Git Bash no se registra nada. El hook debe registrar todo comando de shell en toda máquina. ¿Cuál debe ser el matcher?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Bash(*)`",
+            "why": "Es formato de regla de permisos; los matchers usan nombres pelados, y sigue ignorando PowerShell."
+          },
+          {
+            "id": "B",
+            "text": "`bash`",
+            "why": "Los matchers distinguen mayúsculas, y seguiría sin cubrir PowerShell."
+          },
+          {
+            "id": "C",
+            "text": "`Bash|PowerShell`",
+            "why": "Sin Git Bash, Windows activa la herramienta PowerShell, así que los hooks de shell deben cubrir ambos nombres."
+          },
+          {
+            "id": "D",
+            "text": "`Shell`",
+            "why": "Ninguna herramienta integrada se llama así."
+          }
+        ],
+        "explanation": "En Windows sin Git Bash, la herramienta PowerShell se activa sola y los comandos de shell corren por ella, no por Bash. La documentación indica usar `Bash|PowerShell` en hooks que inspeccionan comandos de shell, porque `Bash` solo no los cubre. `Bash(*)` tienta, pero los matchers usan nombres pelados y además nombra una sola herramienta."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-builtin-names--618a6b3a",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Write the permission rule that matches every WebFetch request to example.com.",
+      "options": [
+        {
+          "id": "A",
+          "text": "WebFetch(domain:example.com)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "WebFetch rules use a `domain:` prefix and match against the hostname of the requested URL, so `WebFetch(domain:example.com)` covers every fetch to example.com. A URL or a bare hostname in the parentheses is not the documented format.",
+      "keywordCues": [
+        "every WebFetch request to example.com"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Escribe la regla de permisos que coincide con toda petición WebFetch a example.com.",
+        "options": [
+          {
+            "id": "A",
+            "text": "WebFetch(domain:example.com)",
+            "why": ""
+          }
+        ],
+        "explanation": "Las reglas WebFetch usan el prefijo `domain:` y comparan contra el hostname de la URL pedida, así que `WebFetch(domain:example.com)` cubre toda petición a example.com. Una URL o un hostname pelado entre paréntesis no es el formato documentado."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-builtin-names--1a2253fd",
+      "conceptId": "tools-builtin-names",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete `~/.claude/settings.json` so Claude can never read files under `~/.aws`, and a formatter runs after every Edit or Write call.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "Edit(~/.aws/**)",
+          "correct": false,
+          "why": "An Edit deny blocks changes, not reads."
+        },
+        {
+          "id": "1b",
+          "text": "Read(~/.aws/**)",
+          "correct": true,
+          "why": "A Read deny with a ~/ path blocks reads under the home directory's .aws folder."
+        },
+        {
+          "id": "1c",
+          "text": "Read(/.aws/**)",
+          "correct": false,
+          "why": "A single leading slash anchors at the settings source, which is ~/.claude in user settings."
+        },
+        {
+          "id": "2a",
+          "text": "Edit(*)|Write(*)",
+          "correct": false,
+          "why": "Hook matchers use bare tool names, not the parenthesized rule format."
+        },
+        {
+          "id": "2b",
+          "text": "Write",
+          "correct": false,
+          "why": "It misses Edit, which Claude uses for partial changes."
+        },
+        {
+          "id": "2c",
+          "text": "Edit|Write",
+          "correct": true,
+          "why": "A bare list of exact names separated by | matches either tool."
+        }
+      ],
+      "explanation": "Permission rules use `ToolName(specifier)`, and `~/path` resolves from the home directory, so `Read(~/.aws/**)` blocks reads there. A single leading slash is not absolute: in user settings it anchors at `~/.claude`. Hook matchers take bare tool names, so `Edit|Write` fires on both tools.",
+      "keywordCues": [
+        "never read files under ~/.aws",
+        "after every Edit or Write call"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Completa `~/.claude/settings.json` para que Claude nunca pueda leer archivos bajo `~/.aws`, y que un formateador corra tras cada llamada a Edit o Write.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "Edit(~/.aws/**)",
+            "why": "Un deny Edit bloquea cambios, no lecturas."
+          },
+          {
+            "id": "1b",
+            "text": "Read(~/.aws/**)",
+            "why": "Un deny Read con ruta ~/ bloquea lecturas en la carpeta .aws del home."
+          },
+          {
+            "id": "1c",
+            "text": "Read(/.aws/**)",
+            "why": "Una sola barra inicial ancla en el origen de settings, que en settings de usuario es ~/.claude."
+          },
+          {
+            "id": "2a",
+            "text": "Edit(*)|Write(*)",
+            "why": "Los matchers de hooks usan nombres pelados, no el formato de regla con paréntesis."
+          },
+          {
+            "id": "2b",
+            "text": "Write",
+            "why": "No cubre Edit, que Claude usa para cambios parciales."
+          },
+          {
+            "id": "2c",
+            "text": "Edit|Write",
+            "why": "Una lista pelada de nombres exactos separados por | coincide con cualquiera de los dos."
+          }
+        ],
+        "explanation": "Las reglas de permisos usan `ToolName(especificador)`, y `~/ruta` se resuelve desde el home, así que `Read(~/.aws/**)` bloquea lecturas ahí. Una sola barra inicial no es absoluta: en settings de usuario ancla en `~/.claude`. Los matchers de hooks usan nombres pelados, así que `Edit|Write` se dispara con ambas herramientas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"deny\": [\"{{1}}\"]\n  },\n  \"hooks\": {\n    \"PostToolUse\": [\n      { \"matcher\": \"{{2}}\",\n        \"hooks\": [{ \"type\": \"command\", \"command\": \"./format.sh\" }] }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "tools-builtin-names--r0",
+      "conceptId": "tools-builtin-names",
+      "kind": "recall",
+      "prompt": "Explain how a tool name appears in a permission rule versus a hook matcher, with an example of each.",
+      "promptEs": "Explica cómo aparece un nombre de herramienta en una regla de permisos frente a un matcher de hook, con un ejemplo de cada uno.",
+      "idealAnswer": "Permission rules, CLI flags like --allowedTools and a skill's allowed-tools use the ToolName(specifier) format, such as Bash(npm run *) or Read(~/secrets/**), and path rules only work as Read or Edit. Hook matchers use bare, exact tool names such as Edit|Write, without parentheses.",
+      "rubric": [
+        "Rules use ToolName(specifier)",
+        "A concrete rule example such as Bash(npm run *)",
+        "Hook matchers use bare names like Edit|Write",
+        "Path rules only via Read or Edit"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,581 @@
+{
+  "conceptId": "install-updates",
+  "card": {
+    "en": {
+      "tldr": "The native installer puts `claude` in `~/.local/bin` and updates it in the background; updates apply the next time you start Claude Code. Homebrew, WinGet, apt, dnf and apk installs need manual upgrades by default. Settings and env vars decide the channel, the floor and whether updates run at all.",
+      "whenToUse": [
+        "Choosing an install method and knowing who applies updates",
+        "Moving to a slower, safer release channel",
+        "Stopping or fully blocking updates on managed machines",
+        "Fixing `command not found` right after installing"
+      ],
+      "keyFacts": [
+        "`autoUpdatesChannel` is `\"latest\"` (default) or `\"stable\"`, typically about one week old and skipping releases with major regressions.",
+        "`minimumVersion` is a floor: auto-updates and `claude update` refuse to install anything below it.",
+        "`DISABLE_AUTOUPDATER=\"1\"` stops only the background check; `claude update` and `claude install` still work.",
+        "`DISABLE_UPDATES` blocks all update paths, including manual updates.",
+        "`claude update` applies an update immediately instead of waiting for the next background check.",
+        "The native installer places `claude` at `~/.local/bin/claude` (`%USERPROFILE%\\.local\\bin\\claude.exe` on Windows)."
+      ],
+      "gotchas": [
+        "`command not found` after a successful install means `~/.local/bin` isn't on your PATH.",
+        "Homebrew picks the channel by cask name (`claude-code` is stable, `claude-code@latest` is latest), not by `autoUpdatesChannel`.",
+        "Switching to `\"stable\"` can downgrade you unless you set `minimumVersion`.",
+        "`minimumVersion` only constrains updates; it doesn't stop Claude Code from starting."
+      ],
+      "confusedWith": [
+        {
+          "concept": "requiredMinimumVersion",
+          "difference": "A managed setting that makes Claude Code refuse to start outside a version range."
+        },
+        {
+          "concept": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
+          "difference": "Opts Homebrew and WinGet installs into background upgrades; it doesn't affect native installs."
+        }
+      ],
+      "examCues": [
+        "keep `claude update` working",
+        "stay on the version we distribute",
+        "about a week behind",
+        "without being downgraded",
+        "command not found after install"
+      ]
+    },
+    "es": {
+      "tldr": "El instalador nativo deja `claude` en `~/.local/bin` y lo actualiza en segundo plano; la actualización aplica la próxima vez que inicias Claude Code. Las instalaciones con Homebrew, WinGet, apt, dnf y apk requieren actualizar manualmente por defecto. Settings y variables de entorno deciden el canal, el piso y si hay actualizaciones.",
+      "whenToUse": [
+        "Elegir método de instalación y saber quién aplica las actualizaciones",
+        "Pasar a un canal de releases más lento y seguro",
+        "Detener o bloquear del todo las actualizaciones en máquinas gestionadas",
+        "Arreglar `command not found` justo después de instalar"
+      ],
+      "keyFacts": [
+        "`autoUpdatesChannel` es `\"latest\"` (por defecto) o `\"stable\"`, normalmente de hace una semana aprox. y sin releases con regresiones graves.",
+        "`minimumVersion` es un piso: las auto-actualizaciones y `claude update` no instalan nada por debajo.",
+        "`DISABLE_AUTOUPDATER=\"1\"` solo detiene el chequeo en segundo plano; `claude update` y `claude install` siguen funcionando.",
+        "`DISABLE_UPDATES` bloquea todas las rutas de actualización, incluidas las manuales.",
+        "`claude update` aplica una actualización de inmediato, sin esperar el siguiente chequeo.",
+        "El instalador nativo deja `claude` en `~/.local/bin/claude` (`%USERPROFILE%\\.local\\bin\\claude.exe` en Windows)."
+      ],
+      "gotchas": [
+        "`command not found` tras una instalación exitosa significa que `~/.local/bin` no está en tu PATH.",
+        "Homebrew elige el canal por el nombre del cask (`claude-code` es stable, `claude-code@latest` es latest), no por `autoUpdatesChannel`.",
+        "Pasar a `\"stable\"` puede bajarte de versión si no fijas `minimumVersion`.",
+        "`minimumVersion` solo limita las actualizaciones; no impide que Claude Code arranque."
+      ],
+      "confusedWith": [
+        {
+          "concept": "requiredMinimumVersion",
+          "difference": "Setting gestionado que hace que Claude Code no arranque fuera de un rango de versiones."
+        },
+        {
+          "concept": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
+          "difference": "Activa upgrades en segundo plano para Homebrew y WinGet; no afecta la instalación nativa."
+        }
+      ],
+      "examCues": [
+        "keep `claude update` working",
+        "stay on the version we distribute",
+        "about a week behind",
+        "without being downgraded",
+        "command not found after install"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/setup.md",
+      "https://code.claude.com/docs/en/troubleshoot-install.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "install-updates--6055fb0a",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer with a native install runs a recent build from the latest channel. She wants to move to the stable channel to avoid regressions, and keep receiving stable updates afterwards, without ever being downgraded below the version she runs now. What should she add next to `\"autoUpdatesChannel\": \"stable\"`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"env\": { \"DISABLE_AUTOUPDATER\": \"1\" }`",
+          "correct": false,
+          "why": "It stops background updates, so she would stop receiving stable updates automatically."
+        },
+        {
+          "id": "B",
+          "text": "`\"env\": { \"DISABLE_UPDATES\": \"1\" }`",
+          "correct": false,
+          "why": "It blocks every update path, including stable updates."
+        },
+        {
+          "id": "C",
+          "text": "`\"minimumVersion\"` set to her current version",
+          "correct": true,
+          "why": "It sets a floor that auto-updates and `claude update` never go below, while stable updates above it still install."
+        },
+        {
+          "id": "D",
+          "text": "Rerun `install.sh` with the `stable` argument",
+          "correct": false,
+          "why": "It only picks the channel; it sets no floor, so it can install an older stable build."
+        }
+      ],
+      "explanation": "The requirement is to switch channel, keep updating, and never go below the current version. `minimumVersion` is a floor that background auto-updates and `claude update` refuse to cross, so moving to stable doesn't downgrade her. Disabling the autoupdater or all updates stops the stable updates she still wants. Reinstalling with `stable` changes the channel but sets no floor.",
+      "keywordCues": [
+        "keep receiving stable updates",
+        "without ever being downgraded"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora con instalación nativa corre una versión reciente del canal latest. Quiere pasar al canal stable para evitar regresiones y seguir recibiendo actualizaciones stable, sin bajar nunca de la versión que usa ahora. ¿Qué debe agregar junto a `\"autoUpdatesChannel\": \"stable\"`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"env\": { \"DISABLE_AUTOUPDATER\": \"1\" }`",
+            "why": "Detiene las actualizaciones en segundo plano, así que dejaría de recibir las stable automáticamente."
+          },
+          {
+            "id": "B",
+            "text": "`\"env\": { \"DISABLE_UPDATES\": \"1\" }`",
+            "why": "Bloquea todas las rutas de actualización, incluidas las stable."
+          },
+          {
+            "id": "C",
+            "text": "`\"minimumVersion\"` con su versión actual",
+            "why": "Fija un piso que las auto-actualizaciones y `claude update` nunca cruzan, y las stable por encima siguen instalándose."
+          },
+          {
+            "id": "D",
+            "text": "Volver a correr `install.sh` con el argumento `stable`",
+            "why": "Solo elige el canal; no fija piso, así que puede instalar una stable más vieja."
+          }
+        ],
+        "explanation": "El requisito es cambiar de canal, seguir actualizando y nunca bajar de la versión actual. `minimumVersion` es un piso que las auto-actualizaciones y `claude update` no cruzan, así que pasar a stable no la baja de versión. Desactivar el autoupdater o todas las actualizaciones corta las stable que sí quiere. Reinstalar con `stable` cambia el canal pero no fija piso."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "install-updates--b388f04f",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A platform team ships a vetted Claude Code build to developer laptops through its own internal channel. Developers must stay on exactly the version the team provides, even if someone runs `claude update` by hand. Which setting meets this?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`DISABLE_AUTOUPDATER` set to `\"1\"`",
+          "correct": false,
+          "why": "It stops only the background check; `claude update` still installs a newer version."
+        },
+        {
+          "id": "B",
+          "text": "`autoUpdatesChannel` set to `\"stable\"`",
+          "correct": false,
+          "why": "It still updates, just to versions about a week old."
+        },
+        {
+          "id": "C",
+          "text": "`minimumVersion` set to the vetted version",
+          "correct": false,
+          "why": "A floor blocks older versions, not newer ones."
+        },
+        {
+          "id": "D",
+          "text": "`DISABLE_UPDATES` set in the environment",
+          "correct": true,
+          "why": "It blocks every update path, manual `claude update` included."
+        }
+      ],
+      "explanation": "The deciding requirement is that manual updates must also be blocked. `DISABLE_UPDATES` blocks all update paths and is meant for teams that distribute Claude Code through their own channels. `DISABLE_AUTOUPDATER` is the tempting answer, but it only stops the background check and leaves `claude update` working. The channel and the floor still allow newer versions.",
+      "keywordCues": [
+        "stay on exactly the version the team provides",
+        "even if someone runs `claude update` by hand"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma distribuye una versión revisada de Claude Code a las laptops por su propio canal interno. Los desarrolladores deben quedarse exactamente en esa versión, aunque alguien corra `claude update` a mano. ¿Qué setting cumple esto?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`DISABLE_AUTOUPDATER` en `\"1\"`",
+            "why": "Solo detiene el chequeo en segundo plano; `claude update` igual instala una versión más nueva."
+          },
+          {
+            "id": "B",
+            "text": "`autoUpdatesChannel` en `\"stable\"`",
+            "why": "Sigue actualizando, solo que a versiones de hace una semana aprox."
+          },
+          {
+            "id": "C",
+            "text": "`minimumVersion` con la versión revisada",
+            "why": "Un piso bloquea versiones más viejas, no más nuevas."
+          },
+          {
+            "id": "D",
+            "text": "`DISABLE_UPDATES` en el entorno",
+            "why": "Bloquea todas las rutas de actualización, incluido `claude update` manual."
+          }
+        ],
+        "explanation": "El requisito que decide es que también se bloqueen las actualizaciones manuales. `DISABLE_UPDATES` bloquea todas las rutas y está pensado para equipos que distribuyen Claude Code por sus propios canales. `DISABLE_AUTOUPDATER` es tentador, pero solo detiene el chequeo en segundo plano y deja funcionando `claude update`. El canal y el piso siguen permitiendo versiones más nuevas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "install-updates--77b875f3",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A macOS developer installed Claude Code with `brew install --cask claude-code` and wants to keep Homebrew as the package manager. She now wants new versions as soon as they ship, installed for her in the background instead of by running upgrades herself. Which two changes does she need? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `\"autoUpdatesChannel\": \"latest\"` in settings.json",
+          "correct": false,
+          "why": "Homebrew picks the channel by cask name, not by this setting."
+        },
+        {
+          "id": "B",
+          "text": "Switch to the `claude-code@latest` cask",
+          "correct": true,
+          "why": "This cask tracks the latest channel and gets versions as soon as they ship."
+        },
+        {
+          "id": "C",
+          "text": "Set `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` to `1`",
+          "correct": true,
+          "why": "Claude Code then runs the Homebrew upgrade in the background when a new version is available."
+        },
+        {
+          "id": "D",
+          "text": "Run `claude update` after each release",
+          "correct": false,
+          "why": "It is a manual step each release, which is exactly what she wants to avoid."
+        },
+        {
+          "id": "E",
+          "text": "Set `minimumVersion` to the newest release",
+          "correct": false,
+          "why": "A floor only restricts which versions may install; it doesn't trigger upgrades."
+        }
+      ],
+      "explanation": "There are two requirements: the latest channel and automatic upgrades, both while staying on Homebrew. The `claude-code` cask tracks stable, so she must move to `claude-code@latest`, because Homebrew ignores `autoUpdatesChannel`. Homebrew installs don't auto-update by default; `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1` makes Claude Code run the upgrade in the background. A floor or manual `claude update` doesn't meet either requirement.",
+      "keywordCues": [
+        "keep Homebrew as the package manager",
+        "as soon as they ship",
+        "installed for her in the background"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora en macOS instaló Claude Code con `brew install --cask claude-code` y quiere seguir usando Homebrew. Ahora quiere versiones nuevas apenas salen, instaladas en segundo plano en vez de correr upgrades ella misma. ¿Qué dos cambios necesita? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner `\"autoUpdatesChannel\": \"latest\"` en settings.json",
+            "why": "Homebrew elige el canal por el nombre del cask, no por este setting."
+          },
+          {
+            "id": "B",
+            "text": "Cambiar al cask `claude-code@latest`",
+            "why": "Este cask sigue el canal latest y recibe versiones apenas salen."
+          },
+          {
+            "id": "C",
+            "text": "Poner `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` en `1`",
+            "why": "Claude Code corre el upgrade de Homebrew en segundo plano cuando hay versión nueva."
+          },
+          {
+            "id": "D",
+            "text": "Correr `claude update` tras cada release",
+            "why": "Es un paso manual en cada release, justo lo que quiere evitar."
+          },
+          {
+            "id": "E",
+            "text": "Poner `minimumVersion` en el release más nuevo",
+            "why": "Un piso solo restringe qué versiones se instalan; no dispara upgrades."
+          }
+        ],
+        "explanation": "Hay dos requisitos: canal latest y upgrades automáticos, ambos sin dejar Homebrew. El cask `claude-code` sigue stable, así que debe pasar a `claude-code@latest`, porque Homebrew ignora `autoUpdatesChannel`. Las instalaciones Homebrew no se actualizan solas por defecto; `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1` hace que Claude Code corra el upgrade en segundo plano. Un piso o `claude update` manual no cumplen ninguno de los dos."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "install-updates--548158c6",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command applies a Claude Code update immediately, without waiting for the next background check?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude update",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude update` installs an available update right away. It reports `Successfully updated from <old version> to version <new version>`, or that Claude Code is up to date. It still works when `DISABLE_AUTOUPDATER` is set, but not when `DISABLE_UPDATES` is set.",
+      "keywordCues": [
+        "applies a Claude Code update immediately"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando aplica una actualización de Claude Code de inmediato, sin esperar el siguiente chequeo en segundo plano?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude update",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude update` instala de inmediato una actualización disponible. Informa `Successfully updated from <old version> to version <new version>`, o que Claude Code ya está al día. Sigue funcionando con `DISABLE_AUTOUPDATER`, pero no con `DISABLE_UPDATES`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "install-updates--6e76622a",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which settings.json key chooses whether auto-updates and `claude update` follow the latest or the stable release channel?",
+      "options": [
+        {
+          "id": "A",
+          "text": "autoUpdatesChannel",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`autoUpdatesChannel` accepts `\"latest\"`, the default, or `\"stable\"`. You can also change it via `/config` under Auto-update channel. Homebrew installs ignore it and choose the channel by cask name.",
+      "keywordCues": [
+        "latest or the stable release channel"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "¿Qué key de settings.json elige si las auto-actualizaciones y `claude update` siguen el canal latest o stable?",
+        "options": [
+          {
+            "id": "A",
+            "text": "autoUpdatesChannel",
+            "why": ""
+          }
+        ],
+        "explanation": "`autoUpdatesChannel` acepta `\"latest\"`, el valor por defecto, o `\"stable\"`. También puedes cambiarlo en `/config`, en Auto-update channel. Las instalaciones Homebrew lo ignoran y eligen el canal por el nombre del cask."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "install-updates--123bec73",
+      "conceptId": "install-updates",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make Claude Code follow the stable channel, never install anything below 2.1.100, and stop background update checks while still letting you run `claude update` by hand.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "latest",
+          "correct": false,
+          "why": "latest is the default channel and gets every release as soon as it ships."
+        },
+        {
+          "id": "1b",
+          "text": "stable",
+          "correct": true,
+          "why": "stable follows a version about one week old, skipping major regressions."
+        },
+        {
+          "id": "2a",
+          "text": "requiredMinimumVersion",
+          "correct": false,
+          "why": "It's a managed setting that makes Claude Code refuse to start outside a range, not an update floor."
+        },
+        {
+          "id": "2b",
+          "text": "minimumVersion",
+          "correct": true,
+          "why": "Auto-updates and `claude update` refuse to install anything below this floor."
+        },
+        {
+          "id": "2c",
+          "text": "requiredMaximumVersion",
+          "correct": false,
+          "why": "It's a ceiling, not a floor."
+        },
+        {
+          "id": "3a",
+          "text": "DISABLE_UPDATES",
+          "correct": false,
+          "why": "It would also block the manual `claude update`."
+        },
+        {
+          "id": "3b",
+          "text": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
+          "correct": false,
+          "why": "It opts Homebrew and WinGet into background upgrades; it doesn't stop checks."
+        },
+        {
+          "id": "3c",
+          "text": "DISABLE_AUTOUPDATER",
+          "correct": true,
+          "why": "It stops only the background check; `claude update` still works."
+        }
+      ],
+      "explanation": "The channel comes from `autoUpdatesChannel`, and `\"stable\"` gives the week-old build. `minimumVersion` is the update floor; the `required*` keys control whether Claude Code starts at all. `DISABLE_AUTOUPDATER` stops the background check but keeps `claude update`, while `DISABLE_UPDATES` would block manual updates too.",
+      "keywordCues": [
+        "follow the stable channel",
+        "never install anything below 2.1.100",
+        "still letting you run `claude update` by hand"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/setup.md",
+        "https://code.claude.com/docs/en/troubleshoot-install.md"
+      ],
+      "es": {
+        "stem": "Haz que Claude Code siga el canal stable, nunca instale nada por debajo de 2.1.100 y detenga los chequeos en segundo plano, dejándote correr `claude update` a mano.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "latest",
+            "why": "latest es el canal por defecto y recibe cada release apenas sale."
+          },
+          {
+            "id": "1b",
+            "text": "stable",
+            "why": "stable sigue una versión de hace una semana aprox., sin regresiones graves."
+          },
+          {
+            "id": "2a",
+            "text": "requiredMinimumVersion",
+            "why": "Es un setting gestionado que impide arrancar fuera de un rango, no un piso de actualizaciones."
+          },
+          {
+            "id": "2b",
+            "text": "minimumVersion",
+            "why": "Las auto-actualizaciones y `claude update` no instalan nada por debajo de este piso."
+          },
+          {
+            "id": "2c",
+            "text": "requiredMaximumVersion",
+            "why": "Es un techo, no un piso."
+          },
+          {
+            "id": "3a",
+            "text": "DISABLE_UPDATES",
+            "why": "También bloquearía `claude update` manual."
+          },
+          {
+            "id": "3b",
+            "text": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
+            "why": "Activa upgrades en segundo plano para Homebrew y WinGet; no detiene chequeos."
+          },
+          {
+            "id": "3c",
+            "text": "DISABLE_AUTOUPDATER",
+            "why": "Solo detiene el chequeo en segundo plano; `claude update` sigue funcionando."
+          }
+        ],
+        "explanation": "El canal sale de `autoUpdatesChannel`, y `\"stable\"` da la versión de hace una semana. `minimumVersion` es el piso de actualizaciones; las keys `required*` controlan si Claude Code arranca. `DISABLE_AUTOUPDATER` detiene el chequeo en segundo plano pero conserva `claude update`, mientras que `DISABLE_UPDATES` bloquearía también las manuales."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"autoUpdatesChannel\": \"{{1}}\",\n  \"{{2}}\": \"2.1.100\",\n  \"env\": {\n    \"{{3}}\": \"1\"\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "install-updates--r0",
+      "conceptId": "install-updates",
+      "kind": "recall",
+      "prompt": "Explain how a native install stays up to date, and how DISABLE_AUTOUPDATER and DISABLE_UPDATES differ.",
+      "promptEs": "Explica cómo se mantiene al día una instalación nativa y en qué se diferencian DISABLE_AUTOUPDATER y DISABLE_UPDATES.",
+      "idealAnswer": "A native install checks for updates on startup and periodically, downloads them in the background, and applies them the next time Claude Code starts. DISABLE_AUTOUPDATER stops only that background check, so `claude update` still works, while DISABLE_UPDATES blocks every update path, including manual ones.",
+      "rubric": [
+        "Native install updates itself in the background",
+        "Updates take effect on the next start",
+        "DISABLE_AUTOUPDATER keeps `claude update` working",
+        "DISABLE_UPDATES blocks manual updates too"
+      ]
+    }
+  ]
+}

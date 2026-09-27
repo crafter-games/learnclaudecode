@@ -1,0 +1,539 @@
+{
+  "conceptId": "debug-inspect-commands",
+  "card": {
+    "en": {
+      "tldr": "Inspection commands show what Claude Code actually loaded, so you stop guessing. Run /context first to see whether CLAUDE.md, rules, skills and MCP tools are present at all, then drill in with the dedicated command: /memory, /skills, /hooks, /mcp, /permissions or /status.",
+      "whenToUse": [
+        "An instruction or feature you configured seems to be ignored.",
+        "A setting doesn't apply and you suspect another scope or managed settings.",
+        "A hook is listed in /hooks but never fires.",
+        "You want an installation and settings health check."
+      ],
+      "keyFacts": [
+        "/context breaks the context window down by category: system prompt, system tools, MCP tools, custom subagents, memory files, skills (including bundled skills) and messages.",
+        "/status shows the active settings sources, including whether managed settings are in effect.",
+        "claude doctor (shell) prints read-only install and settings diagnostics without starting a session; /doctor (in a session) also proposes fixes and asks before applying them.",
+        "/hooks lists registered hooks grouped by event; /mcp shows each server's status and approval; /permissions shows the resolved allow and deny rules.",
+        "claude --debug writes a log to ~/.claude/debug/<session-id>.txt, not to the terminal; /debug turns debug logging on mid-session from that point forward."
+      ],
+      "gotchas": [
+        "Subdirectory CLAUDE.md files load on demand, when Claude reads a file there with the Read tool, so they are not in /context at session start.",
+        "If /context shows the file loaded but Claude still ignores a rule, the problem is how the rule is written, not loading.",
+        "/skills doesn't list bundled skills; /context does.",
+        "A settings.json edit applies to the running session after a brief delay; you don't need to restart."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Everyday commands (/init, /config)",
+          "difference": "They create or change configuration; inspection commands show what is loaded or active."
+        },
+        {
+          "concept": "Clean-config bisecting (--safe-mode)",
+          "difference": "Use it when you suspect your customizations themselves and need to rule them all out at once."
+        }
+      ],
+      "examCues": [
+        "confirm whether the file loaded at all",
+        "whether managed settings are in effect",
+        "without starting a session",
+        "which matchers were checked",
+        "the hook is listed but never fires"
+      ]
+    },
+    "es": {
+      "tldr": "Los comandos de inspección muestran qué cargó realmente Claude Code, para que dejes de adivinar. Corre /context primero para ver si CLAUDE.md, reglas, skills y tools MCP están presentes, y luego profundiza con el comando dedicado: /memory, /skills, /hooks, /mcp, /permissions o /status.",
+      "whenToUse": [
+        "Una instrucción o función que configuraste parece ignorada.",
+        "Un setting no aplica y sospechas de otro scope o de settings administrados.",
+        "Un hook aparece en /hooks pero nunca se dispara.",
+        "Quieres un chequeo de salud de la instalación y los settings."
+      ],
+      "keyFacts": [
+        "/context desglosa la ventana de contexto por categoría: system prompt, system tools, tools MCP, subagentes, memory files, skills (incluidas las bundled) y mensajes.",
+        "/status muestra las fuentes de settings activas, incluido si hay settings administrados en efecto.",
+        "claude doctor (shell) imprime diagnósticos de instalación y settings de solo lectura sin abrir sesión; /doctor (en sesión) además propone arreglos y pregunta antes de aplicarlos.",
+        "/hooks lista los hooks registrados agrupados por evento; /mcp muestra el estado y la aprobación de cada servidor; /permissions muestra las reglas allow y deny resueltas.",
+        "claude --debug escribe un log en ~/.claude/debug/<session-id>.txt, no en la terminal; /debug activa el log a mitad de sesión desde ese momento."
+      ],
+      "gotchas": [
+        "Los CLAUDE.md de subdirectorios cargan bajo demanda, cuando Claude lee un archivo ahí con la tool Read, así que no están en /context al inicio.",
+        "Si /context muestra que el archivo cargó pero Claude ignora una regla, el problema es cómo está escrita, no la carga.",
+        "/skills no lista las bundled skills; /context sí.",
+        "Un cambio en settings.json aplica a la sesión en curso tras una breve espera; no necesitas reiniciar."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Comandos de uso diario (/init, /config)",
+          "difference": "Crean o cambian configuración; los de inspección muestran qué está cargado o activo."
+        },
+        {
+          "concept": "Aislar con config limpia (--safe-mode)",
+          "difference": "Úsalo cuando sospechas de tus propias personalizaciones y quieres descartarlas todas de una vez."
+        }
+      ],
+      "examCues": [
+        "confirm whether the file loaded at all",
+        "whether managed settings are in effect",
+        "without starting a session",
+        "which matchers were checked",
+        "the hook is listed but never fires"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/debug-your-config.md",
+      "https://code.claude.com/docs/en/commands.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "debug-inspect-commands--f76e56f9",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer added a testing rule to the project's CLAUDE.md, but Claude keeps ignoring it. Before rewording the rule, she wants to confirm whether the file is present in the current session's context at all, using a single command. What should she run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory",
+          "correct": false,
+          "why": "It lists memory file locations and opens them in your editor, but it does not break down what is occupying the context window."
+        },
+        {
+          "id": "B",
+          "text": "/doctor",
+          "correct": false,
+          "why": "It runs a setup checkup and proposes fixes; it is not the check for whether a file is in the current context."
+        },
+        {
+          "id": "C",
+          "text": "/context",
+          "correct": true,
+          "why": "It shows everything occupying the context window by category, including memory files, so it confirms whether CLAUDE.md loaded."
+        },
+        {
+          "id": "D",
+          "text": "/status",
+          "correct": false,
+          "why": "It shows active settings sources and managed settings, not which memory files are in context."
+        }
+      ],
+      "explanation": "The requirement is to confirm presence in the current context. /context breaks the context window down by category, including memory files, rules and skills, and the docs say to run it first. /memory is tempting because it deals with CLAUDE.md, but it shows locations and opens files for editing rather than confirming what loaded. If /context shows the file, the next suspect is how the rule is worded.",
+      "keywordCues": [
+        "present in the current session's context at all",
+        "Before rewording the rule"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora agregó una regla de testing al CLAUDE.md del proyecto, pero Claude la sigue ignorando. Antes de reescribir la regla, quiere confirmar si el archivo está siquiera en el contexto de la sesión actual, con un solo comando. ¿Qué debe ejecutar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/memory",
+            "why": "Lista las ubicaciones de los memory files y los abre en tu editor, pero no desglosa lo que ocupa la ventana de contexto."
+          },
+          {
+            "id": "B",
+            "text": "/doctor",
+            "why": "Hace un chequeo de setup y propone arreglos; no es la forma de ver si un archivo está en el contexto actual."
+          },
+          {
+            "id": "C",
+            "text": "/context",
+            "why": "Muestra todo lo que ocupa la ventana de contexto por categoría, incluidos los memory files, así que confirma si CLAUDE.md cargó."
+          },
+          {
+            "id": "D",
+            "text": "/status",
+            "why": "Muestra las fuentes de settings activas y los settings administrados, no qué memory files están en contexto."
+          }
+        ],
+        "explanation": "El requisito es confirmar la presencia en el contexto actual. /context desglosa la ventana de contexto por categoría, incluidos memory files, reglas y skills, y la documentación dice correrlo primero. /memory tienta porque trata con CLAUDE.md, pero muestra ubicaciones y abre archivos para editar en vez de confirmar qué cargó. Si /context muestra el archivo, lo siguiente a revisar es cómo está redactada la regla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-inspect-commands--fa6736f2",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [
+        "cmd-everyday-commands"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team lead's change to the project's settings has no effect on one engineer's laptop, even after a few seconds. He suspects the organization deploys managed settings that apply first. He wants to confirm, from inside the session, whether managed settings are in effect. Which command should he run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/permissions",
+          "correct": false,
+          "why": "It shows the resolved allow and deny rules, not which settings sources are active or whether managed settings apply."
+        },
+        {
+          "id": "B",
+          "text": "/config",
+          "correct": false,
+          "why": "It is for changing settings such as theme or model, not for inspecting which sources are active."
+        },
+        {
+          "id": "C",
+          "text": "/status",
+          "correct": true,
+          "why": "It shows the active settings sources, including whether managed settings are in effect."
+        },
+        {
+          "id": "D",
+          "text": "/hooks",
+          "correct": false,
+          "why": "It lists registered hooks by event; it says nothing about settings sources."
+        }
+      ],
+      "explanation": "The deciding requirement is seeing whether managed settings are in effect. /status shows which settings sources are active, including managed settings, which apply first when present. /permissions is the tempting choice because it shows rules in effect, but it shows the resolved result rather than the sources behind it. /config changes settings rather than inspecting them.",
+      "keywordCues": [
+        "whether managed settings are in effect",
+        "from inside the session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "El cambio de un líder técnico a los settings del proyecto no tiene efecto en la laptop de un ingeniero, ni siquiera tras unos segundos. Sospecha que la organización despliega settings administrados que aplican primero. Quiere confirmar, desde dentro de la sesión, si hay settings administrados en efecto. ¿Qué comando debe ejecutar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/permissions",
+            "why": "Muestra las reglas allow y deny resueltas, no qué fuentes de settings están activas ni si aplican settings administrados."
+          },
+          {
+            "id": "B",
+            "text": "/config",
+            "why": "Sirve para cambiar settings como el tema o el modelo, no para inspeccionar qué fuentes están activas."
+          },
+          {
+            "id": "C",
+            "text": "/status",
+            "why": "Muestra las fuentes de settings activas, incluido si hay settings administrados en efecto."
+          },
+          {
+            "id": "D",
+            "text": "/hooks",
+            "why": "Lista los hooks registrados por evento; no dice nada de las fuentes de settings."
+          }
+        ],
+        "explanation": "El requisito decisivo es ver si hay settings administrados en efecto. /status muestra qué fuentes de settings están activas, incluidos los administrados, que aplican primero cuando existen. /permissions tienta porque muestra reglas vigentes, pero muestra el resultado resuelto, no las fuentes detrás. /config cambia settings en vez de inspeccionarlos."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-inspect-commands--404c8d2e",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [
+        "debug-clean-config"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "An engineer maintains a shell script that checks developer machines for broken Claude Code setups. The script must print installation health and settings-file validation errors without starting a Claude Code session and without applying any changes. What should the script run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/doctor inside a new session",
+          "correct": false,
+          "why": "It needs a session, and it proposes fixes that it can apply after asking, which the requirement rules out."
+        },
+        {
+          "id": "B",
+          "text": "claude --debug",
+          "correct": false,
+          "why": "It starts a session with debug logging to a file; it is not a settings validation report."
+        },
+        {
+          "id": "C",
+          "text": "claude --safe-mode",
+          "correct": false,
+          "why": "It starts a session with customizations disabled; it does not report validation errors."
+        },
+        {
+          "id": "D",
+          "text": "claude doctor",
+          "correct": true,
+          "why": "Run from the terminal, it prints read-only installation and settings diagnostics without starting a session."
+        }
+      ],
+      "explanation": "Two constraints decide it: no session and no changes. claude doctor runs from the shell and prints read-only installation and settings diagnostics, including settings-file validation errors. /doctor is the tempting look-alike, but it runs inside a session and proposes fixes. --debug and --safe-mode both start a session and serve other purposes.",
+      "keywordCues": [
+        "without starting a Claude Code session",
+        "without applying any changes",
+        "settings-file validation errors"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Un ingeniero mantiene un script de shell que revisa las máquinas de los desarrolladores en busca de setups de Claude Code rotos. El script debe imprimir la salud de la instalación y los errores de validación de los archivos de settings sin iniciar una sesión de Claude Code y sin aplicar ningún cambio. ¿Qué debe ejecutar el script?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/doctor inside a new session",
+            "why": "Necesita una sesión y propone arreglos que puede aplicar tras preguntar, lo que el requisito descarta."
+          },
+          {
+            "id": "B",
+            "text": "claude --debug",
+            "why": "Inicia una sesión con log de debug a un archivo; no es un reporte de validación de settings."
+          },
+          {
+            "id": "C",
+            "text": "claude --safe-mode",
+            "why": "Inicia una sesión con las personalizaciones desactivadas; no reporta errores de validación."
+          },
+          {
+            "id": "D",
+            "text": "claude doctor",
+            "why": "Desde la terminal, imprime diagnósticos de instalación y settings de solo lectura sin iniciar sesión."
+          }
+        ],
+        "explanation": "Deciden dos restricciones: sin sesión y sin cambios. claude doctor corre desde la shell e imprime diagnósticos de instalación y settings de solo lectura, incluidos errores de validación de archivos de settings. /doctor es el parecido tentador, pero corre dentro de una sesión y propone arreglos. --debug y --safe-mode inician una sesión y sirven para otra cosa."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-inspect-commands--38e1a1c4",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A PreToolUse hook on Bash is listed in /hooks, but it never seems to run. You want a record, for a real Bash call, of each hook event, which matchers were checked, and the hook's exit code and output. Which two approaches give you that record? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Start with claude --debug, trigger a Bash call, then read ~/.claude/debug/<session-id>.txt",
+          "correct": true,
+          "why": "The debug log records each event, the matchers checked, and the hook's exit code and output."
+        },
+        {
+          "id": "B",
+          "text": "Run claude doctor from the terminal",
+          "correct": false,
+          "why": "It prints read-only install and settings diagnostics without a session, so no tool call is evaluated."
+        },
+        {
+          "id": "C",
+          "text": "Start with claude --debug-file <path> and trigger a Bash call",
+          "correct": true,
+          "why": "It writes the same debug log to a path you choose and implicitly enables debug mode."
+        },
+        {
+          "id": "D",
+          "text": "Run /context after the Bash call",
+          "correct": false,
+          "why": "It shows what occupies the context window, not how hooks were evaluated at runtime."
+        },
+        {
+          "id": "E",
+          "text": "Run /status after the Bash call",
+          "correct": false,
+          "why": "It shows active settings sources, not hook evaluation details."
+        }
+      ],
+      "explanation": "The requirement is a runtime record of hook evaluation for an actual tool call. The debug log captures each event, the matchers checked and the hook's exit code and output; claude --debug writes it to ~/.claude/debug/<session-id>.txt, and --debug-file writes it to a known path. claude doctor is tempting because it catches settings errors, but it never evaluates a tool call. /context and /status show loaded content and settings sources, not hook execution.",
+      "keywordCues": [
+        "listed in /hooks, but it never seems to run",
+        "which matchers were checked",
+        "exit code and output"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Un hook PreToolUse sobre Bash aparece en /hooks, pero parece no ejecutarse nunca. Quieres un registro, para una llamada Bash real, de cada evento de hook, qué matchers se evaluaron y el código de salida y la salida del hook. ¿Qué dos enfoques te dan ese registro? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Start with claude --debug, trigger a Bash call, then read ~/.claude/debug/<session-id>.txt",
+            "why": "El log de debug registra cada evento, los matchers evaluados y el código de salida y la salida del hook."
+          },
+          {
+            "id": "B",
+            "text": "Run claude doctor from the terminal",
+            "why": "Imprime diagnósticos de instalación y settings de solo lectura sin sesión, así que no se evalúa ninguna tool call."
+          },
+          {
+            "id": "C",
+            "text": "Start with claude --debug-file <path> and trigger a Bash call",
+            "why": "Escribe el mismo log de debug en la ruta que elijas y activa el modo debug implícitamente."
+          },
+          {
+            "id": "D",
+            "text": "Run /context after the Bash call",
+            "why": "Muestra lo que ocupa la ventana de contexto, no cómo se evaluaron los hooks en ejecución."
+          },
+          {
+            "id": "E",
+            "text": "Run /status after the Bash call",
+            "why": "Muestra las fuentes de settings activas, no detalles de evaluación de hooks."
+          }
+        ],
+        "explanation": "El requisito es un registro en ejecución de la evaluación de hooks para una tool call real. El log de debug captura cada evento, los matchers evaluados y el código de salida y la salida del hook; claude --debug lo escribe en ~/.claude/debug/<session-id>.txt y --debug-file lo escribe en una ruta conocida. claude doctor tienta porque detecta errores de settings, pero nunca evalúa una tool call. /context y /status muestran contenido cargado y fuentes de settings, no la ejecución de hooks."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-inspect-commands--680295aa",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command do you run first to see everything occupying the context window, including memory files and skills?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/context all",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/context shows everything occupying the context window by category: system prompt, tools, MCP tools, subagents, memory files, skills and messages. The docs recommend running it first to confirm your configuration loaded at all; passing all expands the per-item breakdown.",
+      "keywordCues": [
+        "run first",
+        "everything occupying the context window"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando slash ejecutas primero para ver todo lo que ocupa la ventana de contexto, incluidos memory files y skills?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/context",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/context all",
+            "why": ""
+          }
+        ],
+        "explanation": "/context muestra todo lo que ocupa la ventana de contexto por categoría: system prompt, tools, tools MCP, subagentes, memory files, skills y mensajes. La documentación recomienda correrlo primero para confirmar que tu configuración cargó; pasar all expande el desglose por elemento."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "debug-inspect-commands--ab9427d6",
+      "conceptId": "debug-inspect-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "From your shell, which command prints read-only installation and settings diagnostics without starting a session?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude doctor",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "claude doctor prints read-only installation and settings diagnostics, including settings-file validation errors, without starting a session. For a checkup that can also apply fixes after asking, run /doctor inside a session.",
+      "keywordCues": [
+        "From your shell",
+        "without starting a session",
+        "read-only"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/debug-your-config.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Desde tu shell, ¿qué comando imprime diagnósticos de instalación y settings de solo lectura sin iniciar una sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude doctor",
+            "why": ""
+          }
+        ],
+        "explanation": "claude doctor imprime diagnósticos de instalación y settings de solo lectura, incluidos errores de validación de archivos de settings, sin iniciar sesión. Para un chequeo que también pueda aplicar arreglos tras preguntar, corre /doctor dentro de una sesión."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "debug-inspect-commands--r0",
+      "conceptId": "debug-inspect-commands",
+      "kind": "recall",
+      "prompt": "Something you configured seems ignored. Which inspection commands do you use, in what order, and what does each one show?",
+      "promptEs": "Algo que configuraste parece ignorado. ¿Qué comandos de inspección usas, en qué orden y qué muestra cada uno?",
+      "idealAnswer": "Start with /context to confirm whether CLAUDE.md, rules, skills and MCP tools loaded at all. Then drill in with the dedicated command, such as /hooks, /mcp, /permissions or /status, which shows active settings sources including managed settings. Use claude doctor or /doctor for install and settings health, and claude --debug or /debug for a runtime log in ~/.claude/debug.",
+      "rubric": [
+        "/context first to see whether it loaded",
+        "A dedicated command for the category (/hooks, /mcp, /permissions, /memory, /skills)",
+        "/status for active settings sources and managed settings",
+        "claude doctor (read-only, shell) or /doctor (proposes fixes), or --debug for a log"
+      ]
+    },
+    {
+      "id": "debug-inspect-commands--r1",
+      "conceptId": "debug-inspect-commands",
+      "kind": "why-not",
+      "prompt": "Why is claude doctor not enough to find out why a hook listed in /hooks never fires on a tool call?",
+      "promptEs": "¿Por qué claude doctor no basta para averiguar por qué un hook que aparece en /hooks nunca se dispara en una tool call?",
+      "idealAnswer": "claude doctor only prints read-only install and settings diagnostics without starting a session, so no tool call is ever evaluated. Matching happens at runtime, so you start with claude --debug, trigger the call and read the debug log, which records each event, the matchers checked and the hook's exit code and output.",
+      "rubric": [
+        "claude doctor is static and runs without a session",
+        "Matcher evaluation happens at runtime on a real tool call",
+        "Use claude --debug and read the debug log with matchers and exit code"
+      ]
+    }
+  ]
+}

@@ -34,6 +34,11 @@ ambiguous/wrong (then `fatal`).
 
 Also audit each concept card, each recall prompt and the overview (narration, key points, confusedWith).
 
+House rules that are also defects:
+- A `command` item whose answer is a keyboard key or shortcut to press (Esc, Shift+Tab) instead of something typed → `fatal`.
+- Overview narration that spells commands out ("slash context", "guion guion debug") instead of writing them literally
+  (/context, --debug) → overview `explanation` with the fixed overview.
+
 ## Output
 
 Write `content/.pipeline/verify/<unitId>.json`:
@@ -58,7 +63,7 @@ Write `content/.pipeline/verify/<unitId>.json`:
   ],
   "cards": [ { "conceptId": "…", "severity": "ok" | "explanation" | "fatal", "issues": [], "fixed": null } ],
   // "fixed" = the full corrected card { "en": CardBody, "es": CardBody } when severity is "explanation" or "fatal"
-  "recall": [ { "conceptId": "…", "index": 0, "severity": "ok" | "explanation" | "fatal", "issues": [], "fixedIdealAnswer": null } ],
+  "recall": [ { "conceptId": "…", "index": 0, "severity": "ok" | "explanation" | "fatal", "issues": [], "fixedIdealAnswer": null, "fixedRubric": null } ],
   "overview": { "severity": "ok" | "explanation", "issues": [], "fixed": null }
   // overview "fixed" = { "hook", "segments", "keyPoints", "confusedWith" } rewritten, keeping node ids
 }

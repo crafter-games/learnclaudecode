@@ -1,0 +1,385 @@
+{
+  "unitId": "u-settings-keys",
+  "audited": true,
+  "overview": {
+    "title": "Claves de settings y variables de entorno",
+    "hook": "Saber qué valor gana: shell, bloque env, flag de sesión o archivo del repo.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "shell",
+          "label": "Export del shell",
+          "kind": "data",
+          "x": 8,
+          "y": 20
+        },
+        {
+          "id": "user",
+          "label": "Settings usuario",
+          "kind": "data",
+          "x": 8,
+          "y": 80
+        },
+        {
+          "id": "flags",
+          "label": "--settings, flags",
+          "kind": "data",
+          "x": 40,
+          "y": 20
+        },
+        {
+          "id": "repo",
+          "label": "Repo .claude/",
+          "kind": "zone",
+          "x": 40,
+          "y": 80
+        },
+        {
+          "id": "trust",
+          "label": "Workspace trust",
+          "kind": "service",
+          "x": 70,
+          "y": 80
+        },
+        {
+          "id": "session",
+          "label": "Sesión",
+          "kind": "actor",
+          "x": 92,
+          "y": 50
+        }
+      ],
+      "edges": [
+        {
+          "from": "shell",
+          "to": "user",
+          "label": "env del archivo gana"
+        },
+        {
+          "from": "user",
+          "to": "flags",
+          "label": "el flag gana"
+        },
+        {
+          "from": "flags",
+          "to": "session",
+          "label": "solo esta sesión"
+        },
+        {
+          "from": "repo",
+          "to": "trust",
+          "label": "espera"
+        },
+        {
+          "from": "trust",
+          "to": "session",
+          "label": "allow y env"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "El mismo valor puede llegar por varios caminos: una variable exportada en tu shell, una clave en un archivo de settings o un flag al lanzar claude. Esta unidad te ayuda a predecir cuál gana.",
+        "show": [
+          "shell",
+          "session"
+        ],
+        "focus": "shell"
+      },
+      {
+        "narration": "La clave env de un archivo de settings define variables para cada sesión y sus subprocesos. Si la misma variable viene del shell, gana el valor del archivo. Para anular un export que no puedes quitar, ponla como texto vacío.",
+        "show": [
+          "shell",
+          "user",
+          "session"
+        ],
+        "focus": "user"
+      },
+      {
+        "narration": "Para probar un valor sin guardarlo, lanza claude con --settings, con el flag propio de la clave, como --model, o con su variable pareja. Todo eso dura una sola sesión y no toca tus archivos.",
+        "show": [
+          "shell",
+          "user",
+          "flags",
+          "session"
+        ],
+        "focus": "flags"
+      },
+      {
+        "narration": "Las variables de entorno no son un nivel de precedencia: se decide por pareja. ANTHROPIC_MODEL le gana a la clave model de cualquier archivo, y --model le gana a ambos durante la sesión.",
+        "show": [
+          "shell",
+          "user",
+          "flags",
+          "session"
+        ],
+        "focus": "session"
+      },
+      {
+        "narration": "Lo que commiteas en el repo no siempre llega a tu equipo. Algunas claves ni se leen desde un archivo del proyecto, como el modo auto o bypassPermissions, y CLAUDE_CONFIG_DIR se ignora dentro de env.",
+        "show": [
+          "shell",
+          "user",
+          "flags",
+          "repo",
+          "session"
+        ],
+        "focus": "repo"
+      },
+      {
+        "narration": "Otras esperan a que cada persona confíe en la carpeta: las reglas allow, los directorios adicionales y la mayoría del bloque env. Las reglas deny y ask aplican de inmediato. No confundas esto con qué archivo elegir para llegar a quién.",
+        "show": [
+          "shell",
+          "user",
+          "flags",
+          "repo",
+          "trust",
+          "session"
+        ],
+        "focus": "trust"
+      }
+    ],
+    "keyPoints": [
+      "env del archivo pisa el export del shell",
+      "\"VAR\": \"\" anula un export que no controlas",
+      "--settings: una sesión, debajo de managed",
+      "--model > ANTHROPIC_MODEL > clave model",
+      "allow del repo espera workspace trust; deny no"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "Precedencia de settings",
+        "difference": "Ordena archivos que fijan la misma clave; las variables de entorno se deciden por pareja, no por nivel."
+      },
+      {
+        "unitOrService": "Scopes de settings",
+        "difference": "Eligen a quién afecta un archivo; aquí la clave ya está commiteada y no aplica."
+      },
+      {
+        "unitOrService": "apiKeyHelper",
+        "difference": "Genera credenciales con un comando; env guarda texto plano visible a subprocesos."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-settings-keys--l1",
+      "conceptId": "settings-env-block",
+      "format": "lightning",
+      "prompt": "Apply `API_TIMEOUT_MS` to every session from a settings file → which key?",
+      "promptEs": "Aplicar `API_TIMEOUT_MS` en cada sesión desde un archivo de settings → ¿qué clave?",
+      "options": [
+        {
+          "id": "A",
+          "text": "apiKeyHelper"
+        },
+        {
+          "id": "B",
+          "text": "env"
+        },
+        {
+          "id": "C",
+          "text": "--settings"
+        },
+        {
+          "id": "D",
+          "text": "modelOverrides"
+        }
+      ],
+      "answer": "B",
+      "why": "La clave `env` define variables para cada sesión y sus subprocesos. `--settings` es un flag que dura una sola sesión, y `apiKeyHelper` solo genera la credencial."
+    },
+    {
+      "id": "u-settings-keys--l2",
+      "conceptId": "settings-env-block",
+      "format": "thisorthat",
+      "prompt": "Shell exports `DEPLOY_ENV=prod`; user settings `env` sets `staging` → which applies?",
+      "promptEs": "El shell exporta `DEPLOY_ENV=prod`; el `env` de settings de usuario pone `staging` → ¿cuál aplica?",
+      "options": [
+        {
+          "id": "A",
+          "text": "prod, the shell export"
+        },
+        {
+          "id": "B",
+          "text": "staging, the settings value"
+        }
+      ],
+      "answer": "B",
+      "why": "Claude Code escribe cada entrada de `env` en el entorno del proceso y reemplaza el valor heredado del shell. El export del shell no tiene prioridad."
+    },
+    {
+      "id": "u-settings-keys--l3",
+      "conceptId": "settings-env-block",
+      "format": "lightning",
+      "prompt": "Project `.claude/settings.json` sets `CLAUDE_CONFIG_DIR` in `env` → result?",
+      "promptEs": "El `.claude/settings.json` del proyecto pone `CLAUDE_CONFIG_DIR` en `env` → ¿resultado?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Applies after workspace trust"
+        },
+        {
+          "id": "B",
+          "text": "Applies immediately for everyone"
+        },
+        {
+          "id": "C",
+          "text": "Dropped, with a debug warning"
+        },
+        {
+          "id": "D",
+          "text": "Applies only in `-p` mode"
+        }
+      ],
+      "answer": "C",
+      "why": "Los settings de proyecto y local no pueden fijar variables que eligen dónde escribe Claude Code, como `CLAUDE_CONFIG_DIR`. Se descartan aun confiando en la carpeta; ponla en el shell, usuario o managed."
+    },
+    {
+      "id": "u-settings-keys--l4",
+      "conceptId": "settings-session-overrides",
+      "format": "lightning",
+      "prompt": "Pass several settings keys as JSON for one session only → ?",
+      "promptEs": "Pasar varias claves de settings como JSON solo para una sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/config"
+        },
+        {
+          "id": "B",
+          "text": "The env block"
+        },
+        {
+          "id": "C",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "D",
+          "text": "claude --settings"
+        }
+      ],
+      "answer": "D",
+      "why": "`--settings` acepta JSON en línea o una ruta y dura una sesión sin tocar archivos. `/config` y `settings.local.json` guardan el valor en disco."
+    },
+    {
+      "id": "u-settings-keys--l5",
+      "conceptId": "settings-session-overrides",
+      "format": "thisorthat",
+      "prompt": "`ANTHROPIC_MODEL` exported; `model` set in project settings → session model?",
+      "promptEs": "`ANTHROPIC_MODEL` exportada; `model` fijado en settings del proyecto → ¿modelo de la sesión?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The `ANTHROPIC_MODEL` value"
+        },
+        {
+          "id": "B",
+          "text": "The project `model` value"
+        }
+      ],
+      "answer": "A",
+      "why": "Las variables de entorno no son un nivel de precedencia; se decide por pareja. `ANTHROPIC_MODEL` le gana a la clave `model` de cualquier archivo."
+    },
+    {
+      "id": "u-settings-keys--l6",
+      "conceptId": "settings-session-overrides",
+      "format": "lightning",
+      "prompt": "Launch with `--model` while `ANTHROPIC_MODEL` is exported → which wins?",
+      "promptEs": "Lanzar con `--model` mientras `ANTHROPIC_MODEL` está exportada → ¿cuál gana?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--model"
+        },
+        {
+          "id": "B",
+          "text": "ANTHROPIC_MODEL"
+        },
+        {
+          "id": "C",
+          "text": "The user settings model key"
+        },
+        {
+          "id": "D",
+          "text": "ANTHROPIC_DEFAULT_MODEL"
+        }
+      ],
+      "answer": "A",
+      "why": "`--model` tiene precedencia sobre `ANTHROPIC_MODEL`, y ambos sobre la clave `model` durante la sesión. `ANTHROPIC_DEFAULT_MODEL` solo aplica si nada más elige modelo."
+    },
+    {
+      "id": "u-settings-keys--l7",
+      "conceptId": "settings-repo-file-limits",
+      "format": "lightning",
+      "prompt": "Committed `permissions.defaultMode: \"auto\"` never applies for teammates → why?",
+      "promptEs": "`permissions.defaultMode: \"auto\"` commiteado nunca aplica a tu equipo → ¿por qué?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It waits for workspace trust"
+        },
+        {
+          "id": "B",
+          "text": "Project files can't set that value"
+        },
+        {
+          "id": "C",
+          "text": "A deny rule overrides it"
+        },
+        {
+          "id": "D",
+          "text": "It needs `--settings` to load"
+        }
+      ],
+      "answer": "B",
+      "why": "Los valores `auto` y `bypassPermissions` no tienen efecto desde settings de proyecto o local, confíes o no en la carpeta. Van en `~/.claude/settings.json` o managed."
+    },
+    {
+      "id": "u-settings-keys--l8",
+      "conceptId": "settings-repo-file-limits",
+      "format": "thisorthat",
+      "prompt": "Committed `permissions.deny` rule, folder not yet trusted → applies?",
+      "promptEs": "Regla `permissions.deny` commiteada, carpeta aún sin confianza → ¿aplica?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Waits for workspace trust"
+        },
+        {
+          "id": "B",
+          "text": "Applies right away"
+        }
+      ],
+      "answer": "B",
+      "why": "Solo lo que otorga capacidad espera la confianza, como `permissions.allow`. Las reglas `deny` y `ask` solo restringen, así que aplican de inmediato."
+    },
+    {
+      "id": "u-settings-keys--l9",
+      "conceptId": "settings-repo-file-limits",
+      "format": "lightning",
+      "prompt": "`claude -p` in a never-trusted repo with committed `permissions.allow` → ?",
+      "promptEs": "`claude -p` en un repo nunca confiado con `permissions.allow` commiteado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Trust dialog appears first"
+        },
+        {
+          "id": "B",
+          "text": "Allow rules apply normally"
+        },
+        {
+          "id": "C",
+          "text": "Run exits with an error"
+        },
+        {
+          "id": "D",
+          "text": "Allow rules unused; stderr warning"
+        }
+      ],
+      "answer": "D",
+      "why": "`claude -p` nunca muestra el diálogo de confianza. Las reglas allow del repo no se usan y se imprime la advertencia `this workspace has not been trusted` a stderr."
+    }
+  ]
+}

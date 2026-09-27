@@ -1,0 +1,410 @@
+{
+  "conceptId": "tools-edit-vs-write",
+  "card": {
+    "en": {
+      "tldr": "Edit replaces an exact `old_string` with `new_string`; Write creates a file or overwrites it with the full content. Use Edit for partial changes to existing files and Write for new files or full rewrites. Read feeds both, returning numbered lines and paging large files.",
+      "whenToUse": [
+        "Changing a few lines in an existing file (Edit)",
+        "Creating a new file from scratch (Write)",
+        "Diagnosing why an Edit failed to apply",
+        "Reading large files, images, PDFs or notebooks (Read)"
+      ],
+      "keyFacts": [
+        "Edit has no regex or fuzzy matching: `old_string` must match exactly, including whitespace and indentation.",
+        "`old_string` must appear exactly once, unless `replace_all: true` replaces every occurrence.",
+        "Read-before-edit: Claude Opus 4.6, Claude Haiku 4.5 and older models always require a read of the file in the conversation; newer models can edit an unread file only when reading it wouldn't need a permission prompt and Read is available. A read cut short with a `PARTIAL view` notice never counts.",
+        "Write never appends or merges; it replaces the whole file.",
+        "Read returns line numbers, pages large files with a `PARTIAL view` notice, reads PDFs over 10 pages in `pages` ranges of up to 20, and can't read directories."
+      ],
+      "gotchas": [
+        "One whitespace difference is enough for Edit to miss.",
+        "Viewing a file with a piped Bash command, such as `cat file | head`, does not satisfy read-before-edit.",
+        "Using Write for a one-line change rewrites the whole file.",
+        "To list a directory, Claude uses a shell command such as `ls`, not Read."
+      ],
+      "confusedWith": [
+        {
+          "concept": "NotebookEdit",
+          "difference": "Modifies Jupyter notebook cells; Edit and Write work on regular files."
+        },
+        {
+          "concept": "Bash file changes",
+          "difference": "A shell command like `sed` changes files outside the Edit and Write tools and their checks."
+        }
+      ],
+      "examCues": [
+        "change only that line",
+        "the string appears more than once",
+        "create a new file",
+        "no match although the text looks identical",
+        "replace every occurrence"
+      ]
+    },
+    "es": {
+      "tldr": "Edit reemplaza un `old_string` exacto por `new_string`; Write crea un archivo o lo sobrescribe con el contenido completo. Usa Edit para cambios parciales en archivos existentes y Write para archivos nuevos o reescrituras completas. Read alimenta a ambas: devuelve líneas numeradas y pagina archivos grandes.",
+      "whenToUse": [
+        "Cambiar unas líneas de un archivo existente (Edit)",
+        "Crear un archivo nuevo desde cero (Write)",
+        "Diagnosticar por qué un Edit no se aplicó",
+        "Leer archivos grandes, imágenes, PDFs o notebooks (Read)"
+      ],
+      "keyFacts": [
+        "Edit no usa regex ni coincidencia difusa: `old_string` debe coincidir exacto, incluidos espacios e indentación.",
+        "`old_string` debe aparecer exactamente una vez, salvo que `replace_all: true` reemplace todas las ocurrencias.",
+        "Read-before-edit: Claude Opus 4.6, Claude Haiku 4.5 y modelos anteriores siempre exigen leer el archivo en la conversación; los modelos más nuevos pueden editar un archivo no leído solo si leerlo no pediría permiso y Read está disponible. Una lectura cortada con aviso `PARTIAL view` nunca cuenta.",
+        "Write nunca agrega ni fusiona; reemplaza el archivo completo.",
+        "Read devuelve números de línea, pagina archivos grandes con aviso `PARTIAL view`, lee PDFs de más de 10 páginas en rangos `pages` de hasta 20 y no lee directorios."
+      ],
+      "gotchas": [
+        "Una diferencia de un espacio basta para que Edit no encuentre el texto.",
+        "Ver un archivo con un comando Bash con pipe, como `cat file | head`, no cumple el read-before-edit.",
+        "Usar Write para cambiar una línea reescribe todo el archivo.",
+        "Para listar un directorio, Claude usa un comando de shell como `ls`, no Read."
+      ],
+      "confusedWith": [
+        {
+          "concept": "NotebookEdit",
+          "difference": "Modifica celdas de notebooks Jupyter; Edit y Write trabajan con archivos normales."
+        },
+        {
+          "concept": "Cambios de archivos con Bash",
+          "difference": "Un comando de shell como `sed` cambia archivos fuera de las herramientas Edit y Write y sus chequeos."
+        }
+      ],
+      "examCues": [
+        "change only that line",
+        "the string appears more than once",
+        "create a new file",
+        "no match although the text looks identical",
+        "replace every occurrence"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/tools-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "tools-edit-vs-write--3c64dff0",
+      "conceptId": "tools-edit-vs-write",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer asks Claude to rename one configuration key that appears once in a 2,000-line YAML file Claude has already read. The change must touch only that line, leaving the rest of the file untouched. Which approach fits?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write with just the corrected line as content",
+          "correct": false,
+          "why": "Write replaces the whole file, so everything else would be lost."
+        },
+        {
+          "id": "B",
+          "text": "Edit with a regex that matches the old key",
+          "correct": false,
+          "why": "Edit does exact string replacement; it has no regex matching."
+        },
+        {
+          "id": "C",
+          "text": "Write the full file again with the key renamed",
+          "correct": false,
+          "why": "It rewrites all 2,000 lines to change one; Claude uses Edit for partial changes."
+        },
+        {
+          "id": "D",
+          "text": "Edit with the exact line as `old_string`",
+          "correct": true,
+          "why": "The line is unique and the file was read, so an exact replacement changes only it."
+        }
+      ],
+      "explanation": "For a partial change to an existing file, Claude uses Edit, which swaps an exact `old_string` for `new_string`. The key appears once and the file was read, so all three checks pass. Writing the full file again is the tempting option, but Write replaces the whole file instead of touching only that line.",
+      "keywordCues": [
+        "appears once",
+        "touch only that line",
+        "already read"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador pide a Claude renombrar una clave de configuración que aparece una vez en un YAML de 2.000 líneas que Claude ya leyó. El cambio debe tocar solo esa línea y dejar intacto el resto. ¿Qué enfoque sirve?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Write con solo la línea corregida como contenido",
+            "why": "Write reemplaza el archivo completo, así que se perdería todo lo demás."
+          },
+          {
+            "id": "B",
+            "text": "Edit con una regex que coincida con la clave vieja",
+            "why": "Edit hace reemplazo exacto de texto; no tiene regex."
+          },
+          {
+            "id": "C",
+            "text": "Write del archivo completo con la clave renombrada",
+            "why": "Reescribe las 2.000 líneas para cambiar una; Claude usa Edit para cambios parciales."
+          },
+          {
+            "id": "D",
+            "text": "Edit con la línea exacta como `old_string`",
+            "why": "La línea es única y el archivo se leyó, así que el reemplazo exacto cambia solo esa."
+          }
+        ],
+        "explanation": "Para un cambio parcial en un archivo existente, Claude usa Edit, que cambia un `old_string` exacto por `new_string`. La clave aparece una vez y el archivo se leyó, así que pasan los tres chequeos. Reescribir el archivo completo tienta, pero Write reemplaza todo el archivo en vez de tocar solo esa línea."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-edit-vs-write--9b37a2fc",
+      "conceptId": "tools-edit-vs-write",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude read `server.py` fully, then its Edit fails with no match, although the snippet looks identical to the file on screen. The file is indented with tabs and appears exactly once. The goal is to apply the edit on the next try, deterministically. What is the fix?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rebuild `old_string` with the file's exact tab indentation",
+          "correct": true,
+          "why": "Edit needs a character-exact match; one whitespace difference is enough to miss."
+        },
+        {
+          "id": "B",
+          "text": "Set `replace_all: true` so the match is looser",
+          "correct": false,
+          "why": "replace_all handles multiple occurrences; it doesn't relax matching."
+        },
+        {
+          "id": "C",
+          "text": "Read the file again before retrying the same Edit",
+          "correct": false,
+          "why": "The file was already read; the same string would still miss."
+        },
+        {
+          "id": "D",
+          "text": "Use NotebookEdit, which tolerates indentation",
+          "correct": false,
+          "why": "NotebookEdit modifies Jupyter notebook cells, not Python source files."
+        }
+      ],
+      "explanation": "Edit does exact string replacement with no fuzzy matching, so `old_string` must match including whitespace and indentation. A snippet typed with spaces misses a tab-indented file even when it looks the same. `replace_all` is tempting, but it only decides how many occurrences to replace, not how strictly they match.",
+      "keywordCues": [
+        "fails with no match",
+        "looks identical",
+        "indented with tabs"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "Claude leyó `server.py` completo y luego su Edit falla sin coincidencia, aunque el fragmento se ve igual al archivo en pantalla. El archivo usa tabs para indentar y el fragmento aparece exactamente una vez. El objetivo es que el edit se aplique en el siguiente intento, de forma determinista. ¿Cuál es la solución?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reconstruir `old_string` con la indentación exacta en tabs",
+            "why": "Edit exige coincidencia carácter por carácter; una diferencia de espacio basta para fallar."
+          },
+          {
+            "id": "B",
+            "text": "Poner `replace_all: true` para que la coincidencia sea más laxa",
+            "why": "replace_all maneja varias ocurrencias; no relaja la coincidencia."
+          },
+          {
+            "id": "C",
+            "text": "Leer el archivo otra vez y reintentar el mismo Edit",
+            "why": "El archivo ya se leyó; el mismo texto seguiría sin coincidir."
+          },
+          {
+            "id": "D",
+            "text": "Usar NotebookEdit, que tolera la indentación",
+            "why": "NotebookEdit modifica celdas de notebooks Jupyter, no archivos Python."
+          }
+        ],
+        "explanation": "Edit hace reemplazo exacto sin coincidencia difusa, así que `old_string` debe coincidir incluidos espacios e indentación. Un fragmento escrito con espacios no coincide con un archivo indentado con tabs aunque se vea igual. `replace_all` tienta, pero solo decide cuántas ocurrencias reemplazar, no qué tan estricta es la coincidencia."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-edit-vs-write--acbcad10",
+      "conceptId": "tools-edit-vs-write",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A session runs a model that always enforces read-before-edit. Claude must change only the first of two identical `retry(3)` calls in `client.ts`, a file it hasn't read in this conversation. Which two things are required for the edit to apply? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Read `client.ts` in this conversation first",
+          "correct": true,
+          "why": "This model always requires a read of the file before Edit."
+        },
+        {
+          "id": "B",
+          "text": "Extend `old_string` with context unique to the first call",
+          "correct": true,
+          "why": "old_string must appear exactly once, and only the first call should change."
+        },
+        {
+          "id": "C",
+          "text": "Set `replace_all: true` on the Edit",
+          "correct": false,
+          "why": "It would change both calls, not only the first."
+        },
+        {
+          "id": "D",
+          "text": "View it with `cat client.ts | head -50`",
+          "correct": false,
+          "why": "Piped Bash output doesn't count toward the read-before-edit check."
+        },
+        {
+          "id": "E",
+          "text": "Use Write instead, which skips these checks",
+          "correct": false,
+          "why": "Write replaces the whole file, and on this model it also requires the read."
+        }
+      ],
+      "explanation": "Edit needs the file read in the conversation, an exact match, and a unique `old_string`. On a model that always enforces the read, Claude must read `client.ts` first; a piped `cat | head` does not count. Because `retry(3)` appears twice and only one should change, Claude adds surrounding context instead of using `replace_all`, which would change both.",
+      "keywordCues": [
+        "always enforces read-before-edit",
+        "only the first of two identical",
+        "hasn't read in this conversation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "Una sesión usa un modelo que siempre exige read-before-edit. Claude debe cambiar solo la primera de dos llamadas idénticas `retry(3)` en `client.ts`, un archivo que no ha leído en esta conversación. ¿Qué dos cosas se requieren para que el edit se aplique? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Leer `client.ts` primero en esta conversación",
+            "why": "Este modelo siempre exige leer el archivo antes de Edit."
+          },
+          {
+            "id": "B",
+            "text": "Extender `old_string` con contexto único de la primera llamada",
+            "why": "old_string debe aparecer exactamente una vez, y solo la primera llamada debe cambiar."
+          },
+          {
+            "id": "C",
+            "text": "Poner `replace_all: true` en el Edit",
+            "why": "Cambiaría ambas llamadas, no solo la primera."
+          },
+          {
+            "id": "D",
+            "text": "Verlo con `cat client.ts | head -50`",
+            "why": "La salida Bash con pipe no cuenta para el read-before-edit."
+          },
+          {
+            "id": "E",
+            "text": "Usar Write, que se salta estos chequeos",
+            "why": "Write reemplaza todo el archivo y, en este modelo, también exige la lectura."
+          }
+        ],
+        "explanation": "Edit necesita el archivo leído en la conversación, coincidencia exacta y un `old_string` único. Con un modelo que siempre exige la lectura, Claude debe leer `client.ts` primero; un `cat | head` con pipe no cuenta. Como `retry(3)` aparece dos veces y solo una debe cambiar, Claude agrega contexto en vez de usar `replace_all`, que cambiaría ambas."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "tools-edit-vs-write--0db2b59f",
+      "conceptId": "tools-edit-vs-write",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which Edit parameter makes Claude replace every occurrence of `old_string` instead of requiring it to be unique?",
+      "options": [
+        {
+          "id": "A",
+          "text": "replace_all",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "replace_all: true",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`old_string` must appear exactly once for Edit to apply. When it appears more than once, Claude either adds surrounding context to pin down one occurrence or sets `replace_all: true` to replace them all.",
+      "keywordCues": [
+        "replace every occurrence",
+        "instead of requiring it to be unique"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/tools-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué parámetro de Edit hace que Claude reemplace todas las ocurrencias de `old_string` en vez de exigir que sea único?",
+        "options": [
+          {
+            "id": "A",
+            "text": "replace_all",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "replace_all: true",
+            "why": ""
+          }
+        ],
+        "explanation": "`old_string` debe aparecer exactamente una vez para que Edit se aplique. Cuando aparece más de una vez, Claude agrega contexto para fijar una ocurrencia o pone `replace_all: true` para reemplazarlas todas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "tools-edit-vs-write--r0",
+      "conceptId": "tools-edit-vs-write",
+      "kind": "recall",
+      "prompt": "Name the three checks an Edit must pass to apply, and say when Claude uses Write instead.",
+      "promptEs": "Nombra los tres chequeos que debe pasar un Edit para aplicarse, y di cuándo Claude usa Write en su lugar.",
+      "idealAnswer": "Read-before-edit: the file must have been read in the conversation (always on Opus 4.6, Haiku 4.5 and older; newer models may skip it when reading wouldn't need a permission prompt), and a PARTIAL view read doesn't count. Match: old_string must appear exactly as written, including whitespace. Uniqueness: it must appear exactly once unless replace_all is true. Claude uses Write to create a new file or overwrite a whole file, since Write never appends or merges.",
+      "rubric": [
+        "Read-before-edit",
+        "Exact match including whitespace",
+        "Unique occurrence or replace_all",
+        "Write for new files or full overwrite"
+      ]
+    },
+    {
+      "id": "tools-edit-vs-write--r1",
+      "conceptId": "tools-edit-vs-write",
+      "kind": "why-not",
+      "prompt": "Claude needs to add one entry at the end of an existing CHANGELOG.md. Why is Write with only the new entry the wrong tool?",
+      "promptEs": "Claude debe agregar una entrada al final de un CHANGELOG.md existente. ¿Por qué Write con solo la entrada nueva es la herramienta equivocada?",
+      "idealAnswer": "Write creates or overwrites the whole file with the content given; it never appends or merges, so the rest of the changelog would be lost. For a partial change to an existing file, Claude uses Edit with an exact, unique old_string.",
+      "rubric": [
+        "Write overwrites the whole file",
+        "Write never appends",
+        "Use Edit for partial changes"
+      ]
+    }
+  ]
+}

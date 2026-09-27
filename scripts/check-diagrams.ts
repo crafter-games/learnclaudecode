@@ -4,10 +4,13 @@ import { layoutDiagram } from "../src/lib/game/diagram-layout";
 import type { UnitContent } from "../src/lib/content/types";
 
 const PHONE = 340;
+// Default: published units. Pass a directory (e.g. content/.pipeline/drafts) and/or unit ids to lint drafts.
+const [dirArg, ...only] = process.argv.slice(2);
+const DIR = dirArg ?? "content/units";
 const rows: string[] = [];
 let bad = 0;
-for (const f of fs.readdirSync("content/units").filter((x) => x.endsWith(".json"))) {
-  const u: UnitContent = JSON.parse(fs.readFileSync(`content/units/${f}`, "utf8"));
+for (const f of fs.readdirSync(DIR).filter((x) => x.endsWith(".json") && (!only.length || only.includes(x.replace(/.json$/, ""))))) {
+  const u: UnitContent = JSON.parse(fs.readFileSync(`${DIR}/${f}`, "utf8"));
   const l = layoutDiagram(u.overview.diagram, PHONE);
   const scale = Math.min(1.25, PHONE / l.width, 620 / l.height);
   const font = 15 * scale;

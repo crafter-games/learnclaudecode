@@ -1,0 +1,459 @@
+{
+  "unitId": "u-settings-scopes",
+  "audited": true,
+  "overview": {
+    "title": "Scopes y precedencia de settings",
+    "hook": "Elegir en qué archivo va cada setting y saber qué valor gana.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "user",
+          "label": "Scope user",
+          "kind": "service",
+          "x": 30,
+          "y": 85
+        },
+        {
+          "id": "project",
+          "label": "Scope proyecto",
+          "kind": "service",
+          "x": 30,
+          "y": 50
+        },
+        {
+          "id": "local",
+          "label": "Scope local",
+          "kind": "service",
+          "x": 30,
+          "y": 15
+        },
+        {
+          "id": "cli",
+          "label": "--settings",
+          "kind": "data",
+          "x": 55,
+          "y": 50
+        },
+        {
+          "id": "managed",
+          "label": "Managed settings",
+          "kind": "service",
+          "x": 75,
+          "y": 15
+        },
+        {
+          "id": "session",
+          "label": "Sesión activa",
+          "kind": "zone",
+          "x": 92,
+          "y": 60
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "user",
+          "label": "tus preferencias"
+        },
+        {
+          "from": "user",
+          "to": "project",
+          "label": "proyecto > user"
+        },
+        {
+          "from": "project",
+          "to": "local",
+          "label": "local > proyecto"
+        },
+        {
+          "from": "local",
+          "to": "cli",
+          "label": "--settings > local"
+        },
+        {
+          "from": "cli",
+          "to": "managed",
+          "label": "managed > CLI"
+        },
+        {
+          "from": "managed",
+          "to": "session",
+          "label": "gana siempre"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Un mismo setting puede vivir en varios archivos. Si lo pones en el archivo equivocado, tu equipo no lo recibe o tu preferencia personal termina en el repositorio.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "El scope user, en ~/.claude/settings.json, te sigue en todos tus proyectos. El scope proyecto, .claude/settings.json, vive dentro del repo y se commitea para el equipo. El scope local, .claude/settings.local.json, es solo tuyo en ese proyecto y Claude Code lo deja fuera de git cuando lo crea él.",
+        "show": [
+          "you",
+          "user",
+          "project",
+          "local"
+        ],
+        "focus": "project"
+      },
+      {
+        "narration": "Arriba de todo están los managed settings que despliega tu organización. Nada de lo que tú configures los sobreescribe, salvo unas pocas claves de seguridad donde se respeta el valor más estricto.",
+        "show": [
+          "you",
+          "user",
+          "project",
+          "local",
+          "managed",
+          "cli"
+        ],
+        "focus": "managed"
+      },
+      {
+        "narration": "Si la misma clave está en varios lugares, gana el nivel más alto: managed, luego la línea de comandos, luego local, luego proyecto y al final user. Las listas, como las reglas allow, se combinan en vez de pisarse.",
+        "show": [
+          "you",
+          "user",
+          "project",
+          "local",
+          "managed",
+          "cli",
+          "session"
+        ],
+        "focus": "session"
+      },
+      {
+        "narration": "La opción --settings al lanzar claude aplica un valor solo a esa sesión y no escribe ningún archivo. Las variables de entorno no son un nivel de esta pila: cada par de variable y clave decide por su cuenta.",
+        "show": [
+          "you",
+          "user",
+          "project",
+          "local",
+          "managed",
+          "cli",
+          "session"
+        ],
+        "focus": "cli"
+      },
+      {
+        "narration": "Para confirmar qué cargó, corre /status y mira la línea Setting sources: dice qué archivos leyó, no de cuál salió cada clave. Para ver las entradas rechazadas, corre claude doctor.",
+        "show": [
+          "you",
+          "user",
+          "project",
+          "local",
+          "managed",
+          "cli",
+          "session"
+        ],
+        "focus": "session"
+      }
+    ],
+    "keyPoints": [
+      "User te sigue; proyecto es del equipo; local, solo tuyo",
+      "Orden: managed, línea de comandos, local, proyecto, user",
+      "Las listas como permissions.allow se combinan entre archivos",
+      "/status muestra qué archivos cargaron, no qué clave ganó",
+      "Settings es JSON estricto: sin comentarios ni comas finales"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "~/.claude.json",
+        "difference": "Claude Code lo escribe solo: sesión iniciada, servidores MCP y decisiones de trust. No es un scope de settings."
+      },
+      {
+        "unitOrService": "Variables de entorno",
+        "difference": "No son un nivel de la pila; cada par variable-clave define cuál se aplica."
+      },
+      {
+        "unitOrService": "CLAUDE.md",
+        "difference": "Da instrucciones permanentes a Claude; los settings configuran permisos, hooks, modelo y más."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-settings-scopes--l1",
+      "conceptId": "settings-scopes-files",
+      "format": "lightning",
+      "prompt": "Share a permission rule with everyone who clones the repo → which file?",
+      "promptEs": "Compartir una regla de permisos con todos los que clonan el repo → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "C",
+          "text": ".claude/settings.json"
+        },
+        {
+          "id": "D",
+          "text": "~/.claude.json"
+        }
+      ],
+      "answer": "C",
+      "why": "El archivo compartido del proyecto se commitea y llega a cada clon. El local queda fuera de git y el de user solo existe en tu máquina."
+    },
+    {
+      "id": "u-settings-scopes--l2",
+      "conceptId": "settings-scopes-files",
+      "format": "lightning",
+      "prompt": "Personal override in one project that teammates never see → which file?",
+      "promptEs": "Override personal en un proyecto que tus compañeros nunca ven → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.json"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "C",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "D",
+          "text": "managed-settings.json"
+        }
+      ],
+      "answer": "B",
+      "why": "El archivo local aplica solo a ti en ese proyecto y se aplica sobre el compartido. El de user te afectaría en todos tus proyectos, no solo en uno."
+    },
+    {
+      "id": "u-settings-scopes--l3",
+      "conceptId": "settings-scopes-files",
+      "format": "thisorthat",
+      "prompt": "In the CLI, 'Yes, and don't ask again' saves the allow rule where?",
+      "promptEs": "En la CLI, ¿dónde guarda 'Yes, and don't ask again' la regla allow?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.json"
+        }
+      ],
+      "answer": "A",
+      "why": "En la CLI, Claude Code escribe esas aprobaciones solo en tu archivo local. El archivo compartido cambiaría la regla para todo el equipo."
+    },
+    {
+      "id": "u-settings-scopes--l4",
+      "conceptId": "settings-scopes-files",
+      "format": "lightning",
+      "prompt": "File Claude Code writes itself for sign-in, MCP servers and trust decisions → ?",
+      "promptEs": "Archivo que Claude Code escribe solo para sesión, servidores MCP y decisiones de trust → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "C",
+          "text": "managed-settings.json"
+        },
+        {
+          "id": "D",
+          "text": "~/.claude.json"
+        }
+      ],
+      "answer": "D",
+      "why": "`~/.claude.json` es un archivo aparte que Claude Code escribe para sí mismo. `~/.claude/settings.json` es tu scope user, que editas tú o `/config`."
+    },
+    {
+      "id": "u-settings-scopes--l5",
+      "conceptId": "settings-precedence-order",
+      "format": "lightning",
+      "prompt": "Same key set in user, shared project and project local files → which applies?",
+      "promptEs": "La misma clave en los archivos user, proyecto compartido y local → ¿cuál aplica?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The user value"
+        },
+        {
+          "id": "B",
+          "text": "The shared project value"
+        },
+        {
+          "id": "C",
+          "text": "The project local value"
+        },
+        {
+          "id": "D",
+          "text": "Whichever file was edited last"
+        }
+      ],
+      "answer": "C",
+      "why": "Local está sobre proyecto compartido, y este sobre user. Que tu preferencia sea personal no la sube: user es el nivel más bajo."
+    },
+    {
+      "id": "u-settings-scopes--l6",
+      "conceptId": "settings-precedence-order",
+      "format": "lightning",
+      "prompt": "Managed settings set a key; you pass the same key with `--settings` → winner?",
+      "promptEs": "Managed settings fija una clave; pasas la misma con `--settings` → ¿cuál gana?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--settings, for this session"
+        },
+        {
+          "id": "B",
+          "text": "The managed value"
+        },
+        {
+          "id": "C",
+          "text": "Your .claude/settings.local.json value"
+        },
+        {
+          "id": "D",
+          "text": "Claude Code asks you to choose"
+        }
+      ],
+      "answer": "B",
+      "why": "`--settings` queda sobre todos tus archivos pero debajo de managed. Nada que tú configures sobreescribe managed, salvo unas pocas claves de seguridad."
+    },
+    {
+      "id": "u-settings-scopes--l7",
+      "conceptId": "settings-precedence-order",
+      "format": "thisorthat",
+      "prompt": "`permissions.allow` is set in both user and shared project settings → ?",
+      "promptEs": "`permissions.allow` está en settings de user y de proyecto compartido → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Project list replaces the user list"
+        },
+        {
+          "id": "B",
+          "text": "Entries from both files apply"
+        }
+      ],
+      "answer": "B",
+      "why": "Las claves de lista se combinan entre archivos en vez de pisarse, así que cada archivo suma reglas. Solo unas claves de modelos, como `fallbackModel`, toman el valor entero de un solo archivo."
+    },
+    {
+      "id": "u-settings-scopes--l8",
+      "conceptId": "settings-precedence-order",
+      "format": "lightning",
+      "prompt": "Team file sets `spinnerTipsEnabled: true`; turn tips off only for you there → ?",
+      "promptEs": "El archivo del equipo fija `spinnerTipsEnabled: true`; apagar los tips solo para ti ahí → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "C",
+          "text": "~/.claude.json"
+        },
+        {
+          "id": "D",
+          "text": "A note in CLAUDE.md"
+        }
+      ],
+      "answer": "A",
+      "why": "Local está sobre proyecto compartido y no afecta a tus compañeros. Ponerlo en user no sirve: el proyecto compartido está por encima de user."
+    },
+    {
+      "id": "u-settings-scopes--l9",
+      "conceptId": "settings-verify-status",
+      "format": "lightning",
+      "prompt": "See which settings files loaded for the current session → ?",
+      "promptEs": "Ver qué archivos de settings cargaron en la sesión actual → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/config"
+        },
+        {
+          "id": "B",
+          "text": "/permissions"
+        },
+        {
+          "id": "C",
+          "text": "/status"
+        },
+        {
+          "id": "D",
+          "text": "/memory"
+        }
+      ],
+      "answer": "C",
+      "why": "La pestaña Status de `/status` tiene la línea `Setting sources` con cada archivo cargado. La pestaña Config de `/config` no es una vista del contenido de `settings.json`."
+    },
+    {
+      "id": "u-settings-scopes--l10",
+      "conceptId": "settings-verify-status",
+      "format": "lightning",
+      "prompt": "List the settings entries Claude Code rejected → ?",
+      "promptEs": "Listar las entradas de settings que Claude Code rechazó → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/status"
+        },
+        {
+          "id": "B",
+          "text": "/config"
+        },
+        {
+          "id": "C",
+          "text": "/context"
+        },
+        {
+          "id": "D",
+          "text": "claude doctor"
+        }
+      ],
+      "answer": "D",
+      "why": "`claude doctor` lista las entradas rechazadas con el detalle de cada error. `/status` solo dice qué archivos se cargaron o están afectados."
+    },
+    {
+      "id": "u-settings-scopes--l11",
+      "conceptId": "settings-verify-status",
+      "format": "thisorthat",
+      "prompt": "A trailing comma in `.claude/settings.json` → what does Claude Code report?",
+      "promptEs": "Una coma final en `.claude/settings.json` → ¿qué reporta Claude Code?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Settings Warning; only that entry skipped"
+        },
+        {
+          "id": "B",
+          "text": "Settings Error for the whole file"
+        }
+      ],
+      "answer": "B",
+      "why": "Settings es JSON estricto: una coma final o un comentario `//` rompe todo el archivo. Warning es para entradas sueltas inválidas, como un evento de hook desconocido."
+    }
+  ]
+}

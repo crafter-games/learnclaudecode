@@ -1,0 +1,308 @@
+{
+  "unitId": "u-install-auth",
+  "audited": true,
+  "overview": {
+    "title": "Instalación y cuenta",
+    "hook": "Saber cómo se actualiza Claude Code y qué credencial usa realmente.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "installer",
+          "label": "Instalador nativo",
+          "kind": "service",
+          "x": 35,
+          "y": 20
+        },
+        {
+          "id": "settings",
+          "label": "settings.json",
+          "kind": "data",
+          "x": 35,
+          "y": 80
+        },
+        {
+          "id": "claude",
+          "label": "Claude Code",
+          "kind": "service",
+          "x": 60,
+          "y": 50
+        },
+        {
+          "id": "creds",
+          "label": "Credenciales",
+          "kind": "data",
+          "x": 85,
+          "y": 20
+        },
+        {
+          "id": "status",
+          "label": "/status",
+          "kind": "service",
+          "x": 85,
+          "y": 80
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "installer",
+          "label": "curl / irm"
+        },
+        {
+          "from": "installer",
+          "to": "claude",
+          "label": "~/.local/bin"
+        },
+        {
+          "from": "settings",
+          "to": "claude",
+          "label": "canal y piso"
+        },
+        {
+          "from": "claude",
+          "to": "creds",
+          "label": "elige por precedencia"
+        },
+        {
+          "from": "creds",
+          "to": "status",
+          "label": "muestra la activa"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Dos sorpresas típicas: Claude Code no se actualiza como esperabas, o usa una credencial que no elegiste. Empieza por la instalación: tú corres el instalador nativo con curl o con irm en PowerShell.",
+        "show": [
+          "you",
+          "installer"
+        ],
+        "focus": "installer"
+      },
+      {
+        "narration": "El instalador deja claude en la carpeta punto local barra bin. Si la terminal dice que no encuentra el comando, esa carpeta no está en tu PATH. La instalación nativa se actualiza sola en segundo plano y aplica al siguiente inicio.",
+        "show": [
+          "you",
+          "installer",
+          "claude"
+        ],
+        "focus": "claude"
+      },
+      {
+        "narration": "En settings.json eliges el canal: latest, por defecto, o stable, una versión de hace una semana aprox. minimumVersion pone un piso. DISABLE_AUTOUPDATER solo apaga el chequeo en segundo plano; DISABLE_UPDATES bloquea también claude update.",
+        "show": [
+          "you",
+          "installer",
+          "claude",
+          "settings"
+        ],
+        "focus": "settings"
+      },
+      {
+        "narration": "Homebrew, WinGet, apt, dnf y apk no se actualizan solos por defecto: ahí actualizas con tu gestor de paquetes.",
+        "show": [
+          "you",
+          "installer",
+          "claude",
+          "settings"
+        ],
+        "focus": "installer"
+      },
+      {
+        "narration": "Con varias credenciales, gana la de más arriba: proveedor cloud, luego ANTHROPIC_AUTH_TOKEN, ANTHROPIC_API_KEY, apiKeyHelper, CLAUDE_CODE_OAUTH_TOKEN, perfiles de Anthropic y al final tu suscripción de login.",
+        "show": [
+          "you",
+          "installer",
+          "claude",
+          "settings",
+          "creds"
+        ],
+        "focus": "creds"
+      },
+      {
+        "narration": "Por eso una ANTHROPIC_API_KEY olvidada en tu perfil de shell le gana a tu suscripción una vez aprobada. Quítala y revisa en /status qué credencial está activa. Para CI sin navegador, usa claude setup-token y exporta CLAUDE_CODE_OAUTH_TOKEN.",
+        "show": [
+          "you",
+          "installer",
+          "claude",
+          "settings",
+          "creds",
+          "status"
+        ],
+        "focus": "status"
+      }
+    ],
+    "keyPoints": [
+      "Instalación nativa: ~/.local/bin, se actualiza sola en segundo plano.",
+      "Gestores de paquetes: actualización manual por defecto.",
+      "DISABLE_AUTOUPDATER apaga el chequeo; DISABLE_UPDATES bloquea todo.",
+      "ANTHROPIC_API_KEY aprobada le gana a tu suscripción.",
+      "CI sin navegador: claude setup-token más CLAUDE_CODE_OAUTH_TOKEN."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "requiredMinimumVersion",
+        "difference": "Setting gestionado que impide arrancar fuera de rango; minimumVersion solo limita las actualizaciones."
+      },
+      {
+        "unitOrService": "/login",
+        "difference": "Guarda tu suscripción, pero queda debajo de API keys y tokens en variables de entorno."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-install-auth--l1",
+      "conceptId": "install-updates",
+      "format": "lightning",
+      "prompt": "Stop background update checks but keep `claude update` working → ?",
+      "promptEs": "Detener los chequeos de actualización en segundo plano pero mantener `claude update` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DISABLE_UPDATES"
+        },
+        {
+          "id": "B",
+          "text": "DISABLE_AUTOUPDATER"
+        },
+        {
+          "id": "C",
+          "text": "minimumVersion"
+        },
+        {
+          "id": "D",
+          "text": "autoUpdatesChannel"
+        }
+      ],
+      "answer": "B",
+      "why": "DISABLE_AUTOUPDATER solo apaga el chequeo en segundo plano; `claude update` sigue funcionando. DISABLE_UPDATES es tentadora, pero bloquea todas las rutas, incluida la manual."
+    },
+    {
+      "id": "u-install-auth--l2",
+      "conceptId": "install-updates",
+      "format": "lightning",
+      "prompt": "Install method that updates itself in the background by default → ?",
+      "promptEs": "Método de instalación que se actualiza solo en segundo plano por defecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Homebrew cask"
+        },
+        {
+          "id": "B",
+          "text": "WinGet package"
+        },
+        {
+          "id": "C",
+          "text": "Native installer (install.sh / install.ps1)"
+        },
+        {
+          "id": "D",
+          "text": "apt repository"
+        }
+      ],
+      "answer": "C",
+      "why": "Solo la instalación nativa se actualiza sola en segundo plano. Homebrew, WinGet, apt, dnf y apk requieren actualizar manualmente por defecto."
+    },
+    {
+      "id": "u-install-auth--l3",
+      "conceptId": "install-updates",
+      "format": "thisorthat",
+      "prompt": "Get a version about one week old that skips releases with major regressions → ?",
+      "promptEs": "Recibir una versión de hace una semana aprox. que salta releases con regresiones graves → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "\"autoUpdatesChannel\": \"stable\""
+        },
+        {
+          "id": "B",
+          "text": "\"autoUpdatesChannel\": \"latest\""
+        }
+      ],
+      "answer": "A",
+      "why": "stable usa una versión de hace una semana aprox. y salta las que tienen regresiones graves. latest, el valor por defecto, trae cada release apenas sale."
+    },
+    {
+      "id": "u-install-auth--l4",
+      "conceptId": "auth-precedence",
+      "format": "lightning",
+      "prompt": "Route through an LLM gateway that expects an `Authorization: Bearer` token → ?",
+      "promptEs": "Pasar por un LLM gateway que espera un token `Authorization: Bearer` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ANTHROPIC_API_KEY"
+        },
+        {
+          "id": "B",
+          "text": "apiKeyHelper"
+        },
+        {
+          "id": "C",
+          "text": "CLAUDE_CODE_OAUTH_TOKEN"
+        },
+        {
+          "id": "D",
+          "text": "ANTHROPIC_AUTH_TOKEN"
+        }
+      ],
+      "answer": "D",
+      "why": "ANTHROPIC_AUTH_TOKEN se envía como `Authorization: Bearer`, pensado para gateways o proxies. ANTHROPIC_API_KEY va en el header `X-Api-Key`, para acceso directo a la API de Anthropic."
+    },
+    {
+      "id": "u-install-auth--l5",
+      "conceptId": "auth-precedence",
+      "format": "lightning",
+      "prompt": "Rotating short-lived credentials fetched from a vault by a script → ?",
+      "promptEs": "Credenciales rotativas de corta duración que un script trae de un vault → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "apiKeyHelper"
+        },
+        {
+          "id": "B",
+          "text": "claude setup-token"
+        },
+        {
+          "id": "C",
+          "text": "ANTHROPIC_API_KEY in shell profile"
+        },
+        {
+          "id": "D",
+          "text": "/login"
+        }
+      ],
+      "answer": "A",
+      "why": "apiKeyHelper corre un script que devuelve la key y se vuelve a ejecutar cada cinco minutos por defecto. Una ANTHROPIC_API_KEY fija en el perfil no rota."
+    },
+    {
+      "id": "u-install-auth--l6",
+      "conceptId": "auth-precedence",
+      "format": "thisorthat",
+      "prompt": "Confirm which authentication method the current session is using → ?",
+      "promptEs": "Confirmar qué método de autenticación usa la sesión actual → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/login"
+        },
+        {
+          "id": "B",
+          "text": "/status"
+        }
+      ],
+      "answer": "B",
+      "why": "/status muestra el método activo y marca la credencial que no está en uso. /login inicia sesión de nuevo, pero no te dice cuál credencial ganó."
+    }
+  ]
+}

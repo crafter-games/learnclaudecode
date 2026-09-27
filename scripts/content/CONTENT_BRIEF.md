@@ -63,8 +63,13 @@ fields read like docs/exam English. Spanish and English must say the same thing.
 - 3–7 nodes; `kind`: `service` (a Claude Code component/feature: hook, skill, subagent, MCP server, settings file…),
   `actor` (you, Claude, a teammate, CI), `data` (a file, a JSON payload, a message), `zone` (a boundary: project,
   user home, sandbox, cloud VM), `note`. Labels ≤ 18 characters (they are wrapped to 2 lines). x/y are 0–100 percentages,
-  read left→right, ≥ 18 apart (a layout engine refines them).
-- 4–7 segments, each 1–3 spoken sentences, ≤ 45 words, no lists/markdown/backticks (it is read aloud). `show` is
+  read left→right, ≥ 18 apart (a layout engine refines them). Keep it narrow enough for a phone: at most 3 nodes
+  side by side and no node with more than 3 incoming edges (turn a fan-in into a chain when there is an order,
+  e.g. precedence user → project → local → CLI → managed). Check with
+  `pnpm -s check:diagrams content/.pipeline/drafts <unitId>` (needs "ok": text ≥ 11 px, no overlaps).
+- 4–7 segments, each 1–3 spoken sentences, ≤ 45 words, no lists/markdown/backticks (it is read aloud and shown
+  as captions). Write commands, flags and files literally (/context, --debug, CLAUDE.md), never spelled out
+  ("slash context", "guion guion debug"): the TTS voice is told to pronounce them. `show` is
   cumulative (node ids visible from this segment on), `focus` the node being narrated.
 - Segment order: the problem → the pieces → how it flows → the 1–2 decisions/variants that matter → when NOT to use it
   / what it gets confused with.

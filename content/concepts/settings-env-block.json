@@ -1,0 +1,526 @@
+{
+  "conceptId": "settings-env-block",
+  "card": {
+    "en": {
+      "tldr": "The `env` key in a settings file sets environment variables for every session and the subprocesses Claude Code starts. A value there overwrites the same variable exported in your shell, and between files it follows settings precedence. Use it to apply a variable on every launch or roll it out to a team.",
+      "whenToUse": [
+        "Apply a variable such as `API_TIMEOUT_MS` to every session without touching your shell profile",
+        "Roll a variable out to everyone who clones the repo via `.claude/settings.json`",
+        "Neutralize a stale shell export you can't unset with `\"VAR\": \"\"`"
+      ],
+      "keyFacts": [
+        "When the same variable is set in your shell and in an `env` block, the settings file value applies.",
+        "Between settings files, `env` values follow settings precedence, so a managed entry overrides user or project.",
+        "You can't remove a variable from a settings file; set it to `\"\"` and Claude Code treats it as unset for provider selection, while subprocesses inherit the empty value.",
+        "Project and local settings can't set variables like `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR` or the OpenTelemetry exporter variables; set them in your shell, user or managed settings.",
+        "From project and local settings, `env` applies after you trust the workspace, or at startup in `-p` mode; variables classified as safe apply at startup.",
+        "Values are plain text and reach every subprocess; for API credentials use `apiKeyHelper`."
+      ],
+      "gotchas": [
+        "Removing a variable from the file doesn't unset it in a running session; the removal applies on the next launch.",
+        "Features that read variables once at startup, such as OpenTelemetry, keep startup values until you relaunch.",
+        "`NO_COLOR` and `FORCE_COLOR` in `env` reach only subprocesses, not Claude Code's own interface.",
+        "Ignored variables in project or local `env` are dropped with a warning visible in `claude --debug`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-session-overrides",
+          "difference": "A shell export or `--settings` affects one session; `env` in a file applies on every launch."
+        },
+        {
+          "concept": "settings-precedence-order",
+          "difference": "`env` is an ordinary key that follows the file levels; a shell variable paired with a key is decided per pair."
+        }
+      ],
+      "examCues": [
+        "every session",
+        "overrides what my shell exports",
+        "a shell profile I can't edit",
+        "roll the variable out to the team",
+        "subprocesses Claude starts"
+      ]
+    },
+    "es": {
+      "tldr": "La clave `env` de un archivo de settings define variables de entorno para cada sesión y los subprocesos que Claude Code inicia. Su valor pisa la misma variable exportada en tu shell, y entre archivos sigue la precedencia de settings. Úsala para aplicar una variable en cada arranque o repartirla al equipo.",
+      "whenToUse": [
+        "Aplicar una variable como `API_TIMEOUT_MS` en cada sesión sin tocar el perfil de tu shell",
+        "Repartir una variable a todos los que clonan el repo vía `.claude/settings.json`",
+        "Neutralizar un export viejo del shell que no puedes quitar con `\"VAR\": \"\"`"
+      ],
+      "keyFacts": [
+        "Si la misma variable está en tu shell y en un bloque `env`, aplica el valor del archivo de settings.",
+        "Entre archivos de settings, los valores de `env` siguen la precedencia, así que una entrada managed pisa a usuario o proyecto.",
+        "No puedes quitar una variable desde un archivo de settings; ponla en `\"\"` y Claude Code la trata como no definida para elegir proveedor, aunque los subprocesos heredan el valor vacío.",
+        "Los settings de proyecto y local no pueden fijar variables como `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR` ni las del exportador de OpenTelemetry; ponlas en tu shell, usuario o managed.",
+        "Desde settings de proyecto y local, `env` aplica tras confiar en el workspace, o al arrancar en modo `-p`; las variables clasificadas como seguras aplican al arrancar.",
+        "Los valores son texto plano y llegan a cada subproceso; para credenciales de API usa `apiKeyHelper`."
+      ],
+      "gotchas": [
+        "Quitar una variable del archivo no la elimina en una sesión en curso; el cambio aplica en el siguiente arranque.",
+        "Las funciones que leen variables una vez al arrancar, como OpenTelemetry, conservan esos valores hasta relanzar.",
+        "`NO_COLOR` y `FORCE_COLOR` en `env` solo llegan a subprocesos, no a la interfaz de Claude Code.",
+        "Las variables ignoradas en `env` de proyecto o local se descartan con una advertencia visible en `claude --debug`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-session-overrides",
+          "difference": "Un export del shell o `--settings` afecta una sesión; `env` en un archivo aplica en cada arranque."
+        },
+        {
+          "concept": "settings-precedence-order",
+          "difference": "`env` es una clave normal que sigue los niveles de archivos; una variable del shell con clave pareja se decide por pareja."
+        }
+      ],
+      "examCues": [
+        "every session",
+        "overrides what my shell exports",
+        "a shell profile I can't edit",
+        "roll the variable out to the team",
+        "subprocesses Claude starts"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/env-vars.md",
+      "https://code.claude.com/docs/en/settings-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-env-block--6301e8a0",
+      "conceptId": "settings-env-block",
+      "secondaryConcepts": [
+        "settings-session-overrides"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer's shell profile is managed by IT and exports `CLAUDE_CODE_USE_VERTEX`, a stale value that routes Claude Code to the wrong provider. She can't edit or unset it. She wants Claude Code to ignore that export in every project she opens, on every launch.",
+      "options": [
+        {
+          "id": "A",
+          "text": "In `.claude/settings.local.json`, add `\"CLAUDE_CODE_USE_VERTEX\": \"\"` under `env`",
+          "correct": false,
+          "why": "Local settings apply only in that one project, not in every project she opens."
+        },
+        {
+          "id": "B",
+          "text": "In `~/.claude/settings.json`, add `\"CLAUDE_CODE_USE_VERTEX\": \"\"` under `env`",
+          "correct": true,
+          "why": "User settings apply in every project, the `env` value overwrites the shell export, and an empty value counts as unset for provider selection."
+        },
+        {
+          "id": "C",
+          "text": "Launch with `claude --settings '{\"env\": {\"CLAUDE_CODE_USE_VERTEX\": \"\"}}'`",
+          "correct": false,
+          "why": "`--settings` lasts for one session only, so she would have to pass it on every launch."
+        },
+        {
+          "id": "D",
+          "text": "Leave `CLAUDE_CODE_USE_VERTEX` out of the `env` block in `~/.claude/settings.json`",
+          "correct": false,
+          "why": "A settings file can set a variable but can't remove one; omitting it leaves the shell export in place."
+        }
+      ],
+      "explanation": "The requirement is to neutralize an export she can't unset, in every project and on every launch. An `env` entry overwrites the inherited shell value, and setting it to an empty string makes Claude Code treat it as unset for provider selection. User settings is the file that applies across all projects. The local file is limited to one project, and `--settings` lasts a single session.",
+      "keywordCues": [
+        "can't edit or unset it",
+        "in every project",
+        "on every launch"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/env-vars.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "El perfil de shell de una desarrolladora lo administra TI y exporta `CLAUDE_CODE_USE_VERTEX`, un valor viejo que manda Claude Code al proveedor equivocado. No puede editarlo ni quitarlo. Quiere que Claude Code ignore ese export en cada proyecto que abra, en cada arranque.",
+        "options": [
+          {
+            "id": "A",
+            "text": "En `.claude/settings.local.json`, agregar `\"CLAUDE_CODE_USE_VERTEX\": \"\"` bajo `env`",
+            "why": "Los settings locales aplican solo en ese proyecto, no en todos los que abre."
+          },
+          {
+            "id": "B",
+            "text": "En `~/.claude/settings.json`, agregar `\"CLAUDE_CODE_USE_VERTEX\": \"\"` bajo `env`",
+            "why": "Los settings de usuario aplican en todo proyecto, el valor de `env` pisa el export del shell y un valor vacío cuenta como no definido para elegir proveedor."
+          },
+          {
+            "id": "C",
+            "text": "Lanzar con `claude --settings '{\"env\": {\"CLAUDE_CODE_USE_VERTEX\": \"\"}}'`",
+            "why": "`--settings` dura una sola sesión, así que tendría que pasarlo en cada arranque."
+          },
+          {
+            "id": "D",
+            "text": "Dejar `CLAUDE_CODE_USE_VERTEX` fuera del bloque `env` en `~/.claude/settings.json`",
+            "why": "Un archivo de settings puede fijar una variable pero no quitarla; omitirla deja el export del shell."
+          }
+        ],
+        "explanation": "El requisito es neutralizar un export que no puede quitar, en todo proyecto y en cada arranque. Una entrada de `env` pisa el valor heredado del shell, y ponerla como texto vacío hace que Claude Code la trate como no definida para elegir proveedor. Los settings de usuario son el archivo que aplica en todos los proyectos. El archivo local se limita a un proyecto y `--settings` dura una sola sesión."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-env-block--7f6b264e",
+      "conceptId": "settings-env-block",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A consultant wants Claude Code to keep a client's sessions, settings and plugins in `~/.claude-client` instead of `~/.claude`. He committed `\"CLAUDE_CONFIG_DIR\": \"~/.claude-client\"` under `env` in the client repo's `.claude/settings.json` and accepted the trust dialog, but Claude Code still uses `~/.claude`. He wants it working with the least setup.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the entry to `.claude/settings.local.json` in the same repo",
+          "correct": false,
+          "why": "Local settings can't set `CLAUDE_CONFIG_DIR` either; Claude Code drops it from project and local `env`."
+        },
+        {
+          "id": "B",
+          "text": "Add `~/.claude-client` to `permissions.additionalDirectories`",
+          "correct": false,
+          "why": "That grants file access to another directory; it doesn't change where Claude Code stores its own configuration."
+        },
+        {
+          "id": "C",
+          "text": "Launch through a shell alias such as `CLAUDE_CONFIG_DIR=~/.claude-client claude`",
+          "correct": true,
+          "why": "The shell is one of the places `CLAUDE_CONFIG_DIR` is honored, and an alias applies it on every launch."
+        },
+        {
+          "id": "D",
+          "text": "Run `claude -p` so the value applies at startup without the trust dialog",
+          "correct": false,
+          "why": "`-p` changes when project `env` applies, but `CLAUDE_CONFIG_DIR` is ignored in project settings in every mode."
+        }
+      ],
+      "explanation": "The deciding fact is that project and local settings can't set variables that choose where Claude Code stores its own files, such as `CLAUDE_CONFIG_DIR`. Trust doesn't matter: Claude Code drops the entry and logs a warning. Setting it in the shell, user settings or managed settings works, and a shell alias is the documented way to run multiple configurations side by side. Moving it to the local file hits the same restriction.",
+      "keywordCues": [
+        "`CLAUDE_CONFIG_DIR`",
+        "`.claude/settings.json`",
+        "accepted the trust dialog"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/env-vars.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Un consultor quiere que Claude Code guarde las sesiones, settings y plugins de un cliente en `~/.claude-client` en vez de `~/.claude`. Commiteó `\"CLAUDE_CONFIG_DIR\": \"~/.claude-client\"` bajo `env` en el `.claude/settings.json` del repo del cliente y aceptó el diálogo de confianza, pero Claude Code sigue usando `~/.claude`. Quiere que funcione con la menor configuración.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover la entrada a `.claude/settings.local.json` en el mismo repo",
+            "why": "Los settings locales tampoco pueden fijar `CLAUDE_CONFIG_DIR`; Claude Code la descarta del `env` de proyecto y local."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `~/.claude-client` a `permissions.additionalDirectories`",
+            "why": "Eso da acceso a archivos de otro directorio; no cambia dónde guarda Claude Code su propia configuración."
+          },
+          {
+            "id": "C",
+            "text": "Lanzar con un alias de shell como `CLAUDE_CONFIG_DIR=~/.claude-client claude`",
+            "why": "El shell es uno de los lugares donde se respeta `CLAUDE_CONFIG_DIR`, y un alias la aplica en cada arranque."
+          },
+          {
+            "id": "D",
+            "text": "Correr `claude -p` para que el valor aplique al arrancar sin diálogo de confianza",
+            "why": "`-p` cambia cuándo aplica el `env` del proyecto, pero `CLAUDE_CONFIG_DIR` se ignora en settings de proyecto en cualquier modo."
+          }
+        ],
+        "explanation": "Lo que decide es que los settings de proyecto y local no pueden fijar variables que eligen dónde guarda Claude Code sus archivos, como `CLAUDE_CONFIG_DIR`. La confianza no importa: Claude Code descarta la entrada y registra una advertencia. Ponerla en el shell, settings de usuario o managed funciona, y un alias de shell es la forma documentada de tener varias configuraciones en paralelo. Moverla al archivo local choca con la misma restricción."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-env-block--9fc68b0f",
+      "conceptId": "settings-env-block",
+      "secondaryConcepts": [
+        "settings-precedence-order"
+      ],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer's shell exports `DEPLOY_ENV=prod`. Her `~/.claude/settings.json` has `\"env\": {\"DEPLOY_ENV\": \"staging\"}`, and she has no managed settings yet. She starts `claude` and asks Claude to run a deploy script through Bash that reads `DEPLOY_ENV`. Which two statements are true? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The script Claude runs sees `DEPLOY_ENV=staging`",
+          "correct": true,
+          "why": "An `env` entry replaces the value inherited from the shell and reaches the subprocesses Claude Code starts."
+        },
+        {
+          "id": "B",
+          "text": "The script sees `prod`, because shell exports take precedence over settings",
+          "correct": false,
+          "why": "It's the reverse: the settings file value overwrites the shell export."
+        },
+        {
+          "id": "C",
+          "text": "The `staging` value waits until she accepts the workspace trust dialog",
+          "correct": false,
+          "why": "The trust wait applies to project and local `env`; user settings `env` applies at startup."
+        },
+        {
+          "id": "D",
+          "text": "Deleting the entry from the file mid-session restores `prod` right away",
+          "correct": false,
+          "why": "Removing a variable from the file doesn't unset it in a running session; it takes effect on the next launch."
+        },
+        {
+          "id": "E",
+          "text": "If her organization later sets `DEPLOY_ENV` in managed settings `env`, that value applies",
+          "correct": true,
+          "why": "Between settings files, `env` values follow precedence, and managed settings override user settings."
+        }
+      ],
+      "explanation": "An `env` block writes each entry into the process environment, replacing the shell's value, and subprocesses inherit it, so the script sees `staging`. Between files the block follows settings precedence, so a managed value would win over the user one. User settings `env` applies at startup without any trust step. Removing an entry doesn't unset the variable until the next launch.",
+      "keywordCues": [
+        "shell exports",
+        "`~/.claude/settings.json`",
+        "through Bash"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/env-vars.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "El shell de una desarrolladora exporta `DEPLOY_ENV=prod`. Su `~/.claude/settings.json` tiene `\"env\": {\"DEPLOY_ENV\": \"staging\"}` y todavía no tiene settings managed. Inicia `claude` y le pide a Claude correr por Bash un script de deploy que lee `DEPLOY_ENV`. ¿Qué dos afirmaciones son verdaderas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El script que corre Claude ve `DEPLOY_ENV=staging`",
+            "why": "Una entrada de `env` reemplaza el valor heredado del shell y llega a los subprocesos que inicia Claude Code."
+          },
+          {
+            "id": "B",
+            "text": "El script ve `prod`, porque los exports del shell tienen prioridad sobre settings",
+            "why": "Es al revés: el valor del archivo de settings pisa el export del shell."
+          },
+          {
+            "id": "C",
+            "text": "El valor `staging` espera a que acepte el diálogo de confianza del workspace",
+            "why": "La espera por confianza aplica al `env` de proyecto y local; el `env` de usuario aplica al arrancar."
+          },
+          {
+            "id": "D",
+            "text": "Borrar la entrada del archivo a mitad de sesión restaura `prod` de inmediato",
+            "why": "Quitar una variable del archivo no la elimina en una sesión en curso; aplica en el siguiente arranque."
+          },
+          {
+            "id": "E",
+            "text": "Si su organización luego fija `DEPLOY_ENV` en el `env` de settings managed, aplica ese valor",
+            "why": "Entre archivos de settings, `env` sigue la precedencia, y managed pisa a usuario."
+          }
+        ],
+        "explanation": "Un bloque `env` escribe cada entrada en el entorno del proceso, reemplazando el valor del shell, y los subprocesos lo heredan, así que el script ve `staging`. Entre archivos el bloque sigue la precedencia, así que un valor managed ganaría al de usuario. El `env` de usuario aplica al arrancar sin paso de confianza. Quitar una entrada no elimina la variable hasta el siguiente arranque."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-env-block--e51f59c0",
+      "conceptId": "settings-env-block",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which top-level settings key holds environment variables that Claude Code applies to every session and its subprocesses?",
+      "options": [
+        {
+          "id": "A",
+          "text": "env",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The `env` key maps variable names to string values. Claude Code applies them to every session and to the subprocesses it starts, overwriting the same variable exported in your shell.",
+      "keywordCues": [
+        "top-level settings key",
+        "every session and its subprocesses"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/env-vars.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de primer nivel de settings contiene variables de entorno que Claude Code aplica a cada sesión y sus subprocesos?",
+        "options": [
+          {
+            "id": "A",
+            "text": "env",
+            "why": ""
+          }
+        ],
+        "explanation": "La clave `env` asocia nombres de variables con valores de texto. Claude Code los aplica a cada sesión y a los subprocesos que inicia, pisando la misma variable exportada en tu shell."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-env-block--676e4b83",
+      "conceptId": "settings-env-block",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete `~/.claude/settings.json` so every session cancels a stale `CLAUDE_CODE_USE_VERTEX` exported by a shell profile you can't edit, and raises the API timeout.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "environment",
+          "correct": false,
+          "why": "Not a settings key; environment variables go under `env`."
+        },
+        {
+          "id": "1b",
+          "text": "env",
+          "correct": true,
+          "why": "`env` maps variable names to string values for every session."
+        },
+        {
+          "id": "1c",
+          "text": "permissions",
+          "correct": false,
+          "why": "`permissions` holds rules and modes, not environment variables."
+        },
+        {
+          "id": "2a",
+          "text": "null",
+          "correct": false,
+          "why": "`env` values are strings; a settings file can't remove a variable."
+        },
+        {
+          "id": "2b",
+          "text": "\"unset\"",
+          "correct": false,
+          "why": "That sets the literal text `unset`, which is not an empty value."
+        },
+        {
+          "id": "2c",
+          "text": "\"\"",
+          "correct": true,
+          "why": "An empty string overwrites the export and counts as unset for provider selection."
+        }
+      ],
+      "explanation": "Environment variables in a settings file live under the `env` key, as string values. A settings file can't remove a variable, so to cancel a shell export you set it to an empty string. Claude Code treats the empty value as unset for provider selection, while subprocesses inherit the empty value.",
+      "keywordCues": [
+        "cancels a stale",
+        "exported by a shell profile you can't edit"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/env-vars.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Completa `~/.claude/settings.json` para que cada sesión anule un `CLAUDE_CODE_USE_VERTEX` viejo exportado por un perfil de shell que no puedes editar, y suba el timeout de la API.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "environment",
+            "why": "No es una clave de settings; las variables de entorno van bajo `env`."
+          },
+          {
+            "id": "1b",
+            "text": "env",
+            "why": "`env` asocia nombres de variables con valores de texto para cada sesión."
+          },
+          {
+            "id": "1c",
+            "text": "permissions",
+            "why": "`permissions` guarda reglas y modos, no variables de entorno."
+          },
+          {
+            "id": "2a",
+            "text": "null",
+            "why": "Los valores de `env` son texto; un archivo de settings no puede quitar una variable."
+          },
+          {
+            "id": "2b",
+            "text": "\"unset\"",
+            "why": "Eso fija el texto literal `unset`, que no es un valor vacío."
+          },
+          {
+            "id": "2c",
+            "text": "\"\"",
+            "why": "Un texto vacío pisa el export y cuenta como no definido para elegir proveedor."
+          }
+        ],
+        "explanation": "Las variables de entorno en un archivo de settings van bajo la clave `env`, como texto. Un archivo de settings no puede quitar una variable, así que para anular un export del shell la pones como texto vacío. Claude Code trata el valor vacío como no definido para elegir proveedor, mientras los subprocesos heredan el valor vacío."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": {\n    \"CLAUDE_CODE_USE_VERTEX\": {{2}},\n    \"API_TIMEOUT_MS\": \"1200000\"\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-env-block--r0",
+      "conceptId": "settings-env-block",
+      "kind": "recall",
+      "prompt": "Explain what the env settings key does, what happens when your shell exports the same variable, and how you cancel a shell export you can't unset.",
+      "promptEs": "Explica qué hace la clave env de settings, qué pasa si tu shell exporta la misma variable y cómo anulas un export que no puedes quitar.",
+      "idealAnswer": "The env key sets environment variables for every session and the subprocesses Claude Code starts. Its value overwrites the same variable exported in the shell, and between settings files it follows settings precedence. To cancel an export you can't unset, set the variable to an empty string, which counts as unset for provider selection.",
+      "rubric": [
+        "Applies to every session and its subprocesses",
+        "The settings value overwrites the shell export",
+        "Follows settings precedence between files",
+        "Empty string neutralizes an export you can't unset"
+      ]
+    },
+    {
+      "id": "settings-env-block--r1",
+      "conceptId": "settings-env-block",
+      "kind": "why-not",
+      "prompt": "You want API_TIMEOUT_MS applied every time you run claude. Why is passing it through claude --settings not the right fit?",
+      "promptEs": "Quieres que API_TIMEOUT_MS aplique cada vez que corres claude. ¿Por qué pasarlo con claude --settings no es lo adecuado?",
+      "idealAnswer": "--settings is a one-session override: it doesn't write to any file, so the value disappears on the next launch. For a variable on every launch, put it under env in a settings file such as ~/.claude/settings.json, which applies it to every session.",
+      "rubric": [
+        "--settings lasts one session and writes no file",
+        "The env block in a settings file applies on every launch",
+        "Names a suitable file such as user settings"
+      ]
+    }
+  ]
+}

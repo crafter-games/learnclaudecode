@@ -1,0 +1,572 @@
+{
+  "conceptId": "settings-precedence-order",
+  "card": {
+    "en": {
+      "tldr": "When the same key is set in several places, Claude Code uses the value from the highest level: managed, then command line, then project local, then shared project, then user. List keys such as `permissions.allow` merge across files instead of overriding.",
+      "whenToUse": [
+        "Predicting which value applies when two files set the same key",
+        "Overriding a team value for yourself in one project",
+        "Explaining why your own file can't change a managed setting",
+        "Deciding whether rules from several files add up or replace each other"
+      ],
+      "keyFacts": [
+        "Order, highest first: managed settings > command line (`--settings`, flags) > `.claude/settings.local.json` > `.claude/settings.json` > `~/.claude/settings.json`.",
+        "`--settings` applies above your user, project and local files for one session, below managed, and writes no file.",
+        "List keys like `permissions.allow` merge across files; `fallbackModel` takes the whole value from the highest file that defines it.",
+        "Environment variables aren't a level: `ANTHROPIC_MODEL` in your shell applies over `model` from any file, decided per pair.",
+        "A few security keys honor a stricter lower-level value over managed, e.g. `disableClaudeAiConnectors: true` from any scope."
+      ],
+      "gotchas": [
+        "User is the lowest level: a personal value there loses to the team's `.claude/settings.json`.",
+        "Nothing you set, including `--settings`, overrides a managed key outside the listed exceptions.",
+        "Merging means another file's allow rules still apply alongside yours; you can't remove them from a lower file.",
+        "An `env` block in a settings file is an ordinary key and follows the levels."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Session overrides",
+          "difference": "`--settings`, a flag or a paired env var changes one run; the level stack decides between saved files."
+        },
+        {
+          "concept": "The env block",
+          "difference": "Sets environment variables from a settings file on every launch; it's one key that follows the stack."
+        }
+      ],
+      "examCues": [
+        "the team file sets the same key",
+        "which value wins",
+        "my change is ignored",
+        "the organization enforces it",
+        "rules from both files"
+      ]
+    },
+    "es": {
+      "tldr": "Cuando la misma clave está en varios lugares, Claude Code usa el valor del nivel más alto: managed, luego línea de comandos, luego proyecto local, luego proyecto compartido, luego user. Las claves de lista como `permissions.allow` se combinan entre archivos en vez de pisarse.",
+      "whenToUse": [
+        "Predecir qué valor aplica cuando dos archivos fijan la misma clave",
+        "Pisar un valor del equipo solo para ti en un proyecto",
+        "Explicar por qué tu archivo no cambia un setting managed",
+        "Decidir si las reglas de varios archivos se suman o se reemplazan"
+      ],
+      "keyFacts": [
+        "Orden, de mayor a menor: managed settings > línea de comandos (`--settings`, flags) > `.claude/settings.local.json` > `.claude/settings.json` > `~/.claude/settings.json`.",
+        "`--settings` aplica sobre tus archivos user, proyecto y local por una sesión, debajo de managed, y no escribe ningún archivo.",
+        "Las claves de lista como `permissions.allow` se combinan entre archivos; `fallbackModel` toma el valor entero del archivo más alto que lo define.",
+        "Las variables de entorno no son un nivel: `ANTHROPIC_MODEL` en tu shell aplica sobre `model` de cualquier archivo, según cada par.",
+        "Unas pocas claves de seguridad respetan un valor más estricto de un nivel inferior sobre managed, por ejemplo `disableClaudeAiConnectors: true` desde cualquier scope."
+      ],
+      "gotchas": [
+        "User es el nivel más bajo: un valor personal ahí pierde contra el `.claude/settings.json` del equipo.",
+        "Nada que tú configures, ni siquiera `--settings`, pisa una clave managed fuera de las excepciones listadas.",
+        "Combinar significa que las reglas allow de otro archivo siguen aplicando junto a las tuyas; no las puedes quitar desde un archivo inferior.",
+        "Un bloque `env` en un archivo de settings es una clave más y sigue los niveles."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Overrides de sesión",
+          "difference": "`--settings`, un flag o una variable pareada cambian una corrida; la pila decide entre archivos guardados."
+        },
+        {
+          "concept": "El bloque env",
+          "difference": "Fija variables de entorno desde un archivo de settings en cada arranque; es una clave que sigue la pila."
+        }
+      ],
+      "examCues": [
+        "the team file sets the same key",
+        "which value wins",
+        "my change is ignored",
+        "the organization enforces it",
+        "rules from both files"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/settings.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-precedence-order--fe53efd3",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [
+        "settings-session-overrides"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Ana set `spinnerTipsEnabled` to `false` in `~/.claude/settings.json`, but in the `acme-app` repo the team's committed `.claude/settings.json` sets it to `true`, so she still sees tips there. She wants tips off in every session she runs in that repo, without affecting other projects or her teammates. What should she do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `\"spinnerTipsEnabled\": false` to `.claude/settings.local.json` in `acme-app`",
+          "correct": true,
+          "why": "Project local sits above shared project and applies only to her in that repo."
+        },
+        {
+          "id": "B",
+          "text": "Set the key to `false` again in `~/.claude/settings.json`",
+          "correct": false,
+          "why": "User is the lowest level, so the shared project value keeps winning."
+        },
+        {
+          "id": "C",
+          "text": "Change the value in the committed `.claude/settings.json`",
+          "correct": false,
+          "why": "That turns tips off for every teammate too."
+        },
+        {
+          "id": "D",
+          "text": "Start each session with `claude --settings '{\"spinnerTipsEnabled\": false}'`",
+          "correct": false,
+          "why": "It works only for the session it starts; nothing is saved for later sessions."
+        }
+      ],
+      "explanation": "Shared project sits above user, which is why her personal value loses in `acme-app`. Project local sits above shared project and affects only her, so setting the key there fixes every session in that repo without touching teammates or other projects. `--settings` is tempting, but it lasts one session and writes no file.",
+      "keywordCues": [
+        "every session she runs in that repo",
+        "without affecting other projects or her teammates"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Ana puso `spinnerTipsEnabled` en `false` en `~/.claude/settings.json`, pero en el repo `acme-app` el `.claude/settings.json` commiteado del equipo lo fija en `true`, así que ahí sigue viendo tips. Quiere los tips apagados en toda sesión que corra en ese repo, sin afectar otros proyectos ni a su equipo. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `\"spinnerTipsEnabled\": false` a `.claude/settings.local.json` en `acme-app`",
+            "why": "Proyecto local está sobre proyecto compartido y aplica solo a ella en ese repo."
+          },
+          {
+            "id": "B",
+            "text": "Volver a poner la clave en `false` en `~/.claude/settings.json`",
+            "why": "User es el nivel más bajo, así que el valor del proyecto compartido sigue ganando."
+          },
+          {
+            "id": "C",
+            "text": "Cambiar el valor en el `.claude/settings.json` commiteado",
+            "why": "Eso apaga los tips también para todo el equipo."
+          },
+          {
+            "id": "D",
+            "text": "Iniciar cada sesión con `claude --settings '{\"spinnerTipsEnabled\": false}'`",
+            "why": "Solo sirve para la sesión que inicia; no guarda nada para las siguientes."
+          }
+        ],
+        "explanation": "Proyecto compartido está sobre user, por eso su valor personal pierde en `acme-app`. Proyecto local está sobre proyecto compartido y solo la afecta a ella, así que fijar la clave ahí resuelve todas sus sesiones en ese repo sin tocar al equipo ni otros proyectos. `--settings` tienta, pero dura una sesión y no escribe ningún archivo."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-precedence-order--e87d8a64",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [
+        "settings-session-overrides"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your organization's managed settings set `spinnerTipsEnabled` to `true`. You add `false` to `.claude/settings.local.json` and also launch with `claude --settings '{\"spinnerTipsEnabled\": false}'`. What happens, and what is the only way to change it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Tips hide for this session, since `--settings` tops the files",
+          "correct": false,
+          "why": "`--settings` sits above your files but below managed settings."
+        },
+        {
+          "id": "B",
+          "text": "Tips hide in this project, since local beats managed",
+          "correct": false,
+          "why": "Project local is below both command line and managed."
+        },
+        {
+          "id": "C",
+          "text": "Tips hide because the lower `false` value is stricter",
+          "correct": false,
+          "why": "The stricter-value exception covers only a few security keys, not `spinnerTipsEnabled`."
+        },
+        {
+          "id": "D",
+          "text": "Tips still show; ask your administrator to change the policy",
+          "correct": true,
+          "why": "Managed is the top level and nothing you set overrides this key."
+        }
+      ],
+      "explanation": "Managed settings are the highest level: no user, project, local or `--settings` value overrides the same managed key. The exceptions where a stricter lower value wins are a short list of security keys, and `spinnerTipsEnabled` isn't one. Run `/status` to see which managed source applies and ask your administrator.",
+      "keywordCues": [
+        "managed settings set",
+        "--settings",
+        "the only way to change it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Los managed settings de tu organización fijan `spinnerTipsEnabled` en `true`. Agregas `false` en `.claude/settings.local.json` y además lanzas con `claude --settings '{\"spinnerTipsEnabled\": false}'`. ¿Qué pasa y cuál es la única forma de cambiarlo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Los tips se ocultan en esta sesión, porque `--settings` supera a los archivos",
+            "why": "`--settings` está sobre tus archivos pero debajo de managed settings."
+          },
+          {
+            "id": "B",
+            "text": "Los tips se ocultan en este proyecto, porque local le gana a managed",
+            "why": "Proyecto local está debajo de la línea de comandos y de managed."
+          },
+          {
+            "id": "C",
+            "text": "Los tips se ocultan porque el `false` inferior es más estricto",
+            "why": "La excepción del valor más estricto cubre solo unas pocas claves de seguridad, no `spinnerTipsEnabled`."
+          },
+          {
+            "id": "D",
+            "text": "Los tips siguen; pide a tu administrador que cambie la política",
+            "why": "Managed es el nivel más alto y nada que configures pisa esta clave."
+          }
+        ],
+        "explanation": "Managed settings es el nivel más alto: ningún valor user, proyecto, local o de `--settings` pisa la misma clave managed. Las excepciones donde gana un valor inferior más estricto son una lista corta de claves de seguridad, y `spinnerTipsEnabled` no está. Corre `/status` para ver qué fuente managed aplica y habla con tu administrador."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-precedence-order--e88f363f",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A security-conscious team commits `\"disableClaudeAiConnectors\": true` to the repository's `.claude/settings.json`. The organization's managed settings set `disableClaudeAiConnectors` to `false`. What applies in that repository?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`false`, because managed settings always win",
+          "correct": false,
+          "why": "This key is one of the listed exceptions to managed precedence."
+        },
+        {
+          "id": "B",
+          "text": "`true`: connectors are disabled in that repository",
+          "correct": true,
+          "why": "Claude Code honors `true` for this key from any scope, even over a managed `false`."
+        },
+        {
+          "id": "C",
+          "text": "`false`, because repository files can't set security keys",
+          "correct": false,
+          "why": "The docs state a project `true` for this key stays on."
+        },
+        {
+          "id": "D",
+          "text": "`true` only when launched with `--settings`",
+          "correct": false,
+          "why": "No flag is needed; the committed project value is honored on its own."
+        }
+      ],
+      "explanation": "Managed settings normally beat everything, but for a few security-sensitive keys Claude Code honors a restrictive value from a lower scope. `disableClaudeAiConnectors: true` is honored from any scope even when a managed source sets `false`. Applying the general rule mechanically leads to the tempting wrong answer.",
+      "keywordCues": [
+        "disableClaudeAiConnectors",
+        "managed settings set",
+        "false"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Un equipo preocupado por la seguridad commitea `\"disableClaudeAiConnectors\": true` en el `.claude/settings.json` del repositorio. Los managed settings de la organización fijan `disableClaudeAiConnectors` en `false`. ¿Qué aplica en ese repositorio?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`false`, porque managed settings siempre gana",
+            "why": "Esta clave es una de las excepciones listadas a la precedencia de managed."
+          },
+          {
+            "id": "B",
+            "text": "`true`: los connectors quedan desactivados en ese repositorio",
+            "why": "Claude Code respeta `true` para esta clave desde cualquier scope, incluso sobre un `false` managed."
+          },
+          {
+            "id": "C",
+            "text": "`false`, porque los archivos del repo no pueden fijar claves de seguridad",
+            "why": "La documentación dice que un `true` de proyecto para esta clave se mantiene."
+          },
+          {
+            "id": "D",
+            "text": "`true` solo si se lanza con `--settings`",
+            "why": "No hace falta ningún flag; el valor commiteado del proyecto se respeta por sí solo."
+          }
+        ],
+        "explanation": "Managed settings normalmente le gana a todo, pero para unas pocas claves sensibles Claude Code respeta un valor restrictivo de un scope inferior. `disableClaudeAiConnectors: true` se respeta desde cualquier scope aunque una fuente managed fije `false`. Aplicar la regla general a ciegas lleva a la respuesta tentadora equivocada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-precedence-order--83e05cfc",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "In a trusted repository, your `~/.claude/settings.json` allows `Bash(git diff *)` and sets `model` to one model; the committed `.claude/settings.json` allows `Bash(npm run *)` and sets `model` to a different one. No local file, managed settings, flags or model environment variables are in play. Which two statements are true? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Both allow rules apply",
+          "correct": true,
+          "why": "`permissions.allow` lists merge across files."
+        },
+        {
+          "id": "B",
+          "text": "Only the project's allow rule applies",
+          "correct": false,
+          "why": "List keys combine instead of the higher file replacing the lower one."
+        },
+        {
+          "id": "C",
+          "text": "The session starts on the project's model",
+          "correct": true,
+          "why": "Shared project sits above user, so its `model` wins."
+        },
+        {
+          "id": "D",
+          "text": "The session starts on your user model, since it's personal",
+          "correct": false,
+          "why": "User is the lowest level; being personal doesn't raise it."
+        },
+        {
+          "id": "E",
+          "text": "Claude Code uses whichever file changed most recently",
+          "correct": false,
+          "why": "Precedence is by level, not by edit time."
+        }
+      ],
+      "explanation": "Two rules decide this. A single-value key like `model` comes from the highest level that sets it, and shared project beats user. List keys like `permissions.allow` merge across files, so both rules apply. The tempting mistake is to treat the allow list like `model` and assume the project list replaces yours.",
+      "keywordCues": [
+        "allows",
+        "sets model",
+        "trusted repository"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "En un repositorio confiado, tu `~/.claude/settings.json` permite `Bash(git diff *)` y fija `model` en un modelo; el `.claude/settings.json` commiteado permite `Bash(npm run *)` y fija `model` en otro. No hay archivo local, managed settings, flags ni variables de entorno de modelo. ¿Qué dos afirmaciones son ciertas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Aplican ambas reglas allow",
+            "why": "Las listas de `permissions.allow` se combinan entre archivos."
+          },
+          {
+            "id": "B",
+            "text": "Solo aplica la regla allow del proyecto",
+            "why": "Las claves de lista se combinan; el archivo superior no reemplaza al inferior."
+          },
+          {
+            "id": "C",
+            "text": "La sesión arranca con el modelo del proyecto",
+            "why": "Proyecto compartido está sobre user, así que su `model` gana."
+          },
+          {
+            "id": "D",
+            "text": "La sesión arranca con tu modelo de user, por ser personal",
+            "why": "User es el nivel más bajo; ser personal no lo sube."
+          },
+          {
+            "id": "E",
+            "text": "Claude Code usa el archivo que cambió más recientemente",
+            "why": "La precedencia es por nivel, no por fecha de edición."
+          }
+        ],
+        "explanation": "Dos reglas deciden esto. Una clave de valor único como `model` sale del nivel más alto que la fija, y proyecto compartido le gana a user. Las claves de lista como `permissions.allow` se combinan entre archivos, así que aplican ambas reglas. El error tentador es tratar la lista allow como `model` y suponer que la del proyecto reemplaza la tuya."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-precedence-order--069f235a",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Order these settings sources from highest to lowest precedence.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Managed settings",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Command line arguments (`--settings`, flags)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "`.claude/settings.local.json`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`.claude/settings.json`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "E",
+          "text": "`~/.claude/settings.json`",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Managed settings sit on top and nothing you set overrides them. Command line arguments apply for one session above every file. Then project local, shared project, and finally user settings, the lowest level.",
+      "keywordCues": [
+        "highest to lowest precedence"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "Ordena estas fuentes de settings de mayor a menor precedencia.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Managed settings",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Argumentos de línea de comandos (`--settings`, flags)",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "`.claude/settings.local.json`",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`.claude/settings.json`",
+            "why": ""
+          },
+          {
+            "id": "E",
+            "text": "`~/.claude/settings.json`",
+            "why": ""
+          }
+        ],
+        "explanation": "Managed settings está arriba y nada que configures lo pisa. Los argumentos de línea de comandos aplican por una sesión sobre todos los archivos. Luego proyecto local, proyecto compartido y al final los settings de user, el nivel más bajo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-precedence-order--f5e04753",
+      "conceptId": "settings-precedence-order",
+      "secondaryConcepts": [
+        "settings-session-overrides"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which `claude` flag takes settings as inline JSON or a file path and applies them above your user, project and local files for one session only?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--settings",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--settings` passes keys as JSON, inline or from a file. They apply above your user, project and local files and below managed settings, for that session only, and no file is written.",
+      "keywordCues": [
+        "inline JSON or a file path",
+        "for one session only"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag de `claude` recibe settings como JSON en línea o ruta a un archivo y los aplica sobre tus archivos user, proyecto y local solo por una sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--settings",
+            "why": ""
+          }
+        ],
+        "explanation": "`--settings` pasa claves como JSON, en línea o desde un archivo. Aplican sobre tus archivos user, proyecto y local y debajo de managed settings, solo en esa sesión, y no se escribe ningún archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-precedence-order--r0",
+      "conceptId": "settings-precedence-order",
+      "kind": "recall",
+      "prompt": "List the settings precedence levels from highest to lowest, and say what happens when a list key like permissions.allow is set in several files.",
+      "promptEs": "Enumera los niveles de precedencia de settings de mayor a menor y di qué pasa cuando una clave de lista como permissions.allow está en varios archivos.",
+      "idealAnswer": "Managed settings are highest, then command line arguments such as `--settings`, then `.claude/settings.local.json`, then `.claude/settings.json`, and user `~/.claude/settings.json` is lowest. A key at a higher level overrides the same key below it, but list keys like `permissions.allow` merge across files instead of overriding.",
+      "rubric": [
+        "Managed > command line > project local > shared project > user",
+        "Higher level overrides the same key below",
+        "List keys like permissions.allow merge instead of overriding"
+      ]
+    },
+    {
+      "id": "settings-precedence-order--r1",
+      "conceptId": "settings-precedence-order",
+      "kind": "why-not",
+      "prompt": "A developer sets model in .claude/settings.local.json, but sessions start on another model because ANTHROPIC_MODEL is exported. Why doesn't the level stack predict this?",
+      "promptEs": "Un desarrollador fija model en .claude/settings.local.json, pero las sesiones arrancan con otro modelo porque ANTHROPIC_MODEL está exportada. ¿Por qué la pila de niveles no lo predice?",
+      "idealAnswer": "Environment variables aren't a level in the settings stack; for each variable and key pair Claude Code decides which one applies. `ANTHROPIC_MODEL` exported in the shell applies over the `model` key from any file, so the developer must unset the variable for the local value to apply.",
+      "rubric": [
+        "Environment variables are not a precedence level",
+        "Decided per variable-key pair",
+        "ANTHROPIC_MODEL overrides model from any file; unset it"
+      ]
+    }
+  ]
+}

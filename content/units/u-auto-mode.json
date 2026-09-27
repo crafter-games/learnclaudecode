@@ -1,0 +1,414 @@
+{
+  "unitId": "u-auto-mode",
+  "audited": true,
+  "overview": {
+    "title": "Auto mode",
+    "hook": "Trabajar sin prompts de rutina sin dejar pasar lo destructivo.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "action",
+          "label": "Acción",
+          "kind": "data",
+          "x": 27,
+          "y": 50
+        },
+        {
+          "id": "rules",
+          "label": "Reglas de permisos",
+          "kind": "service",
+          "x": 47,
+          "y": 50
+        },
+        {
+          "id": "you",
+          "label": "Tú (prompt)",
+          "kind": "actor",
+          "x": 47,
+          "y": 12
+        },
+        {
+          "id": "fast",
+          "label": "Auto-aprobado",
+          "kind": "service",
+          "x": 70,
+          "y": 22
+        },
+        {
+          "id": "classifier",
+          "label": "Clasificador",
+          "kind": "service",
+          "x": 70,
+          "y": 78
+        },
+        {
+          "id": "env",
+          "label": "Bloque autoMode",
+          "kind": "data",
+          "x": 92,
+          "y": 78
+        }
+      ],
+      "edges": [
+        {
+          "from": "claude",
+          "to": "action",
+          "label": "propone"
+        },
+        {
+          "from": "action",
+          "to": "rules",
+          "label": "1: reglas"
+        },
+        {
+          "from": "rules",
+          "to": "fast",
+          "label": "2: lectura/edición"
+        },
+        {
+          "from": "fast",
+          "to": "classifier",
+          "label": "3: lo demás"
+        },
+        {
+          "from": "env",
+          "to": "classifier",
+          "label": "confianza"
+        },
+        {
+          "from": "rules",
+          "to": "you",
+          "label": "ask: pregunta"
+        },
+        {
+          "from": "classifier",
+          "to": "you",
+          "label": "3 seguidos o 20"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Aprobar cada comando a mano te frena, pero saltarte todos los checks es arriesgado. Auto mode quita los prompts de rutina y pone un segundo modelo a revisar lo riesgoso antes de que corra.",
+        "show": [
+          "claude",
+          "action"
+        ],
+        "focus": "action"
+      },
+      {
+        "narration": "Cada acción sigue un orden fijo. Primero, tus reglas allow, ask y deny resuelven al instante. Una regla ask que mira el contenido del comando, como git push, te sigue preguntando incluso en auto mode.",
+        "show": [
+          "claude",
+          "action",
+          "rules",
+          "you"
+        ],
+        "focus": "rules"
+      },
+      {
+        "narration": "Después, las acciones de solo lectura y las ediciones dentro de tu directorio de trabajo se aprueban solas. Todo lo demás, sobre todo comandos de shell y de red, va al clasificador.",
+        "show": [
+          "claude",
+          "action",
+          "rules",
+          "you",
+          "fast",
+          "classifier"
+        ],
+        "focus": "fast"
+      },
+      {
+        "narration": "El clasificador es un modelo aparte. Bloquea cosas como curl a bash, force push, deploys a producción o datos que salen de tu infraestructura. Ve tus mensajes y las llamadas, pero no los resultados de las herramientas.",
+        "show": [
+          "claude",
+          "action",
+          "rules",
+          "you",
+          "fast",
+          "classifier"
+        ],
+        "focus": "classifier"
+      },
+      {
+        "narration": "Por defecto solo confía en tu directorio de trabajo y los remotes del repo. Con el bloque autoMode, en tu settings de usuario o en managed settings, le describes en prosa qué repos, buckets y dominios son de confianza.",
+        "show": [
+          "claude",
+          "action",
+          "rules",
+          "you",
+          "fast",
+          "classifier",
+          "env"
+        ],
+        "focus": "env"
+      },
+      {
+        "narration": "Al entrar en auto mode se suspenden reglas allow amplias como Bash(*). Si el clasificador bloquea tres veces seguidas o veinte en total, vuelves a los prompts. Y para algo que nunca debe correr, usa una regla deny.",
+        "show": [
+          "claude",
+          "action",
+          "rules",
+          "you",
+          "fast",
+          "classifier",
+          "env"
+        ],
+        "focus": "you"
+      }
+    ],
+    "keyPoints": [
+      "Orden: reglas, luego auto-aprobación local, luego clasificador",
+      "Reglas allow amplias como Bash(*) se suspenden",
+      "autoMode.environment dice qué infraestructura es de confianza",
+      "ask y deny corren antes del clasificador",
+      "3 bloqueos seguidos o 20 totales: vuelven los prompts"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "permission rules",
+        "difference": "Las reglas se evalúan primero y en todo modo; el clasificador solo revisa lo que no resolvieron."
+      },
+      {
+        "unitOrService": "sandbox",
+        "difference": "El sandbox limita al proceso a nivel de sistema operativo; el clasificador juzga la acción antes de correrla."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-auto-mode--l1",
+      "conceptId": "auto-mode-classifier",
+      "format": "lightning",
+      "prompt": "Auto mode: which step decides an action first?",
+      "promptEs": "Auto mode: ¿qué paso decide primero una acción?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The classifier model"
+        },
+        {
+          "id": "B",
+          "text": "Your allow, ask and deny rules"
+        },
+        {
+          "id": "C",
+          "text": "Read-only auto-approval"
+        },
+        {
+          "id": "D",
+          "text": "CLAUDE.md instructions"
+        }
+      ],
+      "answer": "B",
+      "why": "Las reglas allow, ask y deny resuelven primero. Solo lo que no resuelven sigue: auto-aprobación de lecturas y ediciones locales, y luego el clasificador."
+    },
+    {
+      "id": "u-auto-mode--l2",
+      "conceptId": "auto-mode-classifier",
+      "format": "lightning",
+      "prompt": "Allow rule suspended when you enter auto mode → ?",
+      "promptEs": "Regla allow que se suspende al entrar en auto mode → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash(npm test)"
+        },
+        {
+          "id": "B",
+          "text": "Bash(git status)"
+        },
+        {
+          "id": "C",
+          "text": "Bash(python*)"
+        },
+        {
+          "id": "D",
+          "text": "WebFetch(domain:example.com)"
+        }
+      ],
+      "answer": "C",
+      "why": "Se suspenden las reglas amplias que dan ejecución arbitraria, como intérpretes con comodín. Reglas estrechas como `Bash(npm test)` siguen vigentes."
+    },
+    {
+      "id": "u-auto-mode--l3",
+      "conceptId": "auto-mode-classifier",
+      "format": "lightning",
+      "prompt": "Classifier blocks 3 actions in a row → ?",
+      "promptEs": "El clasificador bloquea 3 acciones seguidas → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The session ends with an error"
+        },
+        {
+          "id": "B",
+          "text": "Claude Code switches to plan mode"
+        },
+        {
+          "id": "C",
+          "text": "Blocks continue silently forever"
+        },
+        {
+          "id": "D",
+          "text": "Auto mode pauses; prompts resume"
+        }
+      ],
+      "answer": "D",
+      "why": "Con 3 bloqueos seguidos o 20 en total, auto mode se pausa y vuelve a preguntarte. Aprobar la acción preguntada reanuda auto mode. Los umbrales no se configuran."
+    },
+    {
+      "id": "u-auto-mode--l5",
+      "conceptId": "auto-mode-environment",
+      "format": "lightning",
+      "prompt": "Personal trusted buckets the classifier will read → which file?",
+      "promptEs": "Buckets de confianza personales que el clasificador leerá → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": ".claude/settings.json"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "C",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "D",
+          "text": ".mcp.json"
+        }
+      ],
+      "answer": "B",
+      "why": "El clasificador no lee `autoMode` de los settings del proyecto, ni del `.local.json`: viven en el repo y podrían inyectar reglas. Para uso personal va en `~/.claude/settings.json`."
+    },
+    {
+      "id": "u-auto-mode--l6",
+      "conceptId": "auto-mode-environment",
+      "format": "thisorthat",
+      "prompt": "Classifier rule no allow exception or user intent can clear → ?",
+      "promptEs": "Regla del clasificador que ni una excepción allow ni la intención del usuario pueden levantar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "autoMode.soft_deny"
+        },
+        {
+          "id": "B",
+          "text": "autoMode.hard_deny"
+        }
+      ],
+      "answer": "B",
+      "why": "`hard_deny` bloquea sin condiciones. `soft_deny` bloquea salvo que una excepción `allow` o tu intención explícita lo levante."
+    },
+    {
+      "id": "u-auto-mode--l7",
+      "conceptId": "auto-mode-environment",
+      "format": "lightning",
+      "prompt": "See the rules the classifier actually uses, your settings applied → ?",
+      "promptEs": "Ver las reglas que el clasificador usa de verdad, con tus settings aplicados → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude auto-mode defaults"
+        },
+        {
+          "id": "B",
+          "text": "claude auto-mode critique"
+        },
+        {
+          "id": "C",
+          "text": "claude auto-mode config"
+        },
+        {
+          "id": "D",
+          "text": "/auto-mode-setup"
+        }
+      ],
+      "answer": "C",
+      "why": "`config` imprime la configuración efectiva. `defaults` muestra solo las reglas integradas, `critique` opina sobre tus reglas y `/auto-mode-setup` redacta entradas nuevas."
+    },
+    {
+      "id": "u-auto-mode--l8",
+      "conceptId": "auto-mode-checkpoints",
+      "format": "lightning",
+      "prompt": "Always prompt before `git push`, even in auto mode → ?",
+      "promptEs": "Preguntar siempre antes de `git push`, incluso en auto mode → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An autoMode.soft_deny entry"
+        },
+        {
+          "id": "B",
+          "text": "Say \"don't push\" in chat"
+        },
+        {
+          "id": "C",
+          "text": "An autoMode.environment entry"
+        },
+        {
+          "id": "D",
+          "text": "A permissions.ask rule"
+        }
+      ],
+      "answer": "D",
+      "why": "Una regla ask con contenido, como `Bash(git push *)`, se evalúa antes del clasificador y siempre fuerza un prompt. Un `soft_deny` bloquea en vez de preguntar."
+    },
+    {
+      "id": "u-auto-mode--l9",
+      "conceptId": "auto-mode-checkpoints",
+      "format": "thisorthat",
+      "prompt": "\"No deploy until I review\" must survive context compaction → ?",
+      "promptEs": "\"No despliegues hasta que yo revise\" debe sobrevivir a la compactación → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "State it in conversation"
+        },
+        {
+          "id": "B",
+          "text": "Add an ask or deny rule"
+        }
+      ],
+      "answer": "B",
+      "why": "Un límite dicho en la conversación se relee del transcript y puede perderse si la compactación borra ese mensaje. Una regla ask o deny es duradera."
+    },
+    {
+      "id": "u-auto-mode--l10",
+      "conceptId": "auto-mode-checkpoints",
+      "format": "lightning",
+      "prompt": "Approve a blocked force push in chat → your message must name?",
+      "promptEs": "Aprobar en el chat un force push bloqueado → ¿qué debe nombrar tu mensaje?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The action and its branch"
+        },
+        {
+          "id": "B",
+          "text": "Just the verb \"force-push\""
+        },
+        {
+          "id": "C",
+          "text": "The classifier rule label"
+        },
+        {
+          "id": "D",
+          "text": "The settings file to change"
+        }
+      ],
+      "answer": "A",
+      "why": "Hay que nombrar la acción y lo que la hace peligrosa, como la rama del force push. Decir solo \"puedes hacer force-push\" no levanta nada."
+    }
+  ]
+}

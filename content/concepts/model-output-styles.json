@@ -1,0 +1,544 @@
+{
+  "conceptId": "model-output-styles",
+  "card": {
+    "en": {
+      "tldr": "An output style is a set of instructions that shapes Claude's role, tone and response format for every response in a session. Pick a built-in style or write your own Markdown file. It is guidance Claude follows, not enforcement, and it doesn't replace CLAUDE.md for project knowledge.",
+      "whenToUse": [
+        "Responses are consistently longer than you want: switch to Concise",
+        "You want the reasoning behind each change: Explanatory adds `Insight` blocks",
+        "You want hands-on practice: Learning leaves `TODO(human)` spots for you",
+        "Claude should act as something other than a software engineer: write a custom style"
+      ],
+      "keyFacts": [
+        "Built-in styles: Default, Proactive, Concise, Explanatory and Learning.",
+        "`/output-style <style>` or `/config` saves `outputStyle` to `.claude/settings.local.json`.",
+        "The `outputStyle` value is case-sensitive (`Explanatory`, not `explanatory`); the command ignores case.",
+        "Custom styles are Markdown files in `~/.claude/output-styles` or `.claude/output-styles`, with frontmatter `name`, `description` and `keep-coding-instructions`.",
+        "`keep-coding-instructions` defaults to `false`, which leaves out Claude Code's software engineering instructions.",
+        "The active style is sent with every request; a new style applies from your next message."
+      ],
+      "gotchas": [
+        "A style is an instruction: nothing enforces it. Use a hook for something that must happen every time.",
+        "A mismatched `outputStyle` value silently gives you the Default style.",
+        "Style files are read at startup; restart Claude Code after creating or editing one.",
+        "Proactive doesn't change your permission mode; permission prompts appear as before."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md",
+          "difference": "CLAUDE.md holds what Claude should know about the project; the style sets how it responds."
+        },
+        {
+          "concept": "Hooks",
+          "difference": "A hook runs deterministically at a lifecycle event; a style depends on Claude following it."
+        },
+        {
+          "concept": "Skills",
+          "difference": "A skill loads for one kind of task; a style shapes every response."
+        }
+      ],
+      "examCues": [
+        "every response in the session",
+        "shorter responses",
+        "explain the choices behind the code",
+        "leave some code for me to write",
+        "act as a writing assistant"
+      ]
+    },
+    "es": {
+      "tldr": "Un output style es un conjunto de instrucciones que define el rol, el tono y el formato de cada respuesta de Claude en una sesión. Eliges un estilo integrado o escribes tu propio archivo Markdown. Es una guía que Claude sigue, no algo que se imponga, y no reemplaza a CLAUDE.md para el conocimiento del proyecto.",
+      "whenToUse": [
+        "Las respuestas son siempre más largas de lo que quieres: cambia a Concise",
+        "Quieres el razonamiento detrás de cada cambio: Explanatory agrega bloques `Insight`",
+        "Quieres practicar: Learning te deja lugares con `TODO(human)`",
+        "Claude debe actuar como algo distinto a un ingeniero de software: escribe un estilo propio"
+      ],
+      "keyFacts": [
+        "Estilos integrados: Default, Proactive, Concise, Explanatory y Learning.",
+        "`/output-style <style>` o `/config` guardan `outputStyle` en `.claude/settings.local.json`.",
+        "El valor de `outputStyle` distingue mayúsculas (`Explanatory`, no `explanatory`); el comando no.",
+        "Los estilos propios son archivos Markdown en `~/.claude/output-styles` o `.claude/output-styles`, con frontmatter `name`, `description` y `keep-coding-instructions`.",
+        "`keep-coding-instructions` vale `false` por defecto, lo que deja fuera las instrucciones de ingeniería de software de Claude Code.",
+        "El estilo activo se envía con cada request; un estilo nuevo aplica desde tu siguiente mensaje."
+      ],
+      "gotchas": [
+        "Un estilo es una instrucción: nada lo impone. Usa un hook para lo que debe pasar siempre.",
+        "Un valor de `outputStyle` que no coincide te deja en Default sin avisar.",
+        "Los archivos de estilo se leen al arrancar; reinicia Claude Code tras crear o editar uno.",
+        "Proactive no cambia tu permission mode; los avisos de permisos aparecen igual que antes."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md",
+          "difference": "CLAUDE.md guarda lo que Claude debe saber del proyecto; el estilo define cómo responde."
+        },
+        {
+          "concept": "Hooks",
+          "difference": "Un hook corre de forma determinista en un evento; un estilo depende de que Claude lo siga."
+        },
+        {
+          "concept": "Skills",
+          "difference": "Una skill se carga para un tipo de tarea; un estilo moldea cada respuesta."
+        }
+      ],
+      "examCues": [
+        "every response in the session",
+        "shorter responses",
+        "explain the choices behind the code",
+        "leave some code for me to write",
+        "act as a writing assistant"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/output-styles.md",
+      "https://code.claude.com/docs/en/features-overview.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "model-output-styles--66c1211d",
+      "conceptId": "model-output-styles",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer finds Claude's answers full of preamble, step-by-step narration and closing recaps. They want every response for the rest of the session to lead with the result, with the least setup, and without changing what their teammates get from the shared repo. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add \"keep answers short\" to the committed `CLAUDE.md`",
+          "correct": false,
+          "why": "`CLAUDE.md` is for project knowledge, and the committed file reaches every teammate."
+        },
+        {
+          "id": "B",
+          "text": "Run `/output-style concise`",
+          "correct": true,
+          "why": "Concise leads with the result and drops preamble, narration and recaps; the choice is saved to the local settings file."
+        },
+        {
+          "id": "C",
+          "text": "Run `/effort low`",
+          "correct": false,
+          "why": "Effort controls how much the model reasons, not the shape or length of its responses."
+        },
+        {
+          "id": "D",
+          "text": "Relaunch with `--append-system-prompt` and a brevity instruction",
+          "correct": false,
+          "why": "It works for that launch, but you must pass it every time and restart the session."
+        }
+      ],
+      "explanation": "The requirement is about the shape of every response, with minimal setup and no effect on teammates. The Concise output style does exactly that, and `/output-style` saves it to `.claude/settings.local.json`, which is local to you. A committed `CLAUDE.md` would affect everyone, and effort changes reasoning depth, not response format.",
+      "keywordCues": [
+        "every response for the rest of the session",
+        "lead with the result",
+        "least setup",
+        "without changing what their teammates get"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/output-styles.md",
+        "https://code.claude.com/docs/en/features-overview.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador ve que las respuestas de Claude traen introducción, narración paso a paso y resúmenes al final. Quiere que cada respuesta del resto de la sesión empiece por el resultado, con la menor configuración y sin cambiar lo que reciben sus compañeros del repo compartido. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar \"respuestas cortas\" al `CLAUDE.md` commiteado",
+            "why": "`CLAUDE.md` es para conocimiento del proyecto, y el archivo commiteado llega a todo el equipo."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/output-style concise`",
+            "why": "Concise empieza por el resultado y quita introducción, narración y resúmenes; la elección se guarda en el archivo de settings local."
+          },
+          {
+            "id": "C",
+            "text": "Correr `/effort low`",
+            "why": "El esfuerzo controla cuánto razona el modelo, no la forma ni el largo de sus respuestas."
+          },
+          {
+            "id": "D",
+            "text": "Relanzar con `--append-system-prompt` y una instrucción de brevedad",
+            "why": "Funciona para ese arranque, pero hay que pasarlo cada vez y reiniciar la sesión."
+          }
+        ],
+        "explanation": "El requisito es la forma de cada respuesta, con mínima configuración y sin afectar al equipo. El output style Concise hace eso, y `/output-style` lo guarda en `.claude/settings.local.json`, que es local tuyo. Un `CLAUDE.md` commiteado afectaría a todos, y el esfuerzo cambia la profundidad del razonamiento, no el formato."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-output-styles--8225e03e",
+      "conceptId": "model-output-styles",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer writes a custom output style to make Claude's review comments terse. After switching to it, Claude still sounds right, but it no longer scopes changes carefully or verifies its work the way it did in the Default style. What is the most likely fix?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the file from `.claude/output-styles` to `~/.claude/output-styles`",
+          "correct": false,
+          "why": "The location changes who can use the style, not which instructions it keeps."
+        },
+        {
+          "id": "B",
+          "text": "Add coding rules to the style's `description` field",
+          "correct": false,
+          "why": "`description` is shown in the picker; it doesn't restore Claude Code's built-in instructions."
+        },
+        {
+          "id": "C",
+          "text": "Add `keep-coding-instructions: true` to the style's frontmatter",
+          "correct": true,
+          "why": "Custom styles drop the software engineering instructions unless this field is `true`."
+        },
+        {
+          "id": "D",
+          "text": "Set `force-for-plugin: true` in the frontmatter",
+          "correct": false,
+          "why": "It only applies to plugin styles and makes them apply automatically; it doesn't keep coding instructions."
+        }
+      ],
+      "explanation": "Custom output styles leave out Claude Code's built-in software engineering instructions, such as how to scope changes and verify work, because `keep-coding-instructions` defaults to `false`. Setting it to `true` keeps them alongside the new tone. The file's location and the `description` field don't affect which instructions are sent.",
+      "keywordCues": [
+        "custom output style",
+        "no longer scopes changes carefully or verifies its work"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/output-styles.md",
+        "https://code.claude.com/docs/en/features-overview.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador escribe un output style propio para que los comentarios de revisión de Claude sean breves. Tras activarlo, el tono es el correcto, pero Claude ya no acota sus cambios con cuidado ni verifica su trabajo como en el estilo Default. ¿Cuál es el arreglo más probable?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover el archivo de `.claude/output-styles` a `~/.claude/output-styles`",
+            "why": "La ubicación cambia quién puede usar el estilo, no qué instrucciones conserva."
+          },
+          {
+            "id": "B",
+            "text": "Agregar reglas de código al campo `description` del estilo",
+            "why": "`description` se muestra en el selector; no restaura las instrucciones integradas de Claude Code."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `keep-coding-instructions: true` al frontmatter del estilo",
+            "why": "Los estilos propios dejan fuera las instrucciones de ingeniería de software salvo que este campo sea `true`."
+          },
+          {
+            "id": "D",
+            "text": "Poner `force-for-plugin: true` en el frontmatter",
+            "why": "Solo aplica a estilos de plugin y los activa automáticamente; no conserva las instrucciones de código."
+          }
+        ],
+        "explanation": "Los output styles propios dejan fuera las instrucciones integradas de ingeniería de software de Claude Code, como acotar cambios y verificar el trabajo, porque `keep-coding-instructions` vale `false` por defecto. Ponerlo en `true` las conserva junto al nuevo tono. La ubicación del archivo y el campo `description` no cambian qué instrucciones se envían."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-output-styles--11a1d9f4",
+      "conceptId": "model-output-styles",
+      "secondaryConcepts": [
+        "loop-guidance-vs-enforcement"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A team wants two things in a repo: Prettier must run after every file edit, deterministically, every time; and while onboarding, a new developer wants Claude to explain the choices behind the code it writes, without being asked to write code themselves. Which two should they use? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "A custom output style that says \"always run Prettier after edits\"",
+          "correct": false,
+          "why": "A style is an instruction Claude follows; nothing enforces it every time."
+        },
+        {
+          "id": "B",
+          "text": "A `PostToolUse` hook that runs Prettier after edits",
+          "correct": true,
+          "why": "Claude Code runs the hook itself after each matching tool call, so it doesn't depend on Claude."
+        },
+        {
+          "id": "C",
+          "text": "The Learning output style",
+          "correct": false,
+          "why": "It also leaves `TODO(human)` spots for the developer to write code, which they don't want."
+        },
+        {
+          "id": "D",
+          "text": "The Explanatory output style",
+          "correct": true,
+          "why": "It adds `Insight` blocks explaining Claude's choices while Claude does the task."
+        },
+        {
+          "id": "E",
+          "text": "A line in `CLAUDE.md` telling Claude to run Prettier",
+          "correct": false,
+          "why": "`CLAUDE.md` is guidance too; it doesn't guarantee the formatter runs."
+        }
+      ],
+      "explanation": "The formatting rule must hold every time, so it needs a hook, which Claude Code runs itself at a lifecycle event. Explaining choices is about the shape of responses, which fits the Explanatory style. Learning adds the same explanations but also asks the developer to write code. A style or `CLAUDE.md` line about Prettier is only guidance.",
+      "keywordCues": [
+        "deterministically, every time",
+        "explain the choices behind the code",
+        "without being asked to write code themselves"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/output-styles.md",
+        "https://code.claude.com/docs/en/features-overview.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere dos cosas en un repo: Prettier debe correr tras cada edición de archivo, de forma determinista, siempre; y durante su onboarding, un desarrollador nuevo quiere que Claude explique las decisiones detrás del código que escribe, sin pedirle que escriba código. ¿Qué dos deben usar? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un output style propio que diga \"siempre corre Prettier tras editar\"",
+            "why": "Un estilo es una instrucción que Claude sigue; nada lo impone siempre."
+          },
+          {
+            "id": "B",
+            "text": "Un hook `PostToolUse` que corra Prettier tras las ediciones",
+            "why": "Claude Code corre el hook por su cuenta tras cada llamada que coincide, sin depender de Claude."
+          },
+          {
+            "id": "C",
+            "text": "El output style Learning",
+            "why": "También deja lugares con `TODO(human)` para que el desarrollador escriba código, y eso no lo quiere."
+          },
+          {
+            "id": "D",
+            "text": "El output style Explanatory",
+            "why": "Agrega bloques `Insight` que explican las decisiones de Claude mientras hace la tarea."
+          },
+          {
+            "id": "E",
+            "text": "Una línea en `CLAUDE.md` que pida correr Prettier",
+            "why": "`CLAUDE.md` también es guía; no garantiza que el formateador corra."
+          }
+        ],
+        "explanation": "La regla de formato debe cumplirse siempre, así que necesita un hook, que Claude Code corre por su cuenta en un evento del ciclo de vida. Explicar decisiones es sobre la forma de las respuestas, y eso encaja con Explanatory. Learning agrega las mismas explicaciones pero además pide escribir código. Un estilo o una línea en `CLAUDE.md` sobre Prettier son solo guía."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-output-styles--6fdf38fc",
+      "conceptId": "model-output-styles",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Type the command that switches the current session to the built-in Concise output style.",
+      "options": [
+        {
+          "id": "A",
+          "text": "/output-style concise",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/output-style Concise",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/output-style <style>` switches styles and saves the choice to `.claude/settings.local.json`. The command ignores case, unlike the `outputStyle` value in a settings file, which must be written exactly as `Concise`.",
+      "keywordCues": [
+        "switches the current session",
+        "Concise output style"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/output-styles.md",
+        "https://code.claude.com/docs/en/features-overview.md"
+      ],
+      "es": {
+        "stem": "Escribe el comando que cambia la sesión actual al output style integrado Concise.",
+        "options": [
+          {
+            "id": "A",
+            "text": "/output-style concise",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/output-style Concise",
+            "why": ""
+          }
+        ],
+        "explanation": "`/output-style <style>` cambia de estilo y guarda la elección en `.claude/settings.local.json`. El comando no distingue mayúsculas, a diferencia del valor `outputStyle` en un archivo de settings, que debe escribirse exactamente `Concise`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "model-output-styles--da4c8f5b",
+      "conceptId": "model-output-styles",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete the frontmatter of a custom output style so the picker shows it as \"Reviewer voice\" and Claude keeps its built-in software engineering instructions while only its tone changes.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "title",
+          "correct": false,
+          "why": "Not a supported field; a misspelled field is ignored, so the file name would be used."
+        },
+        {
+          "id": "1b",
+          "text": "name",
+          "correct": true,
+          "why": "`name` is the style name shown in the picker; without it, the file name is used."
+        },
+        {
+          "id": "1c",
+          "text": "outputStyle",
+          "correct": false,
+          "why": "`outputStyle` is a settings key that selects a style, not a frontmatter field."
+        },
+        {
+          "id": "2a",
+          "text": "keepCodingInstructions",
+          "correct": false,
+          "why": "Field names use lowercase words separated by hyphens; this spelling would be ignored."
+        },
+        {
+          "id": "2b",
+          "text": "force-for-plugin",
+          "correct": false,
+          "why": "It is for plugin styles only and makes them apply automatically."
+        },
+        {
+          "id": "2c",
+          "text": "keep-coding-instructions",
+          "correct": true,
+          "why": "Setting it to `true` keeps Claude Code's software engineering instructions."
+        }
+      ],
+      "explanation": "Output style frontmatter uses lowercase, hyphenated field names, and misspelled fields are ignored without an error. `name` sets the label in the picker, and `keep-coding-instructions: true` keeps the built-in coding instructions that custom styles otherwise drop.",
+      "keywordCues": [
+        "shows it as \"Reviewer voice\"",
+        "keeps its built-in software engineering instructions"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/output-styles.md",
+        "https://code.claude.com/docs/en/features-overview.md"
+      ],
+      "es": {
+        "stem": "Completa el frontmatter de un output style propio para que el selector lo muestre como \"Reviewer voice\" y Claude conserve sus instrucciones integradas de ingeniería de software, cambiando solo el tono.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "title",
+            "why": "No es un campo soportado; un campo mal escrito se ignora y se usaría el nombre del archivo."
+          },
+          {
+            "id": "1b",
+            "text": "name",
+            "why": "`name` es el nombre del estilo que muestra el selector; sin él se usa el nombre del archivo."
+          },
+          {
+            "id": "1c",
+            "text": "outputStyle",
+            "why": "`outputStyle` es una clave de settings que elige un estilo, no un campo de frontmatter."
+          },
+          {
+            "id": "2a",
+            "text": "keepCodingInstructions",
+            "why": "Los campos usan minúsculas separadas por guiones; esta forma se ignoraría."
+          },
+          {
+            "id": "2b",
+            "text": "force-for-plugin",
+            "why": "Es solo para estilos de plugin y hace que se apliquen automáticamente."
+          },
+          {
+            "id": "2c",
+            "text": "keep-coding-instructions",
+            "why": "En `true` conserva las instrucciones de ingeniería de software de Claude Code."
+          }
+        ],
+        "explanation": "El frontmatter de un output style usa nombres en minúsculas con guiones, y los campos mal escritos se ignoran sin error. `name` fija la etiqueta en el selector, y `keep-coding-instructions: true` conserva las instrucciones de código integradas que los estilos propios dejan fuera."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "---\n{{1}}: Reviewer voice\ndescription: Terse, direct review comments\n{{2}}: true\n---\n\nWrite review comments in one or two short sentences.",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "model-output-styles--r0",
+      "conceptId": "model-output-styles",
+      "kind": "recall",
+      "prompt": "What does an output style change, where can a custom one live, and what does keep-coding-instructions control?",
+      "promptEs": "¿Qué cambia un output style, dónde puede vivir uno propio y qué controla keep-coding-instructions?",
+      "idealAnswer": "An output style sets Claude's role, tone and response format for every response in the session, and its instructions are sent with every request. A custom style is a Markdown file in ~/.claude/output-styles or .claude/output-styles. keep-coding-instructions defaults to false, which drops Claude Code's software engineering instructions; set it to true to keep them.",
+      "rubric": [
+        "Shapes role, tone and format of every response",
+        "Custom style is a Markdown file in ~/.claude/output-styles or .claude/output-styles",
+        "keep-coding-instructions defaults to false and drops the coding instructions"
+      ]
+    },
+    {
+      "id": "model-output-styles--r1",
+      "conceptId": "model-output-styles",
+      "kind": "why-not",
+      "prompt": "Why can't an output style guarantee that a formatter runs after every edit?",
+      "promptEs": "¿Por qué un output style no puede garantizar que un formateador corra tras cada edición?",
+      "idealAnswer": "An output style is a set of instructions that Claude follows, so nothing enforces it and Claude can still skip the step. A hook is the right tool, because Claude Code runs it itself at a lifecycle event such as after an edit, without depending on Claude's decision.",
+      "rubric": [
+        "An output style is guidance, not enforcement",
+        "A hook runs deterministically at a lifecycle event",
+        "The hook doesn't depend on Claude following an instruction"
+      ]
+    }
+  ]
+}

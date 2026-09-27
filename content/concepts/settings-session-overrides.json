@@ -1,0 +1,521 @@
+{
+  "conceptId": "settings-session-overrides",
+  "card": {
+    "en": {
+      "tldr": "To try a value without saving it, set it when you start Claude Code: `claude --settings '<json or file>'`, a key's own flag such as `--model`, or its paired environment variable. The value lasts one session and your files stay as they were. Environment variables aren't a precedence level; each key-variable pair decides its own winner.",
+      "whenToUse": [
+        "Try a different model or set of keys for one run without editing any file",
+        "Figure out why a session ignores the `model` in your settings",
+        "Switch model mid-session without changing your default for new sessions"
+      ],
+      "keyFacts": [
+        "`--settings` takes inline JSON or a file path; it applies above user, project and local files and below managed settings.",
+        "`--settings` can set any key your user settings file can set, but not `Managed` or `Global config` keys.",
+        "`ANTHROPIC_MODEL` overrides the `model` key from any file, and `--model` overrides both for the session.",
+        "`ANTHROPIC_DEFAULT_MODEL` applies only when nothing else selects a model.",
+        "`/model` saves your pick as the default for new sessions; pressing `s` in the picker switches without saving it.",
+        "`CLAUDE_CODE_EFFORT_LEVEL` takes precedence over `--effort` and `/effort`, the opposite of the model pair."
+      ],
+      "gotchas": [
+        "In-session commands mostly save: `/config` writes to your settings files.",
+        "A managed `availableModels` list still constrains `--model`, `/model` and `ANTHROPIC_MODEL` picks.",
+        "Which of a flag or a variable wins differs per key; check the key's entry in the settings reference.",
+        "The `model` key is read at session start, so editing it mid-session doesn't switch the running session."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-precedence-order",
+          "difference": "The file stack orders levels; a paired env var is decided per key, not by level."
+        },
+        {
+          "concept": "settings-env-block",
+          "difference": "An `env` block in a file persists every launch; a shell export or flag is for this run."
+        }
+      ],
+      "examCues": [
+        "without saving it",
+        "for this session only",
+        "without changing my default",
+        "the model in settings is ignored",
+        "try a value once"
+      ]
+    },
+    "es": {
+      "tldr": "Para probar un valor sin guardarlo, fíjalo al iniciar Claude Code: `claude --settings '<json o archivo>'`, el flag propio de la clave como `--model`, o su variable de entorno pareja. El valor dura una sesión y tus archivos quedan igual. Las variables de entorno no son un nivel de precedencia; cada pareja clave-variable decide su ganador.",
+      "whenToUse": [
+        "Probar otro modelo o un conjunto de claves en una corrida sin editar archivos",
+        "Entender por qué una sesión ignora el `model` de tus settings",
+        "Cambiar de modelo a mitad de sesión sin cambiar tu default para sesiones nuevas"
+      ],
+      "keyFacts": [
+        "`--settings` acepta JSON en línea o una ruta de archivo; aplica sobre los archivos de usuario, proyecto y local, y debajo de managed.",
+        "`--settings` puede fijar cualquier clave que tu archivo de usuario pueda fijar, pero no claves `Managed` ni `Global config`.",
+        "`ANTHROPIC_MODEL` le gana a la clave `model` de cualquier archivo, y `--model` le gana a ambos durante la sesión.",
+        "`ANTHROPIC_DEFAULT_MODEL` solo aplica cuando nada más elige un modelo.",
+        "`/model` guarda tu elección como default para sesiones nuevas; presionar `s` en el selector cambia sin guardarla.",
+        "`CLAUDE_CODE_EFFORT_LEVEL` tiene precedencia sobre `--effort` y `/effort`, al revés que la pareja del modelo."
+      ],
+      "gotchas": [
+        "Los comandos dentro de la sesión casi siempre guardan: `/config` escribe en tus archivos de settings.",
+        "Una lista managed `availableModels` sigue limitando lo que eliges con `--model`, `/model` y `ANTHROPIC_MODEL`.",
+        "Si gana el flag o la variable depende de cada clave; revisa su entrada en la referencia de settings.",
+        "La clave `model` se lee al iniciar la sesión, así que editarla a mitad de sesión no cambia la sesión en curso."
+      ],
+      "confusedWith": [
+        {
+          "concept": "settings-precedence-order",
+          "difference": "La pila de archivos ordena niveles; una variable pareja se decide por clave, no por nivel."
+        },
+        {
+          "concept": "settings-env-block",
+          "difference": "Un bloque `env` en un archivo persiste en cada arranque; un export o flag es para esta corrida."
+        }
+      ],
+      "examCues": [
+        "without saving it",
+        "for this session only",
+        "without changing my default",
+        "the model in settings is ignored",
+        "try a value once"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/settings.md",
+      "https://code.claude.com/docs/en/env-vars.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "settings-session-overrides--40160e30",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer wants to try a trial configuration that changes several keys at once, including `hooks` and `permissions`, for a single run. Afterwards everything must be exactly as before, without editing or reverting any settings file.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Put the keys in `.claude/settings.local.json` and delete them after the run",
+          "correct": false,
+          "why": "That writes to a settings file and requires reverting it, which the requirement rules out."
+        },
+        {
+          "id": "B",
+          "text": "Save the keys in `trial.json` and start with `claude --settings ./trial.json`",
+          "correct": true,
+          "why": "`--settings` takes a file of keys for one session and doesn't write to any settings file."
+        },
+        {
+          "id": "C",
+          "text": "Change each key through `/config` during the session",
+          "correct": false,
+          "why": "`/config` writes your changes to your settings files, so they persist."
+        },
+        {
+          "id": "D",
+          "text": "Export each key's paired environment variable before starting `claude`",
+          "correct": false,
+          "why": "Only some keys have a paired variable; `hooks` and `permissions` don't."
+        }
+      ],
+      "explanation": "The requirement is several keys for one run with no file edits. `--settings` accepts inline JSON or a path, applies above user, project and local files, lasts one session and writes nothing. `/config` and the local file both persist changes. Paired environment variables exist for only some keys, such as `ANTHROPIC_MODEL` for `model`.",
+      "keywordCues": [
+        "several keys at once",
+        "for a single run",
+        "without editing or reverting any settings file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere probar una configuración de prueba que cambia varias claves a la vez, incluidas `hooks` y `permissions`, en una sola corrida. Después todo debe quedar igual que antes, sin editar ni revertir ningún archivo de settings.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner las claves en `.claude/settings.local.json` y borrarlas después de la corrida",
+            "why": "Eso escribe en un archivo de settings y obliga a revertirlo, lo que el requisito descarta."
+          },
+          {
+            "id": "B",
+            "text": "Guardar las claves en `trial.json` e iniciar con `claude --settings ./trial.json`",
+            "why": "`--settings` toma un archivo de claves para una sesión y no escribe en ningún archivo de settings."
+          },
+          {
+            "id": "C",
+            "text": "Cambiar cada clave con `/config` durante la sesión",
+            "why": "`/config` escribe tus cambios en tus archivos de settings, así que persisten."
+          },
+          {
+            "id": "D",
+            "text": "Exportar la variable de entorno pareja de cada clave antes de iniciar `claude`",
+            "why": "Solo algunas claves tienen variable pareja; `hooks` y `permissions` no."
+          }
+        ],
+        "explanation": "El requisito es varias claves para una corrida sin editar archivos. `--settings` acepta JSON en línea o una ruta, aplica sobre los archivos de usuario, proyecto y local, dura una sesión y no escribe nada. `/config` y el archivo local persisten los cambios. Las variables pareja existen solo para algunas claves, como `ANTHROPIC_MODEL` para `model`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-session-overrides--7869d4cc",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [
+        "settings-precedence-order"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A repository's `.claude/settings.json` sets `\"model\": \"sonnet\"`. A developer's shell profile exports `ANTHROPIC_MODEL=opus`, and today she starts a session with `claude --model haiku`. Her organization sets no `availableModels` list. Which model does this session start on?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`sonnet`, from the project settings file",
+          "correct": false,
+          "why": "`ANTHROPIC_MODEL` overrides the `model` key from any file, and `--model` overrides both."
+        },
+        {
+          "id": "B",
+          "text": "`opus`, from `ANTHROPIC_MODEL`",
+          "correct": false,
+          "why": "`--model` takes precedence over `ANTHROPIC_MODEL` for the session."
+        },
+        {
+          "id": "C",
+          "text": "`haiku`, from `--model`",
+          "correct": true,
+          "why": "`--model` takes precedence over `ANTHROPIC_MODEL`, and both over the `model` key, for one session."
+        },
+        {
+          "id": "D",
+          "text": "The account default, because the three sources conflict",
+          "correct": false,
+          "why": "Claude Code doesn't fall back on a conflict; the per-key order picks a winner."
+        }
+      ],
+      "explanation": "Environment variables aren't a level in the settings stack; the winner is decided per pair. For the model, `--model` beats `ANTHROPIC_MODEL`, and `ANTHROPIC_MODEL` beats the `model` key from any file. So the flag decides this session. Picking the project value applies file-level thinking to a pair that isn't decided by level.",
+      "keywordCues": [
+        "`.claude/settings.json` sets",
+        "exports `ANTHROPIC_MODEL`",
+        "`claude --model haiku`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "El `.claude/settings.json` de un repositorio fija `\"model\": \"sonnet\"`. El perfil de shell de una desarrolladora exporta `ANTHROPIC_MODEL=opus`, y hoy inicia una sesión con `claude --model haiku`. Su organización no fija ninguna lista `availableModels`. ¿Con qué modelo arranca esta sesión?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`sonnet`, del archivo de settings del proyecto",
+            "why": "`ANTHROPIC_MODEL` le gana a la clave `model` de cualquier archivo, y `--model` le gana a ambos."
+          },
+          {
+            "id": "B",
+            "text": "`opus`, de `ANTHROPIC_MODEL`",
+            "why": "`--model` tiene precedencia sobre `ANTHROPIC_MODEL` durante la sesión."
+          },
+          {
+            "id": "C",
+            "text": "`haiku`, de `--model`",
+            "why": "`--model` tiene precedencia sobre `ANTHROPIC_MODEL`, y ambos sobre la clave `model`, por una sesión."
+          },
+          {
+            "id": "D",
+            "text": "El default de la cuenta, porque las tres fuentes chocan",
+            "why": "Claude Code no retrocede ante un choque; el orden por clave elige un ganador."
+          }
+        ],
+        "explanation": "Las variables de entorno no son un nivel de la pila de settings; el ganador se decide por pareja. Para el modelo, `--model` le gana a `ANTHROPIC_MODEL`, y `ANTHROPIC_MODEL` a la clave `model` de cualquier archivo. Así que el flag decide esta sesión. Elegir el valor del proyecto aplica la lógica de niveles a una pareja que no se decide por nivel."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-session-overrides--98fe1b84",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Mid-conversation, a developer wants to move this session to Opus for a hard refactor. She must stay in the current session, and new sessions tomorrow must still start on her usual default model.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Pick Opus in `/model` as usual",
+          "correct": false,
+          "why": "A normal `/model` pick saves the value as your default for new sessions."
+        },
+        {
+          "id": "B",
+          "text": "Set `\"model\"` to Opus in `.claude/settings.local.json`",
+          "correct": false,
+          "why": "`model` is read at session start, so the running session doesn't switch, and the file change persists."
+        },
+        {
+          "id": "C",
+          "text": "Change the model through `/config`",
+          "correct": false,
+          "why": "`/config` writes the change to your settings files, so it becomes your default."
+        },
+        {
+          "id": "D",
+          "text": "In the `/model` picker, highlight Opus and press `s`",
+          "correct": true,
+          "why": "Pressing `s` in the picker switches the model without saving it as your user default."
+        }
+      ],
+      "explanation": "Two requirements decide it: switch inside the running session, and don't change the default. In-session commands mostly save, and a normal `/model` pick becomes your default for new sessions. Pressing `s` in the `/model` picker is the documented way to switch for this session only. Editing `model` in a file doesn't reach a running session.",
+      "keywordCues": [
+        "stay in the current session",
+        "new sessions tomorrow",
+        "usual default model"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "A mitad de conversación, una desarrolladora quiere pasar esta sesión a Opus para un refactor difícil. Debe seguir en la sesión actual, y las sesiones nuevas de mañana deben seguir arrancando con su modelo default de siempre.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Elegir Opus en `/model` como siempre",
+            "why": "Una elección normal en `/model` guarda el valor como tu default para sesiones nuevas."
+          },
+          {
+            "id": "B",
+            "text": "Fijar `\"model\"` en Opus en `.claude/settings.local.json`",
+            "why": "`model` se lee al iniciar la sesión, así que la sesión en curso no cambia, y el cambio del archivo persiste."
+          },
+          {
+            "id": "C",
+            "text": "Cambiar el modelo con `/config`",
+            "why": "`/config` escribe el cambio en tus archivos de settings, así que se vuelve tu default."
+          },
+          {
+            "id": "D",
+            "text": "En el selector de `/model`, marcar Opus y presionar `s`",
+            "why": "Presionar `s` en el selector cambia el modelo sin guardarlo como tu default de usuario."
+          }
+        ],
+        "explanation": "Dos requisitos deciden: cambiar dentro de la sesión en curso y no tocar el default. Los comandos dentro de la sesión casi siempre guardan, y una elección normal en `/model` se vuelve tu default para sesiones nuevas. Presionar `s` en el selector de `/model` es la forma documentada de cambiar solo para esta sesión. Editar `model` en un archivo no llega a una sesión en curso."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-session-overrides--154c4804",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which CLI flag passes settings as inline JSON or a file path for one session, above your user, project and local files?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--settings",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--settings` takes a key as JSON, inline or as a path to a file. Claude Code applies it above user, project and local settings and below managed settings, for that session only, without writing to any file.",
+      "keywordCues": [
+        "inline JSON or a file path",
+        "for one session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag de la CLI pasa settings como JSON en línea o ruta de archivo para una sesión, por encima de tus archivos de usuario, proyecto y local?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--settings",
+            "why": ""
+          }
+        ],
+        "explanation": "`--settings` recibe claves como JSON, en línea o como ruta a un archivo. Claude Code lo aplica sobre los settings de usuario, proyecto y local y debajo de managed, solo en esa sesión, sin escribir en ningún archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-session-overrides--8b4ce21e",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable, exported in your shell, overrides the `model` key from any settings file?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ANTHROPIC_MODEL",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`ANTHROPIC_MODEL` is read before the `model` setting, so it applies over `model` from any file. `ANTHROPIC_DEFAULT_MODEL` is different: it applies only when nothing else selects a model.",
+      "keywordCues": [
+        "exported in your shell",
+        "overrides the `model` key from any settings file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno, exportada en tu shell, le gana a la clave `model` de cualquier archivo de settings?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ANTHROPIC_MODEL",
+            "why": ""
+          }
+        ],
+        "explanation": "`ANTHROPIC_MODEL` se lee antes que el setting `model`, así que aplica sobre `model` de cualquier archivo. `ANTHROPIC_DEFAULT_MODEL` es distinta: solo aplica cuando nada más elige un modelo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "settings-session-overrides--d899f133",
+      "conceptId": "settings-session-overrides",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "With no managed `availableModels` list, order these model sources from highest to lowest precedence for the session's starting model.",
+      "options": [
+        {
+          "id": "A",
+          "text": "The `model` key in `.claude/settings.json`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "`ANTHROPIC_DEFAULT_MODEL`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "The `--model` flag",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`ANTHROPIC_MODEL` exported in the shell",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--model` takes precedence over `ANTHROPIC_MODEL`, and both take precedence over the `model` key for one session. A `model` value in a settings file outranks `ANTHROPIC_DEFAULT_MODEL`, which Claude Code uses only when nothing else selects a model.",
+      "keywordCues": [
+        "from highest to lowest precedence"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/settings.md",
+        "https://code.claude.com/docs/en/env-vars.md"
+      ],
+      "es": {
+        "stem": "Sin una lista managed `availableModels`, ordena estas fuentes del modelo de mayor a menor precedencia para el modelo con que arranca la sesión.",
+        "options": [
+          {
+            "id": "A",
+            "text": "La clave `model` en `.claude/settings.json`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "`ANTHROPIC_DEFAULT_MODEL`",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "El flag `--model`",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`ANTHROPIC_MODEL` exportada en el shell",
+            "why": ""
+          }
+        ],
+        "explanation": "`--model` tiene precedencia sobre `ANTHROPIC_MODEL`, y ambos sobre la clave `model` durante una sesión. Un valor `model` en un archivo de settings le gana a `ANTHROPIC_DEFAULT_MODEL`, que Claude Code usa solo cuando nada más elige modelo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "C",
+        "D",
+        "A",
+        "B"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "settings-session-overrides--r0",
+      "conceptId": "settings-session-overrides",
+      "kind": "recall",
+      "prompt": "Name three ways to override a setting for one session only, and say where --settings sits relative to your files and managed settings.",
+      "promptEs": "Nombra tres formas de sobrescribir un setting solo por una sesión y di dónde queda --settings respecto a tus archivos y a managed.",
+      "idealAnswer": "You can pass claude --settings with inline JSON or a file, use the key's own flag such as --model, or export its paired environment variable such as ANTHROPIC_MODEL. --settings applies above user, project and local files but below managed settings. None of these writes to a settings file.",
+      "rubric": [
+        "--settings with JSON or a file",
+        "A key's own flag such as --model",
+        "A paired environment variable such as ANTHROPIC_MODEL",
+        "--settings sits above user, project and local, below managed"
+      ]
+    },
+    {
+      "id": "settings-session-overrides--r1",
+      "conceptId": "settings-session-overrides",
+      "kind": "why-not",
+      "prompt": "You want Opus only for this session. Why isn't a normal pick in /model the right choice?",
+      "promptEs": "Quieres Opus solo para esta sesión. ¿Por qué una elección normal en /model no es lo adecuado?",
+      "idealAnswer": "A normal /model pick saves the model as your user default for new sessions, so tomorrow's sessions would start on Opus too. Pressing s in the /model picker switches without saving, and --model or --settings at launch also last one session only.",
+      "rubric": [
+        "A normal /model pick saves the user default",
+        "Pressing s in the picker switches without saving",
+        "Launch-time flags last one session"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,440 @@
+{
+  "conceptId": "interactive-interrupt-queue",
+  "card": {
+    "en": {
+      "tldr": "While Claude works you can stop it or steer it. Esc cancels the current response or tool call and Claude waits for you; typing a message and pressing Enter queues it, and Claude reads it as soon as the running tool calls finish, within the same turn. Pick Esc when the current step is wrong, Enter when the next step needs adjusting.",
+      "whenToUse": [
+        "Claude is doing the wrong thing right now: press Esc",
+        "Claude is on track but needs one more constraint: type it and press Enter",
+        "A queued message shouldn't wait: press Ctrl+Enter",
+        "A long command blocks the turn: press Ctrl+B to background it"
+      ],
+      "keyFacts": [
+        "Esc stops the current response or tool call; Claude keeps the work done so far, and any queued messages are sent next.",
+        "A message queued while Claude runs tool calls reaches Claude when those calls finish, in the same turn; queued commands and `!` commands wait until the turn ends.",
+        "`Ctrl+Enter` (or `Ctrl+X Ctrl+S` in any terminal) sends the queue now; backgroundable work moves to the background, otherwise the turn is interrupted.",
+        "`Up` from the first line takes queued messages back into the input box.",
+        "Esc Esc clears a non-empty draft, or opens the rewind menu when the input is empty.",
+        "`Ctrl+O` toggles the transcript viewer, `Shift+Tab` cycles permission modes, `Ctrl+G` opens the prompt in your editor."
+      ],
+      "gotchas": [
+        "Enter while Claude works does not interrupt: the running tool calls finish first.",
+        "Esc does not undo edits already made; that's rewind.",
+        "In terminals without extended keys, `Ctrl+Enter` arrives as plain Enter and only queues; `Ctrl+X Ctrl+S` works everywhere.",
+        "`/model`, `/effort` and `/fast` run immediately instead of queueing."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/btw",
+          "difference": "Asks a side question with no tools; it doesn't redirect the turn or enter history."
+        },
+        {
+          "concept": "Rewind (Esc Esc on empty input)",
+          "difference": "Restores code and conversation to an earlier point; Esc only stops the current step."
+        }
+      ],
+      "examCues": [
+        "stop Claude immediately",
+        "without interrupting the running tool calls",
+        "adjust before its next step",
+        "send the queued message now",
+        "keep the dev server running"
+      ]
+    },
+    "es": {
+      "tldr": "Mientras Claude trabaja puedes frenarlo o corregirlo. Esc cancela la respuesta o tool call actual y Claude te espera; escribir un mensaje y presionar Enter lo encola, y Claude lo lee apenas terminan las tool calls en curso, dentro del mismo turno. Usa Esc si el paso actual está mal y Enter si el siguiente paso necesita ajuste.",
+      "whenToUse": [
+        "Claude hace algo mal ahora mismo: presiona Esc",
+        "Claude va bien pero le falta una restricción: escríbela y presiona Enter",
+        "Un mensaje encolado no debe esperar: presiona Ctrl+Enter",
+        "Un comando largo bloquea el turno: presiona Ctrl+B para mandarlo a segundo plano"
+      ],
+      "keyFacts": [
+        "Esc detiene la respuesta o tool call actual; Claude conserva lo hecho y los mensajes en cola se envían a continuación.",
+        "Un mensaje encolado mientras Claude corre tool calls le llega cuando esas llamadas terminan, en el mismo turno; los comandos y los comandos `!` en cola esperan al fin del turno.",
+        "`Ctrl+Enter` (o `Ctrl+X Ctrl+S` en cualquier terminal) envía la cola ya; el trabajo que puede ir a segundo plano sigue ahí, si no, el turno se interrumpe.",
+        "`Up` desde la primera línea devuelve los mensajes encolados a la caja de entrada.",
+        "Esc Esc limpia un borrador con texto, o abre el menú de rewind si la entrada está vacía.",
+        "`Ctrl+O` alterna el transcript, `Shift+Tab` rota los modos de permisos y `Ctrl+G` abre el prompt en tu editor."
+      ],
+      "gotchas": [
+        "Enter mientras Claude trabaja no interrumpe: primero terminan las tool calls en curso.",
+        "Esc no deshace ediciones ya hechas; eso es rewind.",
+        "En terminales sin teclas extendidas, `Ctrl+Enter` llega como Enter y solo encola; `Ctrl+X Ctrl+S` funciona en todas.",
+        "`/model`, `/effort` y `/fast` corren de inmediato en vez de encolarse."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/btw",
+          "difference": "Hace una pregunta al margen sin herramientas; no redirige el turno ni entra al historial."
+        },
+        {
+          "concept": "Rewind (Esc Esc con la entrada vacía)",
+          "difference": "Restaura código y conversación a un punto anterior; Esc solo detiene el paso actual."
+        }
+      ],
+      "examCues": [
+        "stop Claude immediately",
+        "without interrupting the running tool calls",
+        "adjust before its next step",
+        "send the queued message now",
+        "keep the dev server running"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/interactive-mode.md",
+      "https://code.claude.com/docs/en/how-claude-code-works.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "interactive-interrupt-queue--7ebfbc89",
+      "conceptId": "interactive-interrupt-queue",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Midway through a refactor you notice Claude has started rewriting the payments module, which was out of scope. You want the current tool call canceled right away, the work done so far kept, and Claude waiting for your next instruction. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type \"leave payments alone\" and press Enter.",
+          "correct": false,
+          "why": "This queues the message; the running tool call finishes before Claude reads it."
+        },
+        {
+          "id": "B",
+          "text": "Press Shift+Tab to switch to plan mode.",
+          "correct": false,
+          "why": "It cycles the permission mode; it doesn't cancel the tool call already running."
+        },
+        {
+          "id": "C",
+          "text": "Press Esc.",
+          "correct": true,
+          "why": "Esc cancels the current response or tool call, keeps the work so far, and Claude waits."
+        },
+        {
+          "id": "D",
+          "text": "Press Ctrl+B.",
+          "correct": false,
+          "why": "Ctrl+B moves running Bash commands and agents to the background; it doesn't stop them."
+        }
+      ],
+      "explanation": "The requirement is to cancel the current step immediately and have Claude wait. Esc stops the current response or tool call mid-turn, keeps what Claude has done, and waits for your next instruction. A queued message only arrives after the running tool calls finish, so the unwanted edit would still happen. Shift+Tab and Ctrl+B change the mode or move work to the background without canceling it.",
+      "keywordCues": [
+        "canceled right away",
+        "work done so far kept",
+        "waiting for your next instruction"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "A mitad de un refactor ves que Claude empezó a reescribir el módulo de pagos, que estaba fuera del alcance. Quieres que la tool call actual se cancele ya, que se conserve lo hecho y que Claude espere tu siguiente instrucción. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Escribes \"no toques pagos\" y presionas Enter.",
+            "why": "Eso encola el mensaje; la tool call en curso termina antes de que Claude lo lea."
+          },
+          {
+            "id": "B",
+            "text": "Presionas Shift+Tab para pasar a plan mode.",
+            "why": "Rota el modo de permisos; no cancela la tool call que ya corre."
+          },
+          {
+            "id": "C",
+            "text": "Presionas Esc.",
+            "why": "Esc cancela la respuesta o tool call actual, conserva lo hecho y Claude espera."
+          },
+          {
+            "id": "D",
+            "text": "Presionas Ctrl+B.",
+            "why": "Ctrl+B manda comandos Bash y agentes a segundo plano; no los detiene."
+          }
+        ],
+        "explanation": "El requisito es cancelar el paso actual de inmediato y que Claude espere. Esc detiene la respuesta o tool call a mitad del turno, conserva lo hecho y espera tu siguiente instrucción. Un mensaje encolado llega recién cuando terminan las tool calls, así que la edición no deseada igual ocurriría. Shift+Tab y Ctrl+B cambian el modo o mandan trabajo a segundo plano sin cancelarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-interrupt-queue--37ce37f0",
+      "conceptId": "interactive-interrupt-queue",
+      "secondaryConcepts": [
+        "cmd-btw"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude is running a series of test commands to reproduce a bug and is on the right track. You remember it should also check how paths are handled on Windows. You want Claude to take this into account before its next step, without canceling the commands already running and without starting a new turn. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type the Windows reminder and press Enter.",
+          "correct": true,
+          "why": "The message is queued and Claude reads it when the running tool calls finish, within the same turn."
+        },
+        {
+          "id": "B",
+          "text": "Press Esc, then type the Windows reminder.",
+          "correct": false,
+          "why": "Esc cancels the running tool call, which you wanted to keep."
+        },
+        {
+          "id": "C",
+          "text": "Run /btw with the Windows reminder.",
+          "correct": false,
+          "why": "/btw answers from context with no tools and never enters history, so it can't steer the work."
+        },
+        {
+          "id": "D",
+          "text": "Press Esc twice to open rewind and edit your prompt.",
+          "correct": false,
+          "why": "Rewind restores an earlier point; it discards progress instead of steering it."
+        }
+      ],
+      "explanation": "The deciding requirement is to steer without canceling what is running, in the same turn. Typing a message and pressing Enter while Claude works queues it, and Claude reads it as soon as the running tool calls finish, adjusting before its next step. Esc would cancel the running tool call. /btw is a side question with no tools whose answer never enters the conversation history, so Claude's work isn't redirected.",
+      "keywordCues": [
+        "before its next step",
+        "without canceling the commands already running",
+        "without starting a new turn"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Claude corre una serie de comandos de test para reproducir un bug y va bien encaminado. Recuerdas que también debe revisar cómo se manejan las rutas en Windows. Quieres que lo tenga en cuenta antes de su siguiente paso, sin cancelar los comandos que ya corren y sin empezar un turno nuevo. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Escribes el recordatorio de Windows y presionas Enter.",
+            "why": "El mensaje queda en cola y Claude lo lee al terminar las tool calls en curso, en el mismo turno."
+          },
+          {
+            "id": "B",
+            "text": "Presionas Esc y luego escribes el recordatorio.",
+            "why": "Esc cancela la tool call en curso, que querías conservar."
+          },
+          {
+            "id": "C",
+            "text": "Usas /btw con el recordatorio de Windows.",
+            "why": "/btw responde desde el contexto sin herramientas y nunca entra al historial, así que no guía el trabajo."
+          },
+          {
+            "id": "D",
+            "text": "Presionas Esc dos veces para abrir rewind y editar tu prompt.",
+            "why": "Rewind restaura un punto anterior; descarta el avance en vez de corregirlo."
+          }
+        ],
+        "explanation": "El requisito que decide es corregir sin cancelar lo que corre, en el mismo turno. Escribir un mensaje y presionar Enter mientras Claude trabaja lo encola, y Claude lo lee apenas terminan las tool calls en curso, ajustando antes de su siguiente paso. Esc cancelaría la tool call en curso. /btw es una pregunta al margen sin herramientas cuya respuesta nunca entra al historial, así que no redirige el trabajo de Claude."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-interrupt-queue--dece0e34",
+      "conceptId": "interactive-interrupt-queue",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Claude is running a long `npm run build` through the Bash tool, and you have already queued a message telling it to skip the docs package. You want Claude to read that message now rather than after the build, and you don't want the build canceled. Your terminal reports extended keys. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Press Esc.",
+          "correct": false,
+          "why": "Esc interrupts the turn and cancels the running build, then sends the queue."
+        },
+        {
+          "id": "B",
+          "text": "Press Ctrl+Enter.",
+          "correct": true,
+          "why": "The build can move to the background, so it keeps running and Claude reads the queued message in the same turn."
+        },
+        {
+          "id": "C",
+          "text": "Press Up and then Enter.",
+          "correct": false,
+          "why": "Up takes the message back and Enter queues it again; it still waits for the build."
+        },
+        {
+          "id": "D",
+          "text": "Type another message and press Enter.",
+          "correct": false,
+          "why": "It only adds a second queued message that also waits for the tool call."
+        }
+      ],
+      "explanation": "You need the queue delivered now while the build keeps running. Ctrl+Enter sends queued messages right away; because a shell command can move to the background, the build continues and Claude reads your message in the same turn. Esc also sends the queue, but it interrupts the current tool call, canceling the build. Up and Enter only rearrange the queue without speeding up delivery.",
+      "keywordCues": [
+        "read that message now",
+        "don't want the build canceled",
+        "reports extended keys"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Claude corre un `npm run build` largo con la herramienta Bash y ya encolaste un mensaje pidiéndole saltar el paquete de docs. Quieres que Claude lea ese mensaje ahora y no después del build, y no quieres que el build se cancele. Tu terminal reporta teclas extendidas. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Presionas Esc.",
+            "why": "Esc interrumpe el turno y cancela el build en curso, luego envía la cola."
+          },
+          {
+            "id": "B",
+            "text": "Presionas Ctrl+Enter.",
+            "why": "El build puede ir a segundo plano, así que sigue corriendo y Claude lee el mensaje en el mismo turno."
+          },
+          {
+            "id": "C",
+            "text": "Presionas Up y luego Enter.",
+            "why": "Up recupera el mensaje y Enter lo vuelve a encolar; sigue esperando al build."
+          },
+          {
+            "id": "D",
+            "text": "Escribes otro mensaje y presionas Enter.",
+            "why": "Solo suma un segundo mensaje en cola que también espera a la tool call."
+          }
+        ],
+        "explanation": "Necesitas entregar la cola ya mientras el build sigue. Ctrl+Enter envía los mensajes encolados de inmediato; como un comando de shell puede ir a segundo plano, el build continúa y Claude lee tu mensaje en el mismo turno. Esc también envía la cola, pero interrumpe la tool call actual y cancela el build. Up y Enter solo reordenan la cola sin acelerar la entrega."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "interactive-interrupt-queue--4ec2cba8",
+      "conceptId": "interactive-interrupt-queue",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "You have queued two messages while Claude works. Then you decide its current approach is wrong and press Esc. Which two statements describe what happens? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude keeps the work it has done so far.",
+          "correct": true,
+          "why": "Esc stops the current step but doesn't discard earlier work."
+        },
+        {
+          "id": "B",
+          "text": "Your queued messages are discarded.",
+          "correct": false,
+          "why": "Claude Code keeps what you queued and sends it."
+        },
+        {
+          "id": "C",
+          "text": "Files Claude edited this turn are restored.",
+          "correct": false,
+          "why": "Restoring code is what rewind does, not Esc."
+        },
+        {
+          "id": "D",
+          "text": "Claude Code sends your queued messages right away.",
+          "correct": true,
+          "why": "After Esc interrupts, the queued messages go out next."
+        },
+        {
+          "id": "E",
+          "text": "Claude Code exits the session.",
+          "correct": false,
+          "why": "Esc interrupts the turn; exiting is Ctrl+D or a second Ctrl+C on empty input."
+        }
+      ],
+      "explanation": "Esc stops the current response or tool call mid-turn so you can redirect, and Claude keeps the work done so far. If messages are queued, Claude Code keeps them and sends them right away. Esc doesn't restore files; that is the rewind menu. It doesn't end the session either.",
+      "keywordCues": [
+        "queued two messages",
+        "press Esc"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/interactive-mode.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Encolaste dos mensajes mientras Claude trabaja. Luego decides que su enfoque actual está mal y presionas Esc. ¿Qué dos afirmaciones describen lo que pasa? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Claude conserva el trabajo hecho hasta ahora.",
+            "why": "Esc detiene el paso actual pero no descarta el trabajo previo."
+          },
+          {
+            "id": "B",
+            "text": "Tus mensajes en cola se descartan.",
+            "why": "Claude Code conserva lo que encolaste y lo envía."
+          },
+          {
+            "id": "C",
+            "text": "Se restauran los archivos que Claude editó en este turno.",
+            "why": "Restaurar código es tarea de rewind, no de Esc."
+          },
+          {
+            "id": "D",
+            "text": "Claude Code envía tus mensajes en cola de inmediato.",
+            "why": "Tras la interrupción con Esc, los mensajes en cola salen a continuación."
+          },
+          {
+            "id": "E",
+            "text": "Claude Code cierra la sesión.",
+            "why": "Esc interrumpe el turno; salir es Ctrl+D o un segundo Ctrl+C con la entrada vacía."
+          }
+        ],
+        "explanation": "Esc detiene la respuesta o tool call a mitad del turno para que redirijas, y Claude conserva lo hecho. Si hay mensajes en cola, Claude Code los conserva y los envía de inmediato. Esc no restaura archivos; eso es el menú de rewind. Tampoco termina la sesión."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "interactive-interrupt-queue--r0",
+      "conceptId": "interactive-interrupt-queue",
+      "kind": "recall",
+      "prompt": "Explain the difference between pressing Esc and typing a message plus Enter while Claude is running tool calls.",
+      "promptEs": "Explica la diferencia entre presionar Esc y escribir un mensaje más Enter mientras Claude corre tool calls.",
+      "idealAnswer": "Esc stops the current response or tool call immediately; Claude keeps the work done so far and waits, and any queued messages are sent next. Typing and pressing Enter queues the message without interrupting: Claude reads it as soon as the running tool calls finish, within the same turn. Ctrl+Enter sends the queue right away.",
+      "rubric": [
+        "Esc cancels the current step and Claude waits",
+        "Work done so far is kept",
+        "Enter queues without interrupting",
+        "Queued message is read after running tool calls finish, same turn"
+      ]
+    },
+    {
+      "id": "interactive-interrupt-queue--r1",
+      "conceptId": "interactive-interrupt-queue",
+      "kind": "why-not",
+      "prompt": "You want Claude to also cover an edge case in the work it is doing now. Why doesn't /btw achieve that?",
+      "promptEs": "Quieres que Claude también cubra un caso borde en el trabajo que hace ahora. ¿Por qué /btw no lo logra?",
+      "idealAnswer": "/btw asks a side question answered from what's already in context, with no tools, and the question and answer never enter the conversation history, so the running turn never sees your instruction. To steer the work, type the correction and press Enter so it's queued and read after the running tool calls, or press Esc to stop first.",
+      "rubric": [
+        "/btw has no tool access",
+        "/btw never enters the conversation history",
+        "Use a queued message (Enter) or Esc to steer"
+      ]
+    }
+  ]
+}

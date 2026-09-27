@@ -1,0 +1,536 @@
+{
+  "conceptId": "cmd-everyday-commands",
+  "card": {
+    "en": {
+      "tldr": "Five built-in commands cover everyday session chores: /init creates a starter CLAUDE.md, /config changes settings, /diff shows working-tree changes, /add-dir grants access to another directory, and /export saves the conversation. Reach for them when you want to create or change something, not to inspect what is loaded.",
+      "whenToUse": [
+        "First session in a repo with no CLAUDE.md: run /init.",
+        "Change theme, model or another preference, or set a key from a -p run: /config key=value.",
+        "Before you ship, look over every change, including Claude's edits: /diff.",
+        "Claude needs files outside the working directory this session: /add-dir <path>; to keep a record, /export [filename]."
+      ],
+      "keyFacts": [
+        "/init initializes the project with a CLAUDE.md guide; set CLAUDE_CODE_NEW_INIT=1 for an interactive flow that also walks through skills, hooks and personal memory files.",
+        "/config [key=value ...] opens the Settings interface, or sets keys directly (/config theme=dark, /config model=sonnet); the key=value form also works in non-interactive mode (-p). /config --help lists accepted keys; alias /settings.",
+        "/diff reviews the changes in your working tree, including the edits Claude has made so far.",
+        "/add-dir <path> adds a working directory for file access during the current session; most .claude/ configuration isn't discovered from it.",
+        "/export [filename] exports the conversation as plain text: with a filename it writes that file, without one it opens a dialog to copy to clipboard or save to a file."
+      ],
+      "gotchas": [
+        "/config key=value can't turn on a setting that needs confirmation in the panel, such as autoContinueAtUsageLimit, though it can turn one off.",
+        "/add-dir grants file access, not configuration: don't expect the added directory's .claude/ setup to apply.",
+        "/add-dir can't add most network paths, such as \\\\server\\share.",
+        "To allow a command, set an environment variable or add a hook by describing it, use /update-config, which edits settings.json; /config is for options such as theme and model."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/context, /status (inspection)",
+          "difference": "They show what is loaded or active; the everyday commands create or change something."
+        },
+        {
+          "concept": "/cd <path>",
+          "difference": "Moves the session to a new working directory, keeping the conversation; /add-dir adds one alongside the current one."
+        },
+        {
+          "concept": "/copy [N]",
+          "difference": "Copies the last (or Nth-latest) assistant response to the clipboard; /export saves the whole conversation."
+        }
+      ],
+      "examCues": [
+        "generate a starter CLAUDE.md",
+        "set a setting without opening the interface",
+        "review every change before committing",
+        "access files in another directory this session",
+        "save the conversation as plain text"
+      ]
+    },
+    "es": {
+      "tldr": "Cinco comandos integrados cubren las tareas diarias de la sesión: /init crea un CLAUDE.md inicial, /config cambia ajustes, /diff muestra los cambios del working tree, /add-dir da acceso a otro directorio y /export guarda la conversación. Úsalos cuando quieres crear o cambiar algo, no para inspeccionar qué está cargado.",
+      "whenToUse": [
+        "Primera sesión en un repo sin CLAUDE.md: ejecuta /init.",
+        "Cambiar theme, model u otra preferencia, o fijar una clave desde una ejecución con -p: /config key=value.",
+        "Antes de publicar, revisar todos los cambios, incluidas las ediciones de Claude: /diff.",
+        "Claude necesita archivos fuera del directorio de trabajo en esta sesión: /add-dir <path>; para guardar un registro, /export [filename]."
+      ],
+      "keyFacts": [
+        "/init inicializa el proyecto con una guía CLAUDE.md; define CLAUDE_CODE_NEW_INIT=1 para un flujo interactivo que también recorre skills, hooks y archivos de memoria personales.",
+        "/config [key=value ...] abre la interfaz de Settings, o fija claves directamente (/config theme=dark, /config model=sonnet); la forma key=value también funciona en modo no interactivo (-p). /config --help lista las claves aceptadas; alias /settings.",
+        "/diff revisa los cambios de tu working tree, incluidas las ediciones que Claude hizo hasta ahora.",
+        "/add-dir <path> agrega un directorio de trabajo con acceso a archivos durante la sesión actual; la mayor parte de la configuración .claude/ no se descubre desde él.",
+        "/export [filename] exporta la conversación como texto plano: con un nombre de archivo escribe ese archivo; sin él abre un diálogo para copiar al portapapeles o guardar en un archivo."
+      ],
+      "gotchas": [
+        "/config key=value no puede activar un ajuste que requiere confirmación en el panel, como autoContinueAtUsageLimit, aunque sí puede desactivarlo.",
+        "/add-dir da acceso a archivos, no a configuración: no esperes que se aplique la configuración .claude/ del directorio agregado.",
+        "/add-dir no puede agregar la mayoría de rutas de red, como \\\\server\\share.",
+        "Para permitir un comando, definir una variable de entorno o agregar un hook describiéndolo, usa /update-config, que edita settings.json; /config es para opciones como theme y model."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/context, /status (inspección)",
+          "difference": "Muestran qué está cargado o activo; los comandos diarios crean o cambian algo."
+        },
+        {
+          "concept": "/cd <path>",
+          "difference": "Mueve la sesión a otro directorio de trabajo conservando la conversación; /add-dir agrega uno junto al actual."
+        },
+        {
+          "concept": "/copy [N]",
+          "difference": "Copia la última respuesta de Claude (o la N-ésima) al portapapeles; /export guarda toda la conversación."
+        }
+      ],
+      "examCues": [
+        "generate a starter CLAUDE.md",
+        "set a setting without opening the interface",
+        "review every change before committing",
+        "access files in another directory this session",
+        "save the conversation as plain text"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/commands.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cmd-everyday-commands--888c3dc5",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "You clone a repository that has no CLAUDE.md and start your first Claude Code session in it. You want a starting CLAUDE.md for the project that you can refine later, with the least setup. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /memory and write the file from scratch",
+          "correct": false,
+          "why": "/memory edits CLAUDE.md files and manages auto memory; it doesn't generate a starter guide for you."
+        },
+        {
+          "id": "B",
+          "text": "Run /init",
+          "correct": true,
+          "why": "/init initializes the project with a CLAUDE.md guide, the documented first step in a new repo."
+        },
+        {
+          "id": "C",
+          "text": "Run /update-config and describe the project conventions",
+          "correct": false,
+          "why": "/update-config edits settings.json files, such as permissions, environment variables and hooks, not CLAUDE.md."
+        },
+        {
+          "id": "D",
+          "text": "Run /config and change the output style",
+          "correct": false,
+          "why": "/config adjusts preferences such as theme, model and output style; it doesn't create project instructions."
+        }
+      ],
+      "explanation": "The requirement is a starting CLAUDE.md with the least setup. /init analyzes the codebase and generates one with build commands, test instructions and conventions it discovers; you then refine it over time, for example by editing it with /memory. /memory is the tempting choice because it also deals with CLAUDE.md, but it edits files rather than generating the starter guide.",
+      "keywordCues": [
+        "has no CLAUDE.md",
+        "a starting CLAUDE.md",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Clonas un repositorio que no tiene CLAUDE.md e inicias en él tu primera sesión de Claude Code. Quieres un CLAUDE.md inicial para el proyecto que puedas refinar después, con la menor configuración posible. ¿Qué debes hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar /memory y escribir el archivo desde cero",
+            "why": "/memory edita archivos CLAUDE.md y gestiona la auto memory; no genera una guía inicial por ti."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar /init",
+            "why": "/init inicializa el proyecto con una guía CLAUDE.md, el primer paso documentado en un repo nuevo."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar /update-config y describir las convenciones del proyecto",
+            "why": "/update-config edita archivos settings.json, como permisos, variables de entorno y hooks, no CLAUDE.md."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar /config y cambiar el output style",
+            "why": "/config ajusta preferencias como theme, model y output style; no crea instrucciones del proyecto."
+          }
+        ],
+        "explanation": "El requisito es un CLAUDE.md inicial con la menor configuración. /init analiza el código y genera uno con comandos de build, instrucciones de test y convenciones que descubre; después lo refinas con el tiempo, por ejemplo editándolo con /memory. /memory es la opción tentadora porque también trabaja con CLAUDE.md, pero edita archivos en vez de generar la guía inicial."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-everyday-commands--38bb37ac",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You are in a long session in the api repository and Claude needs to read and edit files in ../shared-lib, a sibling folder. You want to keep this conversation and keep api as the primary working directory, for this session only. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /cd ../shared-lib",
+          "correct": false,
+          "why": "/cd keeps the conversation but moves the session to a new primary working directory, which the requirement rules out."
+        },
+        {
+          "id": "B",
+          "text": "Run /clear, then restart Claude Code from the parent folder",
+          "correct": false,
+          "why": "/clear starts a new conversation with empty context, so you lose the current one."
+        },
+        {
+          "id": "C",
+          "text": "Run /add-dir ../shared-lib",
+          "correct": true,
+          "why": "/add-dir adds a working directory for file access during the current session, alongside the current one."
+        },
+        {
+          "id": "D",
+          "text": "Run /export, then start a new session inside ../shared-lib",
+          "correct": false,
+          "why": "Exporting saves a plain-text copy, but the new session starts without this conversation and without api as its directory."
+        }
+      ],
+      "explanation": "Three constraints decide it: file access to another folder, same conversation, and api stays primary. /add-dir grants file access to an extra directory for the current session without moving you. /cd is the tempting option because it also keeps the conversation, but it changes the primary working directory.",
+      "keywordCues": [
+        "keep this conversation",
+        "keep api as the primary working directory",
+        "for this session only"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Estás en una sesión larga en el repositorio api y Claude necesita leer y editar archivos en ../shared-lib, una carpeta vecina. Quieres conservar esta conversación y que api siga siendo el directorio de trabajo principal, solo por esta sesión. ¿Qué debes hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar /cd ../shared-lib",
+            "why": "/cd conserva la conversación pero mueve la sesión a otro directorio de trabajo principal, justo lo que el requisito descarta."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar /clear y reiniciar Claude Code desde la carpeta padre",
+            "why": "/clear empieza una conversación nueva con el contexto vacío, así que pierdes la actual."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar /add-dir ../shared-lib",
+            "why": "/add-dir agrega un directorio de trabajo con acceso a archivos durante la sesión actual, junto al actual."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar /export y luego iniciar una sesión nueva dentro de ../shared-lib",
+            "why": "Exportar guarda una copia en texto plano, pero la sesión nueva empieza sin esta conversación y sin api como directorio."
+          }
+        ],
+        "explanation": "Deciden tres restricciones: acceso a archivos de otra carpeta, la misma conversación y api como directorio principal. /add-dir da acceso a un directorio extra durante la sesión actual sin moverte. /cd es la opción tentadora porque también conserva la conversación, pero cambia el directorio de trabajo principal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-everyday-commands--208556aa",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer wants to switch the theme and the model quickly, without clicking through the Settings panel, and also set a key from a script that runs claude -p. Which two statements about /config are accurate? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "/config theme=dark sets the key directly without opening the interface",
+          "correct": true,
+          "why": "Passing key=value pairs sets settings directly instead of opening the Settings interface."
+        },
+        {
+          "id": "B",
+          "text": "The key=value form also works in non-interactive mode (-p)",
+          "correct": true,
+          "why": "The docs state the key=value form works with -p and from the mobile app via Remote Control."
+        },
+        {
+          "id": "C",
+          "text": "The key=value form can turn on autoContinueAtUsageLimit",
+          "correct": false,
+          "why": "It can't turn on a setting that needs confirmation in the panel, such as autoContinueAtUsageLimit; it can only turn one off."
+        },
+        {
+          "id": "D",
+          "text": "/config is the command for adding allow rules and hooks by description",
+          "correct": false,
+          "why": "That is /update-config, which edits the matching settings.json; /config is for options such as theme and model."
+        },
+        {
+          "id": "E",
+          "text": "/config --help opens the Settings panel on the Status tab",
+          "correct": false,
+          "why": "/config --help lists the keys /config accepts; the Status tab is what /status opens."
+        }
+      ],
+      "explanation": "The needs are a quick direct change and one that works from claude -p. /config key=value sets settings without opening the interface, and that form also works in non-interactive mode. Settings that require confirmation in the panel can be turned off this way but not on, and describing permission or hook changes is the job of /update-config.",
+      "keywordCues": [
+        "without clicking through the Settings panel",
+        "from a script that runs claude -p"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere cambiar el theme y el model rápido, sin recorrer el panel de Settings, y además fijar una clave desde un script que ejecuta claude -p. ¿Qué dos afirmaciones sobre /config son correctas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "/config theme=dark fija la clave directamente sin abrir la interfaz",
+            "why": "Pasar pares key=value fija los ajustes directamente en vez de abrir la interfaz de Settings."
+          },
+          {
+            "id": "B",
+            "text": "La forma key=value también funciona en modo no interactivo (-p)",
+            "why": "La documentación dice que la forma key=value funciona con -p y desde la app móvil vía Remote Control."
+          },
+          {
+            "id": "C",
+            "text": "La forma key=value puede activar autoContinueAtUsageLimit",
+            "why": "No puede activar un ajuste que requiere confirmación en el panel, como autoContinueAtUsageLimit; solo puede desactivarlo."
+          },
+          {
+            "id": "D",
+            "text": "/config es el comando para agregar reglas allow y hooks describiéndolos",
+            "why": "Eso es /update-config, que edita el settings.json correspondiente; /config es para opciones como theme y model."
+          },
+          {
+            "id": "E",
+            "text": "/config --help abre el panel de Settings en la pestaña Status",
+            "why": "/config --help lista las claves que /config acepta; la pestaña Status es lo que abre /status."
+          }
+        ],
+        "explanation": "Se necesita un cambio directo y rápido, y uno que funcione desde claude -p. /config key=value fija ajustes sin abrir la interfaz, y esa forma también funciona en modo no interactivo. Los ajustes que requieren confirmación en el panel se pueden desactivar así, pero no activar, y describir cambios de permisos o hooks es tarea de /update-config."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-everyday-commands--568155c0",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Claude has spent an hour editing files, and you also changed a few by hand. Before committing, you want to look over the actual changes in your working tree, Claude's and yours, without leaving Claude Code. You don't want a bug analysis, just the changes. What should you run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/diff",
+          "correct": true,
+          "why": "/diff reviews the changes in your working tree, including the edits Claude has made so far."
+        },
+        {
+          "id": "B",
+          "text": "/code-review",
+          "correct": false,
+          "why": "/code-review checks the diff for correctness bugs; the requirement is to see the changes, not a bug analysis."
+        },
+        {
+          "id": "C",
+          "text": "/rewind",
+          "correct": false,
+          "why": "/rewind rewinds the conversation and/or code to a previous point; it doesn't show a review of your changes."
+        },
+        {
+          "id": "D",
+          "text": "/export",
+          "correct": false,
+          "why": "/export saves the conversation as plain text, not the changes in your working tree."
+        }
+      ],
+      "explanation": "The requirement is to see every working-tree change, both Claude's edits and your own, without an analysis on top. /diff reviews exactly that from inside Claude Code. /code-review is tempting because it also works on the diff, but it produces a check for correctness bugs rather than showing the changes.",
+      "keywordCues": [
+        "look over the actual changes in your working tree",
+        "just the changes"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Claude pasó una hora editando archivos y tú también cambiaste algunos a mano. Antes del commit quieres revisar los cambios reales de tu working tree, los de Claude y los tuyos, sin salir de Claude Code. No quieres un análisis de bugs, solo los cambios. ¿Qué ejecutas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/diff",
+            "why": "/diff revisa los cambios de tu working tree, incluidas las ediciones que Claude hizo hasta ahora."
+          },
+          {
+            "id": "B",
+            "text": "/code-review",
+            "why": "/code-review revisa el diff buscando bugs de corrección; el requisito es ver los cambios, no un análisis de bugs."
+          },
+          {
+            "id": "C",
+            "text": "/rewind",
+            "why": "/rewind rebobina la conversación y/o el código a un punto anterior; no muestra una revisión de tus cambios."
+          },
+          {
+            "id": "D",
+            "text": "/export",
+            "why": "/export guarda la conversación como texto plano, no los cambios de tu working tree."
+          }
+        ],
+        "explanation": "El requisito es ver todos los cambios del working tree, las ediciones de Claude y las tuyas, sin un análisis encima. /diff revisa exactamente eso desde Claude Code. /code-review es tentador porque también trabaja sobre el diff, pero entrega una revisión de bugs de corrección en vez de mostrar los cambios."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-everyday-commands--6882538b",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command writes the current conversation as plain text straight to the file session-log.txt, without opening a dialog?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/export session-log.txt",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/export [filename] exports the conversation as plain text. With a filename it writes directly to that file; without one it opens a dialog to copy to the clipboard or save to a file.",
+      "keywordCues": [
+        "as plain text",
+        "straight to the file",
+        "without opening a dialog"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando escribe la conversación actual como texto plano directamente en el archivo session-log.txt, sin abrir un diálogo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/export session-log.txt",
+            "why": ""
+          }
+        ],
+        "explanation": "/export [filename] exporta la conversación como texto plano. Con un nombre de archivo escribe directo en ese archivo; sin él abre un diálogo para copiar al portapapeles o guardar en un archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cmd-everyday-commands--69753a24",
+      "conceptId": "cmd-everyday-commands",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command sets the theme to dark directly, without opening the Settings interface?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/config theme=dark",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/settings theme=dark",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/config accepts key=value pairs to set a setting directly without opening the interface, for example /config theme=dark. /settings is an alias of /config.",
+      "keywordCues": [
+        "sets the theme to dark directly",
+        "without opening the Settings interface"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando fija el theme en dark directamente, sin abrir la interfaz de Settings?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/config theme=dark",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/settings theme=dark",
+            "why": ""
+          }
+        ],
+        "explanation": "/config acepta pares key=value para fijar un ajuste directamente sin abrir la interfaz, por ejemplo /config theme=dark. /settings es un alias de /config."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cmd-everyday-commands--r0",
+      "conceptId": "cmd-everyday-commands",
+      "kind": "recall",
+      "prompt": "Name the five everyday commands /init, /config, /diff, /add-dir and /export, and say what each one does and its main limit.",
+      "promptEs": "Nombra los cinco comandos diarios /init, /config, /diff, /add-dir y /export, y di qué hace cada uno y su límite principal.",
+      "idealAnswer": "/init generates a starter CLAUDE.md, /config opens Settings or sets keys directly with key=value (also under -p), and /diff reviews working-tree changes including Claude's edits. /add-dir grants file access to another directory for the session, but most of its .claude/ configuration isn't discovered. /export saves the conversation as plain text, to a named file or through a dialog.",
+      "rubric": [
+        "/init creates a starter CLAUDE.md",
+        "/config opens Settings or sets key=value directly, also with -p",
+        "/diff shows working-tree changes including Claude's edits",
+        "/add-dir gives file access, not configuration; /export saves the conversation as plain text"
+      ]
+    },
+    {
+      "id": "cmd-everyday-commands--r1",
+      "conceptId": "cmd-everyday-commands",
+      "kind": "why-not",
+      "prompt": "A teammate runs /config to find out what is filling the context window. Why is that the wrong command, and what fits instead?",
+      "promptEs": "Un compañero ejecuta /config para averiguar qué está llenando la ventana de contexto. ¿Por qué es el comando equivocado y cuál sirve?",
+      "idealAnswer": "/config is an everyday command for changing things: it opens the Settings interface or sets keys such as theme and model. Seeing what is loaded is an inspection job, and /context visualizes current context usage with optimization suggestions.",
+      "rubric": [
+        "/config changes settings; it doesn't show what is loaded",
+        "Inspecting what is loaded is a different family of commands",
+        "/context shows current context usage"
+      ]
+    }
+  ]
+}

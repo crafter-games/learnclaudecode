@@ -1,0 +1,465 @@
+{
+  "conceptId": "auto-mode-checkpoints",
+  "card": {
+    "en": {
+      "tldr": "In auto mode you choose a human checkpoint by how firm it must be: `permissions.ask` always prompts, `permissions.deny` always blocks before the classifier, and a boundary said in conversation lasts only while the message stays in context. To approve a blocked action in conversation, name the action and its specifics.",
+      "whenToUse": [
+        "Require a prompt before Claude's pushes or pull requests while staying in auto mode",
+        "Guarantee an action never runs, whatever the classifier or user intent says",
+        "Set a quick one-off limit for this session",
+        "Approve one specific action the classifier blocked"
+      ],
+      "keyFacts": [
+        "A content-scoped `permissions.ask` rule such as `Bash(git push *)` or `Bash(gh pr create *)` is evaluated before the classifier and always forces a prompt, even in auto mode.",
+        "`permissions.deny` blocks before the classifier is consulted; neither the classifier nor user intent can override it.",
+        "A boundary stated in conversation, like 'don't push until I review', is enforced by the classifier until you lift it, but can be lost if context compaction removes that message.",
+        "An approval in conversation must name the action and what makes it dangerous, such as the branch of a force push; naming the verb alone clears nothing.",
+        "An approval covers the one action you named unless you grant it as standing; to stop approving a routine pattern each time, add it to `autoMode.allow`."
+      ],
+      "gotchas": [
+        "`Bash(git push *)` doesn't match `git -C <dir> push`; use a PreToolUse hook to inspect the full command text.",
+        "Claude's own judgment that a condition was met doesn't lift a boundary you stated.",
+        "Some blocks (`hard_deny`) can't be cleared by approval; leave auto mode and answer the prompt instead.",
+        "By default auto mode allows pushes to any branch of your repo and PR creation, so add an ask rule if you want a checkpoint."
+      ],
+      "confusedWith": [
+        {
+          "concept": "autoMode rules",
+          "difference": "`autoMode` entries are prose the classifier weighs; ask and deny rules run before it and give a guaranteed prompt or block."
+        }
+      ],
+      "examCues": [
+        "prompt me before every push, but stay in auto mode",
+        "must never run regardless of approval",
+        "don't push until I review",
+        "survive context compaction",
+        "approve just this force push"
+      ]
+    },
+    "es": {
+      "tldr": "En auto mode eliges el punto de control humano según qué tan firme debe ser: `permissions.ask` siempre pregunta, `permissions.deny` siempre bloquea antes del clasificador, y un límite dicho en la conversación dura solo mientras ese mensaje siga en contexto. Para aprobar en la conversación una acción bloqueada, nombra la acción y sus detalles.",
+      "whenToUse": [
+        "Exigir un prompt antes de los push o pull requests de Claude sin salir de auto mode",
+        "Garantizar que una acción nunca corra, diga lo que diga el clasificador o el usuario",
+        "Poner un límite rápido y puntual para esta sesión",
+        "Aprobar una acción específica que el clasificador bloqueó"
+      ],
+      "keyFacts": [
+        "Una regla `permissions.ask` con contenido, como `Bash(git push *)` o `Bash(gh pr create *)`, se evalúa antes del clasificador y siempre fuerza un prompt, incluso en auto mode.",
+        "`permissions.deny` bloquea antes de consultar al clasificador; ni el clasificador ni la intención del usuario lo anulan.",
+        "Un límite dicho en la conversación, como 'no hagas push hasta que revise', lo hace cumplir el clasificador hasta que lo levantes, pero puede perderse si la compactación de contexto borra ese mensaje.",
+        "Una aprobación en la conversación debe nombrar la acción y lo que la hace peligrosa, como la rama de un force push; nombrar solo el verbo no levanta nada.",
+        "Una aprobación cubre la única acción que nombraste salvo que la des como permanente; para no aprobar un patrón de rutina cada vez, agrégalo a `autoMode.allow`."
+      ],
+      "gotchas": [
+        "`Bash(git push *)` no coincide con `git -C <dir> push`; usa un hook PreToolUse para revisar el texto completo del comando.",
+        "Que Claude juzgue que una condición ya se cumplió no levanta un límite que pusiste.",
+        "Algunos bloqueos (`hard_deny`) no se levantan con aprobación; sal de auto mode y responde el prompt.",
+        "Por defecto auto mode permite push a cualquier rama de tu repo y crear PRs, así que agrega una regla ask si quieres un punto de control."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas autoMode",
+          "difference": "Las entradas de `autoMode` son prosa que el clasificador sopesa; las reglas ask y deny corren antes y dan un prompt o bloqueo garantizado."
+        }
+      ],
+      "examCues": [
+        "prompt me before every push, but stay in auto mode",
+        "must never run regardless of approval",
+        "don't push until I review",
+        "survive context compaction",
+        "approve just this force push"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/auto-mode-config.md",
+      "https://code.claude.com/docs/en/permission-modes.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "auto-mode-checkpoints--243e0f7f",
+      "conceptId": "auto-mode-checkpoints",
+      "secondaryConcepts": [
+        "auto-mode-environment"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team likes auto mode for everyday work but wants a human to confirm every pull request Claude opens with `gh pr create`. The checkpoint must hold for the whole session, even after context compaction, while everything else stays in auto mode.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Tell Claude at the start: 'ask me before opening any PR'.",
+          "correct": false,
+          "why": "A boundary stated in conversation can be lost if compaction removes the message."
+        },
+        {
+          "id": "B",
+          "text": "Add `Bash(gh pr create *)` to `permissions.ask`.",
+          "correct": true,
+          "why": "A content-scoped ask rule runs before the classifier and always forces a prompt, even in auto mode."
+        },
+        {
+          "id": "C",
+          "text": "Add a `soft_deny` entry: 'Never open pull requests'.",
+          "correct": false,
+          "why": "It blocks instead of prompting, and user intent or an allow exception can clear it."
+        },
+        {
+          "id": "D",
+          "text": "Add `Bash(gh pr create *)` to `permissions.deny`.",
+          "correct": false,
+          "why": "It blocks PR creation entirely instead of asking for confirmation."
+        }
+      ],
+      "explanation": "The requirement is a durable prompt, not a block, without leaving auto mode. A content-scoped `permissions.ask` rule is evaluated before the classifier and always prompts. Saying it in conversation is the tempting shortcut, but the classifier re-reads it from the transcript and compaction can remove it. A deny rule would never let a PR be created.",
+      "keywordCues": [
+        "confirm every pull request",
+        "even after context compaction",
+        "everything else stays in auto mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md",
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un equipo usa auto mode para el trabajo diario, pero quiere que una persona confirme cada pull request que Claude abra con `gh pr create`. El punto de control debe durar toda la sesión, incluso tras la compactación de contexto, mientras todo lo demás sigue en auto mode.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Decirle a Claude al inicio: 'pregúntame antes de abrir cualquier PR'.",
+            "why": "Un límite dicho en la conversación puede perderse si la compactación borra el mensaje."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `Bash(gh pr create *)` en `permissions.ask`.",
+            "why": "Una regla ask con contenido corre antes del clasificador y siempre fuerza un prompt, incluso en auto mode."
+          },
+          {
+            "id": "C",
+            "text": "Agregar una entrada `soft_deny`: 'Nunca abras pull requests'.",
+            "why": "Bloquea en vez de preguntar, y la intención del usuario o una excepción allow pueden levantarla."
+          },
+          {
+            "id": "D",
+            "text": "Agregar `Bash(gh pr create *)` en `permissions.deny`.",
+            "why": "Bloquea por completo la creación de PRs en vez de pedir confirmación."
+          }
+        ],
+        "explanation": "El requisito es un prompt duradero, no un bloqueo, sin salir de auto mode. Una regla `permissions.ask` con contenido se evalúa antes del clasificador y siempre pregunta. Decirlo en la conversación tienta, pero el clasificador lo relee del transcript y la compactación puede borrarlo. Una regla deny nunca dejaría crear un PR."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-checkpoints--fd801f9d",
+      "conceptId": "auto-mode-checkpoints",
+      "secondaryConcepts": [
+        "auto-mode-environment"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A security team requires that `terraform destroy` never runs on any developer machine, in every permission mode, regardless of what the classifier decides or what a developer approves in conversation. Developers must not be able to override it.",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `hard_deny` entry in managed settings: 'Never run terraform destroy'.",
+          "correct": false,
+          "why": "`hard_deny` is a rule inside the classifier, so it depends on the classifier's decision, and the classifier doesn't review actions in modes like Manual or `bypassPermissions`."
+        },
+        {
+          "id": "B",
+          "text": "`Bash(terraform destroy *)` in `permissions.ask` in managed settings.",
+          "correct": false,
+          "why": "An ask rule lets the action run once someone approves the prompt."
+        },
+        {
+          "id": "C",
+          "text": "A line in the project CLAUDE.md: 'never run terraform destroy'.",
+          "correct": false,
+          "why": "CLAUDE.md steers the model and the classifier but is not an enforced boundary."
+        },
+        {
+          "id": "D",
+          "text": "`Bash(terraform destroy *)` in `permissions.deny` in managed settings.",
+          "correct": true,
+          "why": "Deny blocks before the classifier in every mode, and nothing overrides it."
+        }
+      ],
+      "explanation": "The deciding requirements are every permission mode and no override by the classifier, user intent or developers. The docs name `permissions.deny` in managed settings for actions that must never run regardless of user intent or classifier configuration: it blocks before the classifier is consulted, deny rules block in every mode including `bypassPermissions`, and developers can't remove managed rules. `hard_deny` is tempting because user intent can't clear it, but it is a classifier rule, so it only applies where the classifier reviews actions (auto mode, and plan mode's command review), not in Manual or `bypassPermissions`. An ask rule still lets the action run after approval.",
+      "keywordCues": [
+        "in every permission mode",
+        "regardless of what the classifier decides",
+        "must not be able to override it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md",
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Un equipo de seguridad exige que `terraform destroy` nunca corra en la máquina de ningún desarrollador, en todos los modos de permisos, sin importar lo que decida el clasificador ni lo que un desarrollador apruebe en la conversación. Los desarrolladores no deben poder anularlo.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una entrada `hard_deny` en managed settings: 'Nunca corras terraform destroy'.",
+            "why": "`hard_deny` es una regla dentro del clasificador, así que depende de su decisión, y el clasificador no revisa acciones en modos como Manual o `bypassPermissions`."
+          },
+          {
+            "id": "B",
+            "text": "`Bash(terraform destroy *)` en `permissions.ask` en managed settings.",
+            "why": "Una regla ask deja correr la acción cuando alguien aprueba el prompt."
+          },
+          {
+            "id": "C",
+            "text": "Una línea en el CLAUDE.md del proyecto: 'nunca corras terraform destroy'.",
+            "why": "CLAUDE.md guía al modelo y al clasificador, pero no es un límite que se haga cumplir."
+          },
+          {
+            "id": "D",
+            "text": "`Bash(terraform destroy *)` en `permissions.deny` en managed settings.",
+            "why": "Deny bloquea antes del clasificador en todos los modos y nada lo anula."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son todos los modos de permisos y que no lo anulen ni el clasificador, ni la intención del usuario, ni los desarrolladores. La documentación indica `permissions.deny` en managed settings para acciones que nunca deben correr sin importar la intención del usuario ni la configuración del clasificador: bloquea antes de consultar al clasificador, las reglas deny bloquean en todos los modos incluido `bypassPermissions`, y los desarrolladores no pueden quitar reglas gestionadas. `hard_deny` tienta porque la intención del usuario no lo levanta, pero es una regla del clasificador, así que solo aplica donde el clasificador revisa acciones (auto mode y la revisión de comandos en plan mode), no en Manual ni en `bypassPermissions`. Una regla ask igual deja correr la acción tras aprobarla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-checkpoints--1a8070d8",
+      "conceptId": "auto-mode-checkpoints",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In auto mode, the classifier blocked Claude's force push after a rebase on the feature branch `fix/login`. The developer wants to approve only that force push from the conversation, without changing settings or leaving auto mode. Which message clears the block?",
+      "options": [
+        {
+          "id": "A",
+          "text": "\"You can force-push.\"",
+          "correct": false,
+          "why": "Naming the verb alone clears nothing; the specifics are missing."
+        },
+        {
+          "id": "B",
+          "text": "\"Go ahead and clean up the repo however you need.\"",
+          "correct": false,
+          "why": "General requests don't count as explicit intent for a force push."
+        },
+        {
+          "id": "C",
+          "text": "\"Force-push fix/login to origin.\"",
+          "correct": true,
+          "why": "It names the action and the specific branch that makes it dangerous."
+        },
+        {
+          "id": "D",
+          "text": "\"I trust you, stop asking me about git.\"",
+          "correct": false,
+          "why": "It names no specific action, so the classifier doesn't read it as approval."
+        }
+      ],
+      "explanation": "An approval in conversation clears a block only when it names the action and the specific thing that makes it dangerous, such as the branch of a force push. \"You can force-push\" is tempting but names only the verb, so the block stays. A general request like \"clean up the repo\" doesn't authorize a force push either. The approval covers that one action.",
+      "keywordCues": [
+        "approve only that force push",
+        "from the conversation",
+        "without changing settings"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md",
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "En auto mode, el clasificador bloqueó el force push de Claude tras un rebase en la rama `fix/login`. El desarrollador quiere aprobar solo ese force push desde la conversación, sin cambiar settings ni salir de auto mode. ¿Qué mensaje levanta el bloqueo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "\"Puedes hacer force-push.\"",
+            "why": "Nombrar solo el verbo no levanta nada; faltan los detalles."
+          },
+          {
+            "id": "B",
+            "text": "\"Adelante, limpia el repo como necesites.\"",
+            "why": "Los pedidos generales no cuentan como intención explícita para un force push."
+          },
+          {
+            "id": "C",
+            "text": "\"Haz force-push de fix/login a origin.\"",
+            "why": "Nombra la acción y la rama específica que la hace peligrosa."
+          },
+          {
+            "id": "D",
+            "text": "\"Confío en ti, deja de preguntarme por git.\"",
+            "why": "No nombra ninguna acción específica, así que el clasificador no lo lee como aprobación."
+          }
+        ],
+        "explanation": "Una aprobación en la conversación levanta un bloqueo solo si nombra la acción y lo específico que la hace peligrosa, como la rama de un force push. \"Puedes hacer force-push\" tienta, pero solo nombra el verbo, así que el bloqueo sigue. Un pedido general como \"limpia el repo\" tampoco autoriza un force push. La aprobación cubre esa única acción."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "auto-mode-checkpoints--dc350233",
+      "conceptId": "auto-mode-checkpoints",
+      "secondaryConcepts": [
+        "perm-rule-eval-order"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Stay in auto mode, but make every `git push` Claude writes as `git push ...` prompt for confirmation, and make `git push --force` never run, even if the classifier or you would allow it.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "allow",
+          "correct": false,
+          "why": "Pushes would run without any confirmation."
+        },
+        {
+          "id": "1b",
+          "text": "deny",
+          "correct": false,
+          "why": "Every push would be blocked instead of prompting."
+        },
+        {
+          "id": "1c",
+          "text": "ask",
+          "correct": true,
+          "why": "A content-scoped ask rule runs before the classifier and always prompts, even in auto mode."
+        },
+        {
+          "id": "2a",
+          "text": "deny",
+          "correct": true,
+          "why": "Deny blocks before the classifier is consulted; neither it nor user intent can override it."
+        },
+        {
+          "id": "2b",
+          "text": "ask",
+          "correct": false,
+          "why": "A force push would still run once someone approves the prompt."
+        },
+        {
+          "id": "2c",
+          "text": "allow",
+          "correct": false,
+          "why": "It would approve force pushes instead of blocking them."
+        }
+      ],
+      "explanation": "Ask and deny rules are evaluated before the classifier. A content-scoped ask rule for `Bash(git push *)` always forces a prompt in auto mode. The force push must never run, so it needs deny, which is checked before ask and can't be overridden by the classifier or user intent.",
+      "keywordCues": [
+        "prompt for confirmation",
+        "never run",
+        "even if the classifier or you would allow it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/auto-mode-config.md",
+        "https://code.claude.com/docs/en/permission-modes.md"
+      ],
+      "es": {
+        "stem": "Sigue en auto mode, pero haz que todo `git push` que Claude escriba como `git push ...` pida confirmación, y que `git push --force` nunca corra, aunque el clasificador o tú lo permitieran.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "allow",
+            "why": "Los push correrían sin ninguna confirmación."
+          },
+          {
+            "id": "1b",
+            "text": "deny",
+            "why": "Todo push quedaría bloqueado en vez de preguntar."
+          },
+          {
+            "id": "1c",
+            "text": "ask",
+            "why": "Una regla ask con contenido corre antes del clasificador y siempre pregunta, incluso en auto mode."
+          },
+          {
+            "id": "2a",
+            "text": "deny",
+            "why": "Deny bloquea antes de consultar al clasificador; ni él ni la intención del usuario lo anulan."
+          },
+          {
+            "id": "2b",
+            "text": "ask",
+            "why": "El force push igual correría cuando alguien apruebe el prompt."
+          },
+          {
+            "id": "2c",
+            "text": "allow",
+            "why": "Aprobaría los force push en vez de bloquearlos."
+          }
+        ],
+        "explanation": "Las reglas ask y deny se evalúan antes del clasificador. Una regla ask con contenido para `Bash(git push *)` siempre fuerza un prompt en auto mode. El force push nunca debe correr, así que necesita deny, que se revisa antes que ask y que ni el clasificador ni la intención del usuario pueden anular."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": [\"Bash(git push *)\"],\n    \"{{2}}\": [\"Bash(git push --force *)\"]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "auto-mode-checkpoints--r0",
+      "conceptId": "auto-mode-checkpoints",
+      "kind": "recall",
+      "prompt": "Compare the three ways to set a human checkpoint in auto mode and how firm each one is.",
+      "promptEs": "Compara las tres formas de poner un punto de control humano en auto mode y qué tan firme es cada una.",
+      "idealAnswer": "A content-scoped `permissions.ask` rule runs before the classifier and always prompts. `permissions.deny` blocks before the classifier and nothing, not even user intent, overrides it. A boundary stated in conversation is enforced by the classifier until you lift it, but it can be lost if compaction removes the message.",
+      "rubric": [
+        "permissions.ask always forces a prompt, before the classifier",
+        "permissions.deny blocks and cannot be overridden",
+        "A conversational boundary works but can be lost to compaction"
+      ]
+    },
+    {
+      "id": "auto-mode-checkpoints--r1",
+      "conceptId": "auto-mode-checkpoints",
+      "kind": "why-not",
+      "prompt": "Why doesn't adding the deploy host to `autoMode.environment` give you a guaranteed prompt before production deploys?",
+      "promptEs": "¿Por qué agregar el host de deploy a `autoMode.environment` no te da un prompt garantizado antes de los deploys a producción?",
+      "idealAnswer": "`autoMode.environment` is prose context the classifier reads to judge what is inside your boundary; it never forces a prompt, and the classifier still decides on its own. A guaranteed prompt needs a content-scoped `permissions.ask` rule, which is evaluated before the classifier and always prompts, even in auto mode.",
+      "rubric": [
+        "environment is prose context for the classifier, not a prompt",
+        "The classifier still makes the decision",
+        "Use a permissions.ask rule evaluated before the classifier"
+      ]
+    }
+  ]
+}

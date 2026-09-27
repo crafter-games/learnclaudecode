@@ -1,0 +1,488 @@
+{
+  "conceptId": "checkpoint-limits",
+  "card": {
+    "en": {
+      "tldr": "Checkpoints only track edits made by Claude's file-editing tools in the current session. Bash file changes, background subagent edits, external edits, symlinked or hard-linked files and remote effects are not restored by rewind. For those, use git to recover and permissions to prevent.",
+      "whenToUse": [
+        "Deciding whether /rewind can undo a change or you need git",
+        "Claude ran shell commands like rm, mv or cp that changed files",
+        "A subagent or background forked skill edited your working tree",
+        "Claude is about to touch databases, APIs or deployments"
+      ],
+      "keyFacts": [
+        "Files modified by Bash commands (for example `rm`, `mv`, `cp`) are not tracked and can't be undone through rewind.",
+        "Subagent edits are usually not captured; only a foreground forked skill (`context: fork`) is restored. Background subagents, including a background fork (the default), are not.",
+        "Manual edits outside Claude Code and edits from other concurrent sessions are normally not captured.",
+        "Restore skips symlinked and hard-linked paths and shows `Restored the code, but skipped N files`; turn on `/debug` first to see which paths in `~/.claude/debug/<session-id>.txt`.",
+        "A message that joins a running turn gets no checkpoint and isn't listed; rewind to the prompt that started the turn.",
+        "Remote actions (databases, APIs, deployments) can't be checkpointed; control them with your permission mode and permission rules."
+      ],
+      "gotchas": [
+        "Rewinding past a mid-turn message rewinds the whole turn, including work done before the message arrived.",
+        "Files pnpm hard-links and dotfiles a manager symlinks into the project are skipped on restore.",
+        "Checkpoints are not a replacement for version control: use git for commits, branches and long-term history.",
+        "A queued message sent as part of a new turn does get a checkpoint."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Checkpoint rewind options",
+          "difference": "Picking an action assumes the change was tracked; this concept decides whether rewind can reach it at all."
+        },
+        {
+          "concept": "Bash tool behavior",
+          "difference": "Bash runs in a separate process; its file changes are exactly what checkpoints miss."
+        }
+      ],
+      "examCues": [
+        "Claude deleted the file with rm",
+        "a background subagent edited the files",
+        "the file is a symlink",
+        "the migration already ran against the database",
+        "the message I sent while Claude was working"
+      ]
+    },
+    "es": {
+      "tldr": "Los checkpoints solo rastrean las ediciones de las herramientas de edición de Claude en la sesión actual. Los cambios por Bash, las ediciones de subagentes en segundo plano, las ediciones externas, los archivos con symlink o hard link y los efectos remotos no se restauran con rewind. Para eso, git para recuperar y permisos para prevenir.",
+      "whenToUse": [
+        "Decidir si /rewind puede deshacer un cambio o necesitas git",
+        "Claude corrió comandos de shell como rm, mv o cp que cambiaron archivos",
+        "Un subagente o un skill forked en segundo plano editó tu árbol de trabajo",
+        "Claude está por tocar bases de datos, APIs o despliegues"
+      ],
+      "keyFacts": [
+        "Los archivos modificados por comandos Bash (por ejemplo `rm`, `mv`, `cp`) no se rastrean y no se pueden deshacer con rewind.",
+        "Las ediciones de subagentes normalmente no se capturan; solo se restaura un skill forked en primer plano (`context: fork`). Los subagentes en segundo plano, incluido un fork en segundo plano (el valor por defecto), no.",
+        "Las ediciones manuales fuera de Claude Code y las de otras sesiones concurrentes normalmente no se capturan.",
+        "La restauración salta rutas con symlink o hard link y muestra `Restored the code, but skipped N files`; activa `/debug` antes para ver cuáles en `~/.claude/debug/<session-id>.txt`.",
+        "Un mensaje que se une a un turno en curso no tiene checkpoint ni aparece en la lista; rebobina al prompt que inició el turno.",
+        "Las acciones remotas (bases de datos, APIs, despliegues) no se pueden checkpointear; contrólalas con el modo y las reglas de permisos."
+      ],
+      "gotchas": [
+        "Rebobinar antes de un mensaje enviado a mitad de turno rebobina todo el turno, incluido el trabajo previo a ese mensaje.",
+        "Los archivos que pnpm enlaza con hard links y los dotfiles que un gestor enlaza con symlink se saltan al restaurar.",
+        "Los checkpoints no reemplazan al control de versiones: usa git para commits, ramas e historial a largo plazo.",
+        "Un mensaje en cola que se envía como parte de un turno nuevo sí tiene checkpoint."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Opciones del menú de rewind",
+          "difference": "Elegir una acción supone que el cambio se rastreó; este concepto decide si el rewind puede alcanzarlo."
+        },
+        {
+          "concept": "Comportamiento de la herramienta Bash",
+          "difference": "Bash corre en un proceso aparte; sus cambios de archivos son justo lo que los checkpoints no capturan."
+        }
+      ],
+      "examCues": [
+        "Claude deleted the file with rm",
+        "a background subagent edited the files",
+        "the file is a symlink",
+        "the migration already ran against the database",
+        "the message I sent while Claude was working"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/checkpointing.md",
+      "https://code.claude.com/docs/en/how-claude-code-works.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "checkpoint-limits--f931f2d6",
+      "conceptId": "checkpoint-limits",
+      "secondaryConcepts": [
+        "checkpoint-rewind-options"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In one turn, Claude edited `src/api.ts` with its Edit tool and then ran a Bash script that used `mv` to rename a dozen files. The developer committed everything to git just before this turn and wants the whole working tree back to that state. What reliably achieves this?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open /rewind, select that turn's prompt, and choose Restore code.",
+          "correct": false,
+          "why": "It reverts the Edit change but not the files renamed by mv through Bash."
+        },
+        {
+          "id": "B",
+          "text": "Open /rewind, select that turn's prompt, and choose Restore code and conversation.",
+          "correct": false,
+          "why": "Same gap: Bash file changes are not tracked, so the renames remain."
+        },
+        {
+          "id": "C",
+          "text": "Restore the working tree from the git commit made before the turn.",
+          "correct": true,
+          "why": "git covers every change on disk, including those made by Bash commands."
+        },
+        {
+          "id": "D",
+          "text": "Open /rewind, select that turn's prompt, and choose Summarize from here.",
+          "correct": false,
+          "why": "Summarizing never changes files on disk."
+        }
+      ],
+      "explanation": "The requirement is to undo every change, and part of it came from Bash. Checkpoints only track edits made by Claude's file-editing tools, so rewind would restore `src/api.ts` but leave the `mv` renames in place. The git commit captures the full working tree, so restoring from it reverts both kinds of change. Restore code is tempting because it partially works, which is exactly the trap.",
+      "keywordCues": [
+        "ran a Bash script that used `mv`",
+        "whole working tree back",
+        "committed everything to git"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "En un turno, Claude editó `src/api.ts` con su herramienta Edit y luego corrió un script Bash que usó `mv` para renombrar una docena de archivos. El desarrollador hizo commit de todo en git justo antes de ese turno y quiere todo el árbol de trabajo en ese estado. ¿Qué lo logra de forma confiable?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir /rewind, elegir el prompt de ese turno y escoger Restore code.",
+            "why": "Revierte el cambio de Edit pero no los archivos renombrados con mv por Bash."
+          },
+          {
+            "id": "B",
+            "text": "Abrir /rewind, elegir el prompt de ese turno y escoger Restore code and conversation.",
+            "why": "El mismo hueco: los cambios de archivos por Bash no se rastrean, así que los renombres quedan."
+          },
+          {
+            "id": "C",
+            "text": "Restaurar el árbol de trabajo desde el commit de git hecho antes del turno.",
+            "why": "git cubre todo cambio en disco, incluidos los hechos por comandos Bash."
+          },
+          {
+            "id": "D",
+            "text": "Abrir /rewind, elegir el prompt de ese turno y escoger Summarize from here.",
+            "why": "Resumir nunca cambia archivos en disco."
+          }
+        ],
+        "explanation": "El requisito es deshacer todos los cambios, y parte vino de Bash. Los checkpoints solo rastrean ediciones de las herramientas de edición de Claude, así que el rewind restauraría `src/api.ts` pero dejaría los renombres de `mv`. El commit de git captura todo el árbol de trabajo, así que restaurar desde él revierte ambos tipos de cambio. Restore code tienta porque funciona a medias, y esa es justo la trampa."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-limits--8b71f419",
+      "conceptId": "checkpoint-limits",
+      "secondaryConcepts": [
+        "checkpoint-rewind-options"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "During a session, these changes happened after prompt 3. The developer opens /rewind, selects prompt 3, and chooses Restore code. Which two changes will still be present afterwards? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude's Edit tool changed a function in `src/app.ts`.",
+          "correct": false,
+          "why": "Edits from Claude's file-editing tools are tracked and reverted."
+        },
+        {
+          "id": "B",
+          "text": "Claude ran `sed -i` through Bash to rewrite `config.yml`.",
+          "correct": true,
+          "why": "Files modified by Bash commands are not tracked by checkpoints."
+        },
+        {
+          "id": "C",
+          "text": "Claude's Write tool overwrote `README.md` with new content.",
+          "correct": false,
+          "why": "Write is one of Claude's file-editing tools, so the change is tracked."
+        },
+        {
+          "id": "D",
+          "text": "A background subagent edited `src/utils.ts`.",
+          "correct": true,
+          "why": "Rewinding doesn't restore edits made by subagents other than a foreground forked skill."
+        },
+        {
+          "id": "E",
+          "text": "A forked skill running in the foreground edited `src/db.ts` during the turn.",
+          "correct": false,
+          "why": "A foreground forked skill edits during your own turn, so rewinding restores its edits as usual."
+        }
+      ],
+      "explanation": "Rewind can only revert what checkpoints captured: edits made by Claude's file-editing tools during your own turns. A Bash command such as sed modifies files outside that tracking, and background subagents are not restored either, so both survive. The foreground forked skill is the tempting distractor: it edits the working tree during your turn and is restored like any other edit.",
+      "keywordCues": [
+        "through Bash",
+        "background subagent",
+        "forked skill running in the foreground"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Durante una sesión, estos cambios ocurrieron después del prompt 3. El desarrollador abre /rewind, elige el prompt 3 y escoge Restore code. ¿Qué dos cambios seguirán presentes después? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "La herramienta Edit de Claude cambió una función en `src/app.ts`.",
+            "why": "Las ediciones de las herramientas de edición de Claude se rastrean y se revierten."
+          },
+          {
+            "id": "B",
+            "text": "Claude corrió `sed -i` por Bash para reescribir `config.yml`.",
+            "why": "Los checkpoints no rastrean archivos modificados por comandos Bash."
+          },
+          {
+            "id": "C",
+            "text": "La herramienta Write de Claude sobrescribió `README.md` con contenido nuevo.",
+            "why": "Write es una de las herramientas de edición de Claude, así que el cambio se rastrea."
+          },
+          {
+            "id": "D",
+            "text": "Un subagente en segundo plano editó `src/utils.ts`.",
+            "why": "El rewind no restaura ediciones de subagentes, salvo las de un skill forked en primer plano."
+          },
+          {
+            "id": "E",
+            "text": "Un skill forked en primer plano editó `src/db.ts` durante el turno.",
+            "why": "Un skill forked en primer plano edita durante tu propio turno, así que el rewind restaura sus ediciones como siempre."
+          }
+        ],
+        "explanation": "El rewind solo revierte lo que capturaron los checkpoints: ediciones de las herramientas de edición de Claude durante tus propios turnos. Un comando Bash como sed modifica archivos fuera de ese rastreo, y los subagentes en segundo plano tampoco se restauran, así que ambos sobreviven. El skill forked en primer plano es el distractor tentador: edita el árbol de trabajo durante tu turno y se restaura como cualquier otra edición."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-limits--5f619666",
+      "conceptId": "checkpoint-limits",
+      "secondaryConcepts": [
+        "checkpoint-rewind-options"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "While Claude was working on a turn, the developer queued a follow-up message, and it reached Claude within that running turn. Claude then made unwanted file edits based on it. The developer wants to remove that message and undo the edits that followed it. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Open /rewind, select the queued message, and choose Restore code and conversation.",
+          "correct": false,
+          "why": "A message that joins a running turn gets no checkpoint and is not listed in the rewind menu."
+        },
+        {
+          "id": "B",
+          "text": "Open /rewind, select the prompt that started the turn, and choose Restore code and conversation.",
+          "correct": true,
+          "why": "This is the documented way; it rewinds the whole turn, including work done before the message arrived."
+        },
+        {
+          "id": "C",
+          "text": "Open /rewind, select the prompt that started the turn, and choose Summarize up to here.",
+          "correct": false,
+          "why": "Summarizing compresses conversation and leaves the edits on disk."
+        },
+        {
+          "id": "D",
+          "text": "Open /rewind, select the prompt that started the turn, and choose Restore conversation.",
+          "correct": false,
+          "why": "It removes the message from the conversation but keeps the unwanted edits."
+        }
+      ],
+      "explanation": "A queued message that joins a running turn does not start a new turn, so Claude Code creates no checkpoint for it and the rewind menu doesn't list it. To remove it or undo the edits after it, you rewind to the prompt that started the turn, accepting that the whole turn is rewound. Selecting the queued message is the tempting option but it is not available. Restore conversation and Summarize leave the edits in place.",
+      "keywordCues": [
+        "reached Claude within that running turn",
+        "remove that message and undo the edits"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Mientras Claude trabajaba en un turno, el desarrollador puso en cola un mensaje de seguimiento, y llegó a Claude dentro de ese turno en curso. Luego Claude hizo ediciones no deseadas a partir de él. El desarrollador quiere quitar ese mensaje y deshacer las ediciones que le siguieron. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Abrir /rewind, elegir el mensaje en cola y escoger Restore code and conversation.",
+            "why": "Un mensaje que se une a un turno en curso no tiene checkpoint y no aparece en el menú de rewind."
+          },
+          {
+            "id": "B",
+            "text": "Abrir /rewind, elegir el prompt que inició el turno y escoger Restore code and conversation.",
+            "why": "Es la forma documentada; rebobina todo el turno, incluido el trabajo previo a la llegada del mensaje."
+          },
+          {
+            "id": "C",
+            "text": "Abrir /rewind, elegir el prompt que inició el turno y escoger Summarize up to here.",
+            "why": "Resumir comprime la conversación y deja las ediciones en disco."
+          },
+          {
+            "id": "D",
+            "text": "Abrir /rewind, elegir el prompt que inició el turno y escoger Restore conversation.",
+            "why": "Quita el mensaje de la conversación pero conserva las ediciones no deseadas."
+          }
+        ],
+        "explanation": "Un mensaje en cola que se une a un turno en curso no inicia un turno nuevo, así que Claude Code no crea checkpoint para él y el menú de rewind no lo lista. Para quitarlo o deshacer las ediciones posteriores, rebobinas al prompt que inició el turno, aceptando que se rebobina todo el turno. Elegir el mensaje en cola es la opción tentadora, pero no está disponible. Restore conversation y Summarize dejan las ediciones."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-limits--b7c32430",
+      "conceptId": "checkpoint-limits",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team lets Claude run commands that apply schema migrations to a shared staging database. They want to make sure a destructive migration can't run without a human approving it first, since it can't simply be rolled back afterwards. What should they rely on?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Checkpoints, restoring code and conversation with /rewind if a migration goes wrong.",
+          "correct": false,
+          "why": "Actions on remote systems such as databases can't be checkpointed; rewind won't undo them."
+        },
+        {
+          "id": "B",
+          "text": "A higher cleanupPeriodDays so checkpoints are kept long enough to recover.",
+          "correct": false,
+          "why": "Retention only affects local file snapshots; it can't capture remote effects."
+        },
+        {
+          "id": "C",
+          "text": "Permission mode and permission rules that require approval for the migration command.",
+          "correct": true,
+          "why": "The docs say remote actions are controlled with your permission mode and permission rules."
+        },
+        {
+          "id": "D",
+          "text": "Committing to git before each turn so the database can be reverted.",
+          "correct": false,
+          "why": "git versions files in the repository, not the state of a remote database."
+        }
+      ],
+      "explanation": "The requirement is prevention, because the effect lives on a remote system. Checkpoints only cover file changes, and actions affecting databases, APIs or deployments can't be checkpointed. The docs point to the permission mode and permission rules to control what Claude can do without asking. Relying on /rewind is the tempting mistake: it gives a false sense of undo for remote effects.",
+      "keywordCues": [
+        "shared staging database",
+        "without a human approving it first",
+        "can't simply be rolled back"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Un equipo deja que Claude corra comandos que aplican migraciones de esquema a una base de datos de staging compartida. Quieren asegurarse de que una migración destructiva no pueda correr sin que un humano la apruebe antes, porque después no se puede revertir fácilmente. ¿En qué deben apoyarse?",
+        "options": [
+          {
+            "id": "A",
+            "text": "En los checkpoints, restaurando código y conversación con /rewind si una migración sale mal.",
+            "why": "Las acciones sobre sistemas remotos como bases de datos no se pueden checkpointear; el rewind no las deshace."
+          },
+          {
+            "id": "B",
+            "text": "En un cleanupPeriodDays más alto para conservar checkpoints el tiempo suficiente.",
+            "why": "La retención solo afecta snapshots locales de archivos; no captura efectos remotos."
+          },
+          {
+            "id": "C",
+            "text": "En el modo y las reglas de permisos que exijan aprobación para el comando de migración.",
+            "why": "La documentación dice que las acciones remotas se controlan con el modo y las reglas de permisos."
+          },
+          {
+            "id": "D",
+            "text": "En hacer commit en git antes de cada turno para poder revertir la base de datos.",
+            "why": "git versiona archivos del repositorio, no el estado de una base de datos remota."
+          }
+        ],
+        "explanation": "El requisito es prevenir, porque el efecto vive en un sistema remoto. Los checkpoints solo cubren cambios de archivos, y las acciones sobre bases de datos, APIs o despliegues no se pueden checkpointear. La documentación remite al modo y las reglas de permisos para controlar qué puede hacer Claude sin preguntar. Confiar en /rewind es el error tentador: da una falsa sensación de poder deshacer efectos remotos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "checkpoint-limits--ef6483fe",
+      "conceptId": "checkpoint-limits",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A restore warned `Restored the code, but skipped N files`. Which slash command do you run before restoring again so the debug log names each skipped path?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/debug",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Turning on debug logging with `/debug` before a restore makes the debug log at `~/.claude/debug/<session-id>.txt` name each path the restore skips. Skipped paths are typically symlinked or hard-linked files, which checkpointing doesn't rewind.",
+      "keywordCues": [
+        "skipped N files",
+        "debug log names each skipped path"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/checkpointing.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Una restauración avisó `Restored the code, but skipped N files`. ¿Qué comando de barra corres antes de restaurar otra vez para que el log de debug nombre cada ruta saltada?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/debug",
+            "why": ""
+          }
+        ],
+        "explanation": "Activar el logging de debug con `/debug` antes de restaurar hace que el log en `~/.claude/debug/<session-id>.txt` nombre cada ruta que la restauración salta. Las rutas saltadas suelen ser archivos con symlink o hard link, que el checkpointing no rebobina."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "checkpoint-limits--r0",
+      "conceptId": "checkpoint-limits",
+      "kind": "recall",
+      "prompt": "List what checkpoint rewind cannot restore, and what to use instead for each kind of change.",
+      "promptEs": "Enumera lo que el rewind de checkpoints no puede restaurar y qué usar en su lugar para cada tipo de cambio.",
+      "idealAnswer": "Rewind misses file changes made through Bash, edits by background subagents, manual or other-session edits, symlinked and hard-linked files, and remote effects like databases, APIs and deployments. Messages that joined a running turn have no checkpoint of their own. Use git to recover local file changes, and permission mode and rules to guard remote actions.",
+      "rubric": [
+        "Bash file changes and background subagent edits are not restored",
+        "External edits and symlinked or hard-linked files are not restored",
+        "Remote effects can't be checkpointed; guard them with permissions",
+        "git for anything rewind misses"
+      ]
+    },
+    {
+      "id": "checkpoint-limits--r1",
+      "conceptId": "checkpoint-limits",
+      "kind": "why-not",
+      "prompt": "Claude deleted a file with `rm` in Bash. Why won't Restore code in /rewind bring it back?",
+      "promptEs": "Claude borró un archivo con `rm` en Bash. ¿Por qué Restore code en /rewind no lo recupera?",
+      "idealAnswer": "Checkpoints only track direct edits made through Claude's file-editing tools, not files modified by Bash commands like rm, mv or cp. Restore code has no snapshot of that deletion to revert, so you recover the file from git.",
+      "rubric": [
+        "Checkpoints track only Claude's file-editing tools",
+        "Bash commands like rm are not tracked",
+        "Recover with git"
+      ]
+    }
+  ]
+}

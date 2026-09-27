@@ -1,6 +1,6 @@
 # learnclaudecode — plan
 
-Misma app de estudio gamificada que [learnaws](https://github.com/crafter-station/learnaws), para dominar **Claude Code**.
+Misma app de estudio gamificada que [learnaws](https://github.com/crafter-games/learnaws), para dominar **Claude Code**.
 Copia de learnaws (sin fork); si mantener ambas pesa, se extrae un paquete compartido (`engine`, `game`).
 
 ## Decisiones (grilling, 2026-09-27)

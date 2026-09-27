@@ -1,6 +1,6 @@
-# AWS Quest (learnaws)
+# Claude Code Quest (learnclaudecode)
 
-> Eres un arquitecto en formación que recorre 8 islas de servicios AWS jugando rondas cortas y armando diagramas, para llegar al examen SAA-C03 con dominio real — no con suerte.
+> Eres un desarrollador que recorre 9 islas de Claude Code (loop agéntico, contexto, permisos, skills, hooks, subagentes, MCP y plugins, headless y SDK, nube) jugando rondas cortas y labs reales en la terminal, hasta dominarlo de verdad. Base: learnaws, mismo motor y misma piel Arcade.
 
 | | |
 | --- | --- |
@@ -17,7 +17,9 @@
 - Sin cronómetro ni puntos por velocidad mientras se aprende (la presión de tiempo baja la precisión). El tiempo solo como señal interna.
 - Sin rankings ni premios por completar (bajan motivación intrínseca). Feedback informativo, progreso real, racha que no castiga.
 - Construir el diagrama uno mismo > verlo hecho (Nesbit & Adesope 2006: g 0.82 vs 0.37).
-- Progresión corto → largo: el examen es de escenarios largos; los jefes y simulacros los entrenan con ritmo real.
+- Progresión corto → largo: los escenarios largos consolidan; los jefes y simulacros los entrenan con ritmo real.
+- La fuente es la documentación oficial (code.claude.com/docs) y el changelog. Cada ítem guarda su página fuente; si la página cambia, el ítem se suspende hasta volver a verificarse.
+- Practicar en la terminal real > leer sobre la terminal: los labs se verifican leyendo tus archivos.
 
 ## Core loop
 
@@ -25,8 +27,8 @@ Tocar **Jugar** → el motor elige una ronda (Descubrir · Repaso · Mezcla · J
 
 ## First 30 seconds
 
-1. Mapa de 8 islas con progreso y un botón **Jugar** gigante (y aviso de privacidad la primera vez).
-2. Toque en Jugar → "Descubrir: Amazon SQS": una voz narra mientras el diagrama productor → cola → consumidor se arma por segmentos.
+1. Mapa de 9 islas con progreso y un botón **Jugar** gigante (y aviso de privacidad la primera vez).
+2. Toque en Jugar → "Descubrir: Cómo funciona Claude Code": una voz narra mientras el diagrama tú → Claude → herramientas → tu proyecto se arma por segmentos.
 3. Arrastras (o tocas pieza → hueco) los componentes al diagrama; encajan con un "clic".
 4. Primera pregunta relámpago en letra grande, leída en voz alta; aciertas → sonido + rebote + XP.
 
@@ -44,16 +46,19 @@ Tocar **Jugar** → el motor elige una ronda (Descubrir · Repaso · Mezcla · J
 
 ### Formatos de ítem (de fácil a examen)
 
-1. **Relámpago**: ≤ 20 palabras, una restricción → servicio/feature (4 botones color+símbolo ▲◆●■).
-2. **Esto o aquello**: dos opciones gigantes entre confundibles (SQS Standard | FIFO).
-3. **Completa el diagrama**: arquitectura SVG con un hueco; elige la pieza.
-4. **Mini escenario + chips**: 2–3 frases con chips de requisitos (💰 menor costo, ⚙️ menos operación, 🌍 multi-región).
-5. **Escenario completo resaltado**: pregunta larga con las palabras clave marcadas.
-6. **Examen**: escenario largo sin ayudas, ritmo 2 min/ítem (jefes y simulacros; banco reservado solo en simulacros completos).
+1. **Relámpago** (corto): ≤ 20 palabras, un requisito → feature (4 botones color+forma).
+2. **Esto o aquello** (corto): dos opciones gigantes entre confundibles (`--continue` | `--resume`).
+3. **Completa el comando** (corto): escribes el flag, comando o clave literal en un campo tipo terminal; se compara sin importar espacios ni comillas, sí mayúsculas.
+4. **Ordena** (largo): tocas los elementos en orden (precedencia de settings, orden de carga de CLAUDE.md, ciclo de eventos de hooks).
+5. **Arma la config** (largo): un `settings.json`, frontmatter de `SKILL.md`, `.mcp.json` o bloque de `hooks` con huecos; eliges el valor de cada hueco.
+6. **Escenario** (largo): situación de un desarrollador o equipo con un requisito ("para todos los que clonen el repo", "sin tocar otros proyectos"); frases clave resaltadas.
+7. **Simulacro**: solo escenarios, sin ayudas; banco reservado solo en simulacros completos.
+
+Los formatos cortos no cuentan para la probabilidad de dominio ni entran a simulacros.
 
 ### Rondas
 
-- **Descubrir**: explicación narrada del servicio (segmentos de 10–15 s, avanza con toque) → construir su diagrama → 4–6 relámpago/esto-o-aquello. Desbloquea los conceptos del servicio para el motor.
+- **Descubrir**: explicación narrada de la unidad (segmentos de 10–15 s, avanza con toque) → construir su diagrama → 4–6 relámpago/esto-o-aquello. Desbloquea los conceptos de la unidad para el motor.
 - **Repaso**: conceptos debidos por FSRS, formato según nivel (bronce → relámpago; plata → mini escenario; oro → escenario).
 - **Mezcla**: grupos confundibles ya conocidos.
 - **Jefe** (por isla, al tener ≥ 60% plata): 8 escenarios largos, sin ayudas.
@@ -64,13 +69,13 @@ Tocar **Jugar** → el motor elige una ronda (Descubrir · Repaso · Mezcla · J
 - XP solo por aciertos sin ayuda: base 10; confianza "seguro" +5 si acierta, −5 si falla (calibración); "adivinando" 5 fijo (tune).
 - Nivel por servicio = fases del motor: bronce (visto), plata (en repaso), oro (graduado).
 - Racha diaria (≥ 1 ronda) con 1 comodín semanal automático.
-- Insignias informativas por hito de dominio ("Dominaste mensajería desacoplada").
+- Insignias informativas por hito de dominio ("Dominaste los hooks").
 
 ## Win, fail, restart
 
 - **Fallo en un ítem**: sonido suave, pista graduada (si hay API key) o explicación verificada; el concepto se reprograma. Nunca "game over".
 - **Ronda**: siempre termina con resultado; Jefe perdido (< 70%) → se reintenta tras repasar sus conceptos.
-- **Victoria final**: gate de reserva (2 simulacros ≥ 80%, ningún dominio < 70%, externo ≥ 80%) → "Reserva tu examen" + reporte del resultado real.
+- **Victoria final**: dominio de las 9 islas (2 simulacros ≥ 80%, ningún dominio < 70%) + labs 1–8 verificados. Pista CCAR-F opcional con su propio gate y reporte del resultado real.
 
 ## Challenge and progression
 
@@ -82,14 +87,14 @@ Acierto: botón rebota (scale 1→1.08→1, 180 ms), destello verde, "ding", vib
 
 ## Art direction
 
-- **Estilo**: "Arcade" (juego casual móvil): campo azul punteado, tarjetas blancas con contorno tinta de 3 px y sombra sólida de volumen, botones gruesos, Lilita One + Nunito, iconos de game-icons.net (CC BY 3.0), cero emojis.
-- **Palette** (claro por defecto): fondo `#FBFAF8` · texto `#1B1A18` · acento `#D9731A` · opciones ▲`#E23D4B` ◆`#2F6FEB` ●`#E0A100` ■`#1F9D55` · islas por familia con tonos suaves. Tema oscuro cálido opcional.
+- **Estilo**: "Arcade" (juego casual móvil): campo terracota punteado (`#bf4f2a`, texto blanco 4.81:1), tarjetas blancas con contorno tinta de 3 px y sombra sólida de volumen, botones gruesos, Lilita One + Nunito, iconos de game-icons.net (CC BY 3.0), cero emojis.
+- **Palette**: campo `#bf4f2a` / `#9e3f1f` · tinta `#1c1840` · tarjetas blancas · primario amarillo `#ffc933` · opciones rojo/azul/ámbar/verde con forma ▲◆●■ · código en bloque tinta con texto blanco y monoespaciada.
 - **Legibilidad**: preguntas 20 px, opciones 24 px (botón A+ hasta 150%), contraste ≥ 4.5:1, líneas ≤ 60 caracteres, color nunca como único código (símbolos ▲◆●■).
 - **HUD de ronda**: barra de progreso de la ronda, XP, botones 🔊 / ES / A+ arriba; botón de acción fijo abajo.
 
 ## Audio
 
-- **Narración**: OpenAI TTS pre-generada y cacheada para contenido compartido (explicaciones y preguntas); auto-lectura activable.
+- **Narración**: OpenAI TTS pre-generada y cacheada para contenido compartido (explicaciones y preguntas); auto-lectura activable. Comandos, flags, eventos y archivos se pronuncian en inglés tal como se escriben; glosa en español la primera vez por unidad. Las respuestas de "Completa el comando" nunca se leen en voz alta.
 - **Música**: chiptune en loop (Juhani Junkala, CC0): Title Screen en el hub, Level 1/2/3 rotando por ronda, Ending en el resultado. Encendida por defecto con interruptor "Música"; volumen 0.28 hub / 0.13 en ronda (leer necesita silencio relativo), baja a 20% mientras suena la narración y se silencia en la llamada con el experto. Jingles 8-bit (Kenney, CC0) al empezar ronda, terminarla y subir de nivel.
 - **SFX**: ver tabla de assets. Vibración en móvil.
 
@@ -110,17 +115,16 @@ Acierto: botón rebota (scale 1→1.08→1, 180 ms), destello verde, "ding", vib
 | sfx-snap | pieza encaja | kenney:interface-sounds | todo |
 | sfx-levelup | fanfarria corta | kenney:interface-sounds / generate | todo |
 | sfx-streak | whoosh de racha | kenney:interface-sounds | todo |
-| aws-icons | AWS Architecture Icons (SVG) | aws.amazon.com/architecture/icons | todo |
 | narration-* | narración por servicio | generate (OpenAI TTS, cache) | todo |
 | font-ui | Geist (ya incluida) | next/font | done |
 
 ## Milestones
 
-0. **M0: Multiusuario** — `userId` en el esquema + migración, BYOK cifrada, admin, feedback, reporte de examen, rate limits, privacidad/borrado.
-1. **M1: Rondas relámpago** — botón Jugar, ronda de 8 ítems estilo Kahoot con letra grande, auto-audio, XP, SFX y resultado, usando el contenido actual + chips de palabras clave.
-2. **M2: Descubrir servicios** — ~70 explicaciones narradas con diagrama + ~900 ítems relámpago/esto-o-aquello nuevos (genera Claude, audita OpenAI).
-3. **M3: Diagramas** — completar/construir diagramas (~100) con piezas arrastrables.
-4. **M4: Mapa y jefes** — 8 islas, bronce/plata/oro, jefes, contrarreloj, racha con comodín, tema claro/oscuro.
+0. **M0**: copia de learnaws con marca Claude Code, base dev en Blaze, Clerk de producción (solo email y contraseña), repo y deploy en `learnclaudecode.crafter.run`.
+1. **M1**: syllabus (202 conceptos, 74 unidades, 9 islas), formatos ordena / completa el comando / arma la config, contenido de las islas 1–3 generado y verificado a ciegas por subagentes de Claude.
+2. **M2**: islas 4–9, RAG sobre la documentación y el changelog, experto.
+3. **M3**: CLI `learnclaudecode` en npm (login por código de dispositivo, `lab`, `check`) y labs 1–8.
+4. **M4**: `content:refresh` por hash de página, isla Novedades, labs 9–12, pista CCAR-F.
 
 ## Out of scope for v1
 
@@ -128,10 +132,5 @@ Multijugador, rankings, grupos de estudio cooperativos (candidato v2), música a
 
 ## Changelog
 
-- 2026-09-26: GDD inicial (entrevista de diseño + investigación de gamificación, multimedia y legibilidad).
-- 2026-09-26: M0 multiusuario (userId en todo, BYOK cifrada, admin, feedback, resultado de examen, rate limits, privacidad/borrado).
-- 2026-09-26: M1 rondas relámpago (hub Jugar, rondas de 8 estilo Kahoot, chips y frases clave resaltadas, auto-lectura, XP con calibración, racha con comodín, meta diaria, SFX sintetizados). SFX por Web Audio en vez de Kenney.
-- 2026-09-26: M2 Descubrir servicios (75 unidades en 9 islas, explicación narrada con diagrama por segmentos, 781 preguntas relámpago/esto-o-aquello; generadas por Claude, auditadas por OpenAI; formato corto al aprender y escenario al consolidar; los formatos cortos no cuentan para la probabilidad de aprobar).
-- 2026-09-26: Rediseño visual "Arcade" (opción B elegida por el usuario): sin emojis, iconos de juego, botones con volumen, tipografías de juego.
-- 2026-09-26: Login Arcade (Clerk neobrutalism + paleta + español) y "Pregúntale al experto": chat RAG con fuentes citadas y conversación voz a voz (OpenAI Realtime por WebRTC con la key del usuario, búsqueda en el índice como herramienta). Usar el experto cuenta como ayuda.
-- 2026-09-26: Música de juego (5 Chiptunes CC0 de Juhani Junkala + Kenney music-jingles CC0), interruptor Música en el hub, ducking con TTS y voz del experto.
+- 2026-09-27: GDD de learnclaudecode a partir del de learnaws (grilling en 3 rondas; decisiones en PLAN.md).
+- 2026-09-27: M0 listo (repo, Dokploy, Postgres, Blaze dev, Clerk prod solo email+contraseña, paleta terracota).

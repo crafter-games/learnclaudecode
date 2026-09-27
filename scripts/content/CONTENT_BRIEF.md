@@ -107,7 +107,8 @@ How many per concept:
   recent conversation in this directory?". `options` = every accepted spelling, all `correct: true`, ids A, B…,
   `why: ""`; the first is canonical. Answers are compared case-sensitively after trimming, collapsing spaces and
   removing wrapping quotes/backticks, so list real variants only (`-c` and `--continue`). `type: "single"`.
-  `es.options` = same ids and texts. Never ask for something with many valid phrasings.
+  `es.options` = same ids and texts. Never ask for something with many valid phrasings, and never for a keyboard
+  key/shortcut to press (Esc, Shift+Tab): the answer must be something you type.
 - **order** (0–1, only when the docs define a real order: settings precedence, CLAUDE.md load order, hook event
   lifecycle, permission rule evaluation…): 3–5 items as `options` (all `correct: true`, `why: ""`), shown shuffled;
   `order` = the correct id sequence; the stem says which end comes first ("from highest to lowest precedence").

@@ -1,0 +1,459 @@
+{
+  "unitId": "u-permission-rules",
+  "audited": true,
+  "overview": {
+    "title": "Reglas de permisos",
+    "hook": "Decidir qué corre sin preguntar, qué pregunta y qué nunca corre.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "call",
+          "label": "Llamada a tool",
+          "kind": "data",
+          "x": 28,
+          "y": 50
+        },
+        {
+          "id": "settings",
+          "label": "Reglas en settings",
+          "kind": "data",
+          "x": 28,
+          "y": 15
+        },
+        {
+          "id": "deny",
+          "label": "deny",
+          "kind": "service",
+          "x": 50,
+          "y": 20
+        },
+        {
+          "id": "ask",
+          "label": "ask",
+          "kind": "service",
+          "x": 70,
+          "y": 50
+        },
+        {
+          "id": "allow",
+          "label": "allow",
+          "kind": "service",
+          "x": 90,
+          "y": 80
+        },
+        {
+          "id": "mode",
+          "label": "Modo de permisos",
+          "kind": "note",
+          "x": 90,
+          "y": 20
+        }
+      ],
+      "edges": [
+        {
+          "from": "claude",
+          "to": "call",
+          "label": "intenta usar"
+        },
+        {
+          "from": "settings",
+          "to": "deny",
+          "label": "todas las scopes"
+        },
+        {
+          "from": "call",
+          "to": "deny",
+          "label": "1: bloquea"
+        },
+        {
+          "from": "deny",
+          "to": "ask",
+          "label": "2: pregunta"
+        },
+        {
+          "from": "ask",
+          "to": "allow",
+          "label": "3: aprueba"
+        },
+        {
+          "from": "allow",
+          "to": "mode",
+          "label": "sin match"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Claude quiere usar una herramienta: correr un comando, leer un archivo o traer una página. Tú necesitas que algunas cosas pasen sin preguntar y otras nunca pasen.",
+        "show": [
+          "claude",
+          "call"
+        ],
+        "focus": "call"
+      },
+      {
+        "narration": "Las reglas viven en tus archivos de settings, en tres listas: allow, ask y deny. Las reglas de todas las scopes se juntan, y las ves y editas con el comando permissions.",
+        "show": [
+          "claude",
+          "call",
+          "settings"
+        ],
+        "focus": "settings"
+      },
+      {
+        "narration": "Claude Code revisa primero deny, luego ask y al final allow. El primer match en ese orden decide, y que una regla sea más específica no cambia nada.",
+        "show": [
+          "claude",
+          "call",
+          "settings",
+          "deny",
+          "ask",
+          "allow"
+        ],
+        "focus": "deny"
+      },
+      {
+        "narration": "Por eso un deny amplio para aws le gana a un allow exacto para aws s3 ls, y un ask le gana a un allow. Si ninguna regla coincide, decide el modo de permisos.",
+        "show": [
+          "claude",
+          "call",
+          "settings",
+          "deny",
+          "ask",
+          "allow",
+          "mode"
+        ],
+        "focus": "ask"
+      },
+      {
+        "narration": "Las reglas de Bash comparan el texto del comando con comodines. Las de Read y Edit usan rutas estilo gitignore: doble barra es absoluta, y una sola barra ancla en el origen del settings, que es el directorio del proyecto en settings de proyecto y ~/.claude en settings de usuario.",
+        "show": [
+          "claude",
+          "call",
+          "settings",
+          "deny",
+          "ask",
+          "allow",
+          "mode"
+        ],
+        "focus": "allow"
+      },
+      {
+        "narration": "Ojo: una regla de Bash solo ve el texto escrito, así que no frena el mismo programa invocado por ruta o dentro de sh. Para un límite real usa el sandbox; CLAUDE.md solo sugiere.",
+        "show": [
+          "claude",
+          "call",
+          "settings",
+          "deny",
+          "ask",
+          "allow",
+          "mode"
+        ],
+        "focus": "deny"
+      }
+    ],
+    "keyPoints": [
+      "Orden fijo: deny, luego ask, luego allow",
+      "La especificidad nunca cambia el orden",
+      "Un deny de cualquier scope le gana a cualquier allow",
+      "Pon el comodín después del subcomando",
+      "//ruta es absoluta; /ruta ancla en el origen del settings (proyecto o ~/.claude)"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "Sandbox",
+        "difference": "El sistema operativo limita el proceso; las reglas solo comparan el texto de la llamada."
+      },
+      {
+        "unitOrService": "CLAUDE.md",
+        "difference": "Guía al modelo pero no impone nada; las reglas las hace cumplir Claude Code."
+      },
+      {
+        "unitOrService": "Hooks PreToolUse",
+        "difference": "Lógica propia antes de la llamada; su allow no salta un deny ni un ask."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-permission-rules--l1",
+      "conceptId": "perm-rule-eval-order",
+      "format": "lightning",
+      "prompt": "Deny `Bash(aws *)` and allow `Bash(aws s3 ls)` both match → outcome?",
+      "promptEs": "Deny `Bash(aws *)` y allow `Bash(aws s3 ls)` coinciden → ¿resultado?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allowed: the narrower rule wins"
+        },
+        {
+          "id": "B",
+          "text": "Blocked: deny is checked first"
+        },
+        {
+          "id": "C",
+          "text": "Prompts because rules conflict"
+        },
+        {
+          "id": "D",
+          "text": "Depends on the settings scope"
+        }
+      ],
+      "answer": "B",
+      "why": "Se evalúa deny, luego ask, luego allow; el primer match decide y la especificidad no cambia el orden. Un allow no puede abrir una excepción dentro de un deny."
+    },
+    {
+      "id": "u-permission-rules--l2",
+      "conceptId": "perm-rule-eval-order",
+      "format": "lightning",
+      "prompt": "Hide the Bash tool from Claude's context entirely → deny rule?",
+      "promptEs": "Ocultar por completo la herramienta Bash del contexto de Claude → ¿regla deny?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash(rm *)"
+        },
+        {
+          "id": "B",
+          "text": "Bash(command:*)"
+        },
+        {
+          "id": "C",
+          "text": "Bash"
+        },
+        {
+          "id": "D",
+          "text": "Bash(run_in_background:true)"
+        }
+      ],
+      "answer": "C",
+      "why": "Un nombre de herramienta sin especificador en deny la quita del contexto. `Bash(rm *)` deja la herramienta disponible y solo bloquea las llamadas que coinciden."
+    },
+    {
+      "id": "u-permission-rules--l3",
+      "conceptId": "perm-rule-eval-order",
+      "format": "thisorthat",
+      "prompt": "PreToolUse hook returns `allow`, but an ask rule matches → ?",
+      "promptEs": "Un hook PreToolUse devuelve `allow`, pero coincide una regla ask → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude Code still prompts"
+        },
+        {
+          "id": "B",
+          "text": "The call runs without a prompt"
+        }
+      ],
+      "answer": "A",
+      "why": "Las decisiones de un hook no saltan las reglas: un ask que coincide sigue preguntando aunque el hook devuelva allow, y un deny sigue bloqueando."
+    },
+    {
+      "id": "u-permission-rules--l4",
+      "conceptId": "perm-rule-eval-order",
+      "format": "lightning",
+      "prompt": "View every permission rule and which settings file it comes from → ?",
+      "promptEs": "Ver todas las reglas de permisos y de qué archivo de settings viene cada una → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/config"
+        },
+        {
+          "id": "B",
+          "text": "/status"
+        },
+        {
+          "id": "C",
+          "text": "/hooks"
+        },
+        {
+          "id": "D",
+          "text": "/permissions"
+        }
+      ],
+      "answer": "D",
+      "why": "El diálogo de `/permissions` lista las reglas y el `settings.json` del que viene cada una, y permite agregarlas o quitarlas incluso mientras Claude trabaja."
+    },
+    {
+      "id": "u-permission-rules--l5",
+      "conceptId": "perm-bash-wildcards",
+      "format": "lightning",
+      "prompt": "Allow only `git log` commands, with any options → rule?",
+      "promptEs": "Permitir solo comandos `git log`, con cualquier opción → ¿regla?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash(git *)"
+        },
+        {
+          "id": "B",
+          "text": "Bash(git log *)"
+        },
+        {
+          "id": "C",
+          "text": "Bash(git * log)"
+        },
+        {
+          "id": "D",
+          "text": "Bash(git log)"
+        }
+      ],
+      "answer": "B",
+      "why": "El comodín va después del subcomando: lo anterior al primer `*` limita la regla. `Bash(git *)` permite todo git y `Bash(git log)` solo el comando exacto."
+    },
+    {
+      "id": "u-permission-rules--l6",
+      "conceptId": "perm-bash-wildcards",
+      "format": "thisorthat",
+      "prompt": "Match `ls -la` and bare `ls`, but not `lsof` → ?",
+      "promptEs": "Que coincida `ls -la` y `ls` solo, pero no `lsof` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash(ls*)"
+        },
+        {
+          "id": "B",
+          "text": "Bash(ls *)"
+        }
+      ],
+      "answer": "B",
+      "why": "El espacio antes del `*` final es parte de la regla, así que `lsof` no coincide; y un `*` final con espacio también cubre el comando solo. `Bash(ls*)` sí atrapa `lsof`."
+    },
+    {
+      "id": "u-permission-rules--l7",
+      "conceptId": "perm-bash-wildcards",
+      "format": "lightning",
+      "prompt": "Rule `Bash(npm test *)` also matches which command, with no extra rule?",
+      "promptEs": "¿Qué comando también coincide con `Bash(npm test *)` sin otra regla?",
+      "options": [
+        {
+          "id": "A",
+          "text": "timeout 30 npm test"
+        },
+        {
+          "id": "B",
+          "text": "devbox run npm test"
+        },
+        {
+          "id": "C",
+          "text": "npm test && rm -rf dist"
+        },
+        {
+          "id": "D",
+          "text": "xargs -n1 npm test"
+        }
+      ],
+      "answer": "A",
+      "why": "`timeout` está en la lista fija de wrappers que se quitan antes de comparar. `devbox run` no está, `xargs` con flags no se quita y el compuesto exige match por subcomando."
+    },
+    {
+      "id": "u-permission-rules--l8",
+      "conceptId": "perm-bash-wildcards",
+      "format": "lightning",
+      "prompt": "Deny `Bash(curl *)` exists. Which invocation still escapes it?",
+      "promptEs": "Existe el deny `Bash(curl *)`. ¿Qué invocación todavía se le escapa?",
+      "options": [
+        {
+          "id": "A",
+          "text": "curl https://example.com"
+        },
+        {
+          "id": "B",
+          "text": "cd /tmp && curl https://x.dev"
+        },
+        {
+          "id": "C",
+          "text": "sh -c 'curl https://example.com'"
+        },
+        {
+          "id": "D",
+          "text": "FOO=bar curl https://x.dev"
+        }
+      ],
+      "answer": "C",
+      "why": "La regla compara el texto escrito: no ve `curl` dentro de `sh -c`. Deny sí aplica a cualquier subcomando de un compuesto y salta cualquier asignación inicial de variable."
+    },
+    {
+      "id": "u-permission-rules--l9",
+      "conceptId": "perm-read-edit-paths",
+      "format": "lightning",
+      "prompt": "Read rule for the absolute path `/Users/alice/secrets` and everything under it → ?",
+      "promptEs": "Regla Read para la ruta absoluta `/Users/alice/secrets` y todo lo de abajo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Read(/Users/alice/secrets/**)"
+        },
+        {
+          "id": "B",
+          "text": "Read(./Users/alice/secrets/**)"
+        },
+        {
+          "id": "C",
+          "text": "Read(//Users/alice/secrets/**)"
+        },
+        {
+          "id": "D",
+          "text": "Read(~/Users/alice/secrets/**)"
+        }
+      ],
+      "answer": "C",
+      "why": "En reglas Read y Edit, `//` ancla en la raíz del sistema de archivos. Una sola `/` ancla en el origen del settings, no en la raíz."
+    },
+    {
+      "id": "u-permission-rules--l10",
+      "conceptId": "perm-read-edit-paths",
+      "format": "thisorthat",
+      "prompt": "Stop Claude from changing files under `docs/` → which tool name in the rule?",
+      "promptEs": "Impedir que Claude cambie archivos bajo `docs/` → ¿qué herramienta en la regla?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write(docs/**)"
+        },
+        {
+          "id": "B",
+          "text": "Edit(docs/**)"
+        }
+      ],
+      "answer": "B",
+      "why": "Los permisos de archivo solo consultan reglas `Edit(path)` y `Read(path)`. Una regla `Write(docs/**)` se acepta pero nunca se consulta, con una advertencia al iniciar."
+    },
+    {
+      "id": "u-permission-rules--l11",
+      "conceptId": "perm-read-edit-paths",
+      "format": "lightning",
+      "prompt": "Allow fetching pages only from `github.com` without prompts → rule?",
+      "promptEs": "Permitir traer páginas solo de `github.com` sin preguntar → ¿regla?",
+      "options": [
+        {
+          "id": "A",
+          "text": "WebFetch(domain:github.com)"
+        },
+        {
+          "id": "B",
+          "text": "WebFetch"
+        },
+        {
+          "id": "C",
+          "text": "Bash(curl https://github.com/ *)"
+        },
+        {
+          "id": "D",
+          "text": "Read(//github.com/**)"
+        }
+      ],
+      "answer": "A",
+      "why": "Las reglas de WebFetch usan el prefijo `domain:` y comparan el hostname. Un `WebFetch` pelado cubre todos los dominios y la regla de curl es frágil."
+    }
+  ]
+}

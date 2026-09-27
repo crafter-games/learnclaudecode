@@ -1,0 +1,462 @@
+{
+  "unitId": "u-how-it-works",
+  "audited": true,
+  "overview": {
+    "title": "Cómo funciona Claude Code",
+    "hook": "Saber qué pieza razona, cuál actúa y dónde poner cada regla.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "model",
+          "label": "Modelo (razona)",
+          "kind": "actor",
+          "x": 40,
+          "y": 20
+        },
+        {
+          "id": "harness",
+          "label": "Claude Code",
+          "kind": "zone",
+          "x": 40,
+          "y": 50
+        },
+        {
+          "id": "tools",
+          "label": "Herramientas",
+          "kind": "service",
+          "x": 40,
+          "y": 80
+        },
+        {
+          "id": "guidance",
+          "label": "CLAUDE.md / skills",
+          "kind": "data",
+          "x": 75,
+          "y": 25
+        },
+        {
+          "id": "enforce",
+          "label": "Hooks / permisos",
+          "kind": "service",
+          "x": 75,
+          "y": 75
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "model",
+          "label": "prompt"
+        },
+        {
+          "from": "model",
+          "to": "tools",
+          "label": "tool call"
+        },
+        {
+          "from": "tools",
+          "to": "model",
+          "label": "resultado"
+        },
+        {
+          "from": "harness",
+          "to": "tools",
+          "label": "provee"
+        },
+        {
+          "from": "guidance",
+          "to": "model",
+          "label": "guía"
+        },
+        {
+          "from": "enforce",
+          "to": "tools",
+          "label": "bloquea"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cuando algo sale mal, cuesta saber si falló el modelo, una herramienta o tu configuración. Empieza por las piezas: tú das la tarea y el modelo Claude la razona.",
+        "show": [
+          "you",
+          "model"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Sin herramientas, el modelo solo responde con texto. Las herramientas actúan: leen archivos, editan, corren comandos y buscan en la web. Claude Code es el harness que provee esas herramientas, gestiona el contexto y aplica los permisos.",
+        "show": [
+          "you",
+          "model",
+          "harness",
+          "tools"
+        ],
+        "focus": "harness"
+      },
+      {
+        "narration": "El loop tiene tres fases que se mezclan: reunir contexto, actuar y verificar. Cada resultado de herramienta alimenta la siguiente decisión. Todo eso, desde tu mensaje hasta que Claude termina de responder, es un turno.",
+        "show": [
+          "you",
+          "model",
+          "harness",
+          "tools"
+        ],
+        "focus": "tools"
+      },
+      {
+        "narration": "Para cada necesidad que se repite hay una extensión. Una convención que Claude falla dos veces va a CLAUDE.md. Un prompt que repites se vuelve skill. Datos que Claude no ve piden un servidor MCP. Una tarea que inunda el contexto va a un subagente.",
+        "show": [
+          "you",
+          "model",
+          "harness",
+          "tools",
+          "guidance"
+        ],
+        "focus": "guidance"
+      },
+      {
+        "narration": "Pero CLAUDE.md y las skills son guía: Claude las interpreta. Si algo debe cumplirse siempre, sin importar lo que Claude decida, usa un hook PreToolUse o una regla deny de permisos.",
+        "show": [
+          "you",
+          "model",
+          "harness",
+          "tools",
+          "guidance",
+          "enforce"
+        ],
+        "focus": "enforce"
+      },
+      {
+        "narration": "No uses un hook para convenciones que piden criterio, ni CLAUDE.md para límites de seguridad. Y si quieres cambiar el tono o el largo de cada respuesta, eso es un output style, no una regla del proyecto.",
+        "show": [
+          "you",
+          "model",
+          "harness",
+          "tools",
+          "guidance",
+          "enforce"
+        ],
+        "focus": "guidance"
+      }
+    ],
+    "keyPoints": [
+      "El modelo razona, las herramientas actúan, Claude Code es el harness.",
+      "Loop: reunir contexto, actuar, verificar; repite hasta terminar.",
+      "Un turno va de tu mensaje al final de la respuesta.",
+      "Elige la extensión según el disparador que se repite.",
+      "CLAUDE.md y skills guían; hooks y permisos garantizan."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "output styles",
+        "difference": "Cambian rol, tono y formato de cada respuesta; tampoco se imponen, Claude los sigue como instrucciones."
+      },
+      {
+        "unitOrService": "checkpoints",
+        "difference": "Deshacen ediciones de archivos después; no impiden acciones ni cubren sistemas remotos."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-how-it-works--l1",
+      "conceptId": "loop-agentic-loop",
+      "format": "lightning",
+      "prompt": "Layer that provides the tools, manages context and gates permissions around the model → ?",
+      "promptEs": "Capa que provee las herramientas, gestiona el contexto y controla permisos alrededor del modelo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The Claude model"
+        },
+        {
+          "id": "B",
+          "text": "A subagent"
+        },
+        {
+          "id": "C",
+          "text": "The agentic harness (Claude Code)"
+        },
+        {
+          "id": "D",
+          "text": "CLAUDE.md"
+        }
+      ],
+      "answer": "C",
+      "why": "Claude Code es el harness: da acceso a archivos, shell, permisos y carga de memoria. El modelo solo razona y decide; sin el harness no puede actuar."
+    },
+    {
+      "id": "u-how-it-works--l2",
+      "conceptId": "loop-agentic-loop",
+      "format": "lightning",
+      "prompt": "From your message until Claude finishes responding, with any number of tool calls → ?",
+      "promptEs": "Desde tu mensaje hasta que Claude termina de responder, con cualquier cantidad de tool calls → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A turn"
+        },
+        {
+          "id": "B",
+          "text": "A session"
+        },
+        {
+          "id": "C",
+          "text": "A checkpoint"
+        },
+        {
+          "id": "D",
+          "text": "A compaction"
+        }
+      ],
+      "answer": "A",
+      "why": "Un turno es una respuesta completa, con todas sus tool calls. La sesión es tentadora, pero contiene muchos turnos."
+    },
+    {
+      "id": "u-how-it-works--l3",
+      "conceptId": "loop-agentic-loop",
+      "format": "thisorthat",
+      "prompt": "Stop Claude immediately, canceling the tool call that is running → ?",
+      "promptEs": "Detener a Claude de inmediato, cancelando la tool call en curso → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Type a correction and press Enter"
+        },
+        {
+          "id": "B",
+          "text": "Press Esc"
+        }
+      ],
+      "answer": "B",
+      "why": "Esc cancela la tool call en curso y Claude espera tu instrucción. Escribir y pulsar Enter deja el mensaje en cola sin detener nada."
+    },
+    {
+      "id": "u-how-it-works--l4",
+      "conceptId": "loop-agentic-loop",
+      "format": "lightning",
+      "prompt": "What informs Claude's next step inside the agentic loop → ?",
+      "promptEs": "Qué informa el siguiente paso de Claude dentro del loop agéntico → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A fixed plan made at the start"
+        },
+        {
+          "id": "B",
+          "text": "History from previous sessions"
+        },
+        {
+          "id": "C",
+          "text": "Only your next message"
+        },
+        {
+          "id": "D",
+          "text": "The result of each tool use"
+        }
+      ],
+      "answer": "D",
+      "why": "Cada uso de herramienta devuelve información que decide el paso siguiente. No hay plan fijo, y cada sesión nueva empieza sin el historial anterior."
+    },
+    {
+      "id": "u-how-it-works--l5",
+      "conceptId": "loop-extension-map",
+      "format": "lightning",
+      "prompt": "Claude gets a project convention wrong twice → ?",
+      "promptEs": "Claude se equivoca dos veces con una convención del proyecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write a hook"
+        },
+        {
+          "id": "B",
+          "text": "Add it to CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "Connect an MCP server"
+        },
+        {
+          "id": "D",
+          "text": "Route it through a subagent"
+        }
+      ],
+      "answer": "B",
+      "why": "Una convención que Claude debe saber siempre va a CLAUDE.md, que carga en cada sesión. Un hook es para acciones que deben ocurrir cada vez, sin criterio."
+    },
+    {
+      "id": "u-how-it-works--l6",
+      "conceptId": "loop-extension-map",
+      "format": "lightning",
+      "prompt": "You keep copying data from a browser tab Claude can't see → ?",
+      "promptEs": "Sigues copiando datos de una pestaña del navegador que Claude no ve → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Save it as a skill"
+        },
+        {
+          "id": "B",
+          "text": "Package it as a plugin"
+        },
+        {
+          "id": "C",
+          "text": "Connect that system as an MCP server"
+        },
+        {
+          "id": "D",
+          "text": "Delegate to a subagent"
+        }
+      ],
+      "answer": "C",
+      "why": "El problema es acceso a datos externos: eso lo da un servidor MCP. Una skill aporta conocimiento, pero no conecta Claude con el sistema."
+    },
+    {
+      "id": "u-how-it-works--l7",
+      "conceptId": "loop-extension-map",
+      "format": "lightning",
+      "prompt": "A second repository needs the same skills, hooks and MCP setup → ?",
+      "promptEs": "Un segundo repositorio necesita las mismas skills, hooks y MCP → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Package it as a plugin"
+        },
+        {
+          "id": "B",
+          "text": "Add it to CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "Set an output style"
+        },
+        {
+          "id": "D",
+          "text": "Spawn a subagent"
+        }
+      ],
+      "answer": "A",
+      "why": "Un plugin empaqueta skills, hooks, subagentes y servidores MCP en una unidad instalable para reutilizar en varios repos. CLAUDE.md solo aporta contexto."
+    },
+    {
+      "id": "u-how-it-works--l8",
+      "conceptId": "loop-extension-map",
+      "format": "thisorthat",
+      "prompt": "A side task floods your conversation with output you won't reference again → ?",
+      "promptEs": "Una tarea lateral inunda tu conversación con salida que no volverás a usar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Skill"
+        },
+        {
+          "id": "B",
+          "text": "Subagent"
+        }
+      ],
+      "answer": "B",
+      "why": "El subagente trabaja en su propia ventana de contexto y solo devuelve un resumen. Una skill, por defecto, se carga en tu ventana principal y la llenaría igual."
+    },
+    {
+      "id": "u-how-it-works--l9",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "format": "lightning",
+      "prompt": "A rule must hold every time, regardless of what Claude decides → ?",
+      "promptEs": "Una regla debe cumplirse siempre, sin importar lo que Claude decida → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A rule in CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "A skill with the rule"
+        },
+        {
+          "id": "C",
+          "text": "An output style"
+        },
+        {
+          "id": "D",
+          "text": "A PreToolUse hook"
+        }
+      ],
+      "answer": "D",
+      "why": "Un hook PreToolUse que bloquea la acción es imposición. CLAUDE.md, skills y output styles son instrucciones que Claude interpreta, no garantías."
+    },
+    {
+      "id": "u-how-it-works--l10",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "format": "thisorthat",
+      "prompt": "\"We do it this way here\": where files belong and which build command to use → ?",
+      "promptEs": "\"Aquí lo hacemos así\": dónde van los archivos y qué comando de build usar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "A permission deny rule"
+        }
+      ],
+      "answer": "A",
+      "why": "Las convenciones para decidir bien van en CLAUDE.md. Las reglas deny son para límites de seguridad y lo que nunca debe pasar."
+    },
+    {
+      "id": "u-how-it-works--l11",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "format": "lightning",
+      "prompt": "A Bash(rm *) deny rule misses find -delete; you need a hard guarantee → ?",
+      "promptEs": "Una regla deny Bash(rm *) no atrapa find -delete; necesitas garantía dura → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An ask rule for Bash(rm *)"
+        },
+        {
+          "id": "B",
+          "text": "A PreToolUse hook"
+        },
+        {
+          "id": "C",
+          "text": "A warning in CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "A cleanup skill checklist"
+        }
+      ],
+      "answer": "B",
+      "why": "Las reglas Bash comparan el texto literal del comando, así que una regla ask tiene el mismo hueco. Un hook PreToolUse (o el sandbox) da la garantía."
+    },
+    {
+      "id": "u-how-it-works--l12",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "format": "thisorthat",
+      "prompt": "\"Never edit .env\" written in a skill is → ?",
+      "promptEs": "\"Nunca edites .env\" escrito en una skill es → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A request Claude interprets"
+        },
+        {
+          "id": "B",
+          "text": "A guaranteed block"
+        }
+      ],
+      "answer": "A",
+      "why": "Una instrucción en CLAUDE.md o en una skill es una petición, no una garantía. El bloqueo garantizado lo da un hook PreToolUse o una regla deny."
+    }
+  ]
+}

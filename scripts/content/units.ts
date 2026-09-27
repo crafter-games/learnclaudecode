@@ -240,6 +240,10 @@ function finalize() {
   for (const u of ready) {
     const d = draftOf(u);
     const v = readJson<Verdict>(path.join(VERIFY, `${u}.json`));
+    if (!v.overview || !v.items?.length || !v.cards?.length) {
+      report.push(`${u}: verificación incompleta, se omite`);
+      continue;
+    }
     const errs = check(d);
     if (errs.length) {
       report.push(`${u}: draft inválido, se omite — ${errs.join("; ")}`);

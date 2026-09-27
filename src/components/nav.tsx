@@ -50,7 +50,7 @@ export function Nav() {
           </nav>
         </div>
       </header>
-      <nav className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(10px,env(safe-area-inset-bottom))] sm:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-20 px-3 [[data-round]_&]:hidden pb-[max(10px,env(safe-area-inset-bottom))] sm:hidden">
         <div className="chunk mx-auto grid max-w-md grid-cols-5 gap-1 p-1.5">
           {TABS.map((t) => {
             const on = active(t.href);

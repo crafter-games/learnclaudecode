@@ -8,6 +8,7 @@ import { duckWhilePlaying } from "@/lib/game/music";
 import type { Chip } from "@/lib/game/cues";
 import type { PublicQuestion, Reveal } from "../question-view";
 import { ExpertPanel } from "./expert-panel";
+import { Rich } from "./rich";
 import { CommandInput, ConfigInput, OrderInput } from "./format-inputs";
 import { GameIcon, type GameIconName } from "./icons";
 
@@ -275,17 +276,17 @@ export function GameQuestion({
           {parts.map((p, i) =>
             p.hit ? (
               <mark key={i} className="rounded-md bg-yellow/60 px-0.5 text-ink">
-                {p.text}
+                <Rich text={p.text} />
               </mark>
             ) : (
-              <span key={i}>{p.text}</span>
+              <span key={i}><Rich text={p.text} /></span>
             ),
           )}
         </p>
       </motion.div>
 
       {format === "order" && (
-        <OrderInput options={options} selected={selected} setSelected={setSelected} phase={phase} correctIds={correctIds} />
+        <OrderInput options={options} selected={selected} setSelected={setSelected} phase={phase} correctIds={correctIds} firstPick={firstPick} />
       )}
       {format === "command" && (
         <CommandInput
@@ -293,6 +294,7 @@ export function GameQuestion({
           setValue={(v) => setSelected(v ? [v] : [])}
           phase={phase}
           answerText={reveal?.answerText ?? null}
+          typed={firstPick[0] ?? ""}
         />
       )}
       {format === "config" && question.template && (
@@ -335,8 +337,8 @@ export function GameQuestion({
                 <Shape kind={s.shape} />
               )}
               <span className="flex-1">
-                <span className={`block font-extrabold leading-snug [text-shadow:0_1px_0_rgb(0_0_0_/_0.25)] ${two ? "text-[1.2em]" : "text-[1.08em]"}`}>{o.text}</span>
-                {why && <span className="mt-1 block text-[0.85em] font-bold leading-snug text-white/90">{why}</span>}
+                <span className={`block font-extrabold leading-snug [text-shadow:0_1px_0_rgb(0_0_0_/_0.25)] ${two ? "text-[1.2em]" : "text-[1.08em]"}`}><Rich text={o.text} /></span>
+                {why && <span className="mt-1 block text-[0.85em] font-bold leading-snug text-white/90"><Rich text={why} /></span>}
               </span>
             </motion.button>
           );
@@ -385,7 +387,7 @@ export function GameQuestion({
             {hints.map((h, i) => (
               <p key={i} className="flex gap-2 rounded-xl border-2 border-ink bg-card p-3 text-[0.98em] font-bold leading-relaxed">
                 <GameIcon name="light-bulb" size={20} className="mt-0.5 shrink-0 text-amber" />
-                {h}
+                <Rich text={h} />
               </p>
             ))}
             <div className="flex flex-wrap gap-2">
@@ -430,7 +432,7 @@ export function GameQuestion({
               )}
             </div>
             {showWhy ? (
-              <p className="chunk p-4 text-[1em] font-bold leading-relaxed">{spanish ? reveal?.explanationEs : reveal?.explanation}</p>
+              <p className="chunk p-4 text-[1em] font-bold leading-relaxed"><Rich text={(spanish ? reveal?.explanationEs : reveal?.explanation) ?? ""} /></p>
             ) : (
               <button onClick={() => setShowWhy(true)} className="press chunk-sm flex w-full items-center justify-center gap-2 py-3 font-extrabold">
                 <GameIcon name="open-book" size={20} /> ¿Por qué?

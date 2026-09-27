@@ -1,0 +1,503 @@
+{
+  "conceptId": "loop-agentic-loop",
+  "card": {
+    "en": {
+      "tldr": "Claude works through three blended phases, gather context, take action and verify results, repeating until the task is done. The model reasons and the tools act; Claude Code is the agentic harness that provides the tools, manages context and gates permissions.",
+      "whenToUse": [
+        "Predicting what Claude will do next: it chooses based on the last tool result.",
+        "Deciding how to steer mid-task: stop with Esc or queue a correction with Enter.",
+        "Giving Claude a check it can run so it verifies instead of stopping at a plausible answer."
+      ],
+      "keyFacts": [
+        "Phases: gather context, take action, verify results; they blend and the loop adapts to the task.",
+        "A turn begins when you send a message and ends when Claude finishes responding, with any number of tool calls in between.",
+        "Each tool use returns information that informs Claude's next decision.",
+        "Built-in tool categories: file operations, search, execution, web, code intelligence.",
+        "Esc stops Claude and cancels the running tool call; a message sent with Enter is queued and read after the current tool calls finish, in the same turn.",
+        "The loop and tools are the same in every interface; what changes is where code runs and how you interact."
+      ],
+      "gotchas": [
+        "A turn is not one tool call: one turn can chain dozens of actions.",
+        "A question about the codebase may only need context gathering; not every request cycles all three phases.",
+        "Without tools, Claude can only respond with text.",
+        "Each new session starts with a fresh context window, without previous conversation history."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Session",
+          "difference": "A session contains many turns and is saved locally; a turn is one complete response."
+        },
+        {
+          "concept": "Model choice (/model)",
+          "difference": "Switching models changes the reasoning; the harness still supplies the tools and permission gating."
+        }
+      ],
+      "examCues": [
+        "gather context, take action, verify",
+        "each tool result informs the next step",
+        "from your message until Claude finishes responding",
+        "provides the tools and manages context",
+        "redirect without starting over"
+      ]
+    },
+    "es": {
+      "tldr": "Claude trabaja en tres fases que se mezclan, reunir contexto, actuar y verificar resultados, y repite hasta terminar la tarea. El modelo razona y las herramientas actúan; Claude Code es el harness agéntico que provee las herramientas, gestiona el contexto y controla los permisos.",
+      "whenToUse": [
+        "Predecir qué hará Claude después: decide según el último resultado de herramienta.",
+        "Decidir cómo corregir a mitad de tarea: detener con Esc o encolar una corrección con Enter.",
+        "Darle a Claude una verificación ejecutable para que compruebe en vez de quedarse en una respuesta plausible."
+      ],
+      "keyFacts": [
+        "Fases: reunir contexto, actuar, verificar resultados; se mezclan y el loop se adapta a la tarea.",
+        "Un turno empieza cuando envías un mensaje y termina cuando Claude termina de responder, con cualquier cantidad de tool calls en medio.",
+        "Cada uso de herramienta devuelve información que informa la siguiente decisión de Claude.",
+        "Categorías de herramientas integradas: operaciones de archivos, búsqueda, ejecución, web, inteligencia de código.",
+        "Esc detiene a Claude y cancela la tool call en curso; un mensaje enviado con Enter queda en cola y se lee al terminar las tool calls actuales, en el mismo turno.",
+        "El loop y las herramientas son iguales en todas las interfaces; cambia dónde corre el código y cómo interactúas."
+      ],
+      "gotchas": [
+        "Un turno no es una tool call: un turno puede encadenar decenas de acciones.",
+        "Una pregunta sobre el código puede requerir solo reunir contexto; no toda petición recorre las tres fases.",
+        "Sin herramientas, Claude solo puede responder con texto.",
+        "Cada sesión nueva empieza con una ventana de contexto limpia, sin el historial de conversaciones anteriores."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sesión",
+          "difference": "Una sesión contiene muchos turnos y se guarda localmente; un turno es una respuesta completa."
+        },
+        {
+          "concept": "Elección de modelo (/model)",
+          "difference": "Cambiar de modelo cambia el razonamiento; el harness sigue dando las herramientas y el control de permisos."
+        }
+      ],
+      "examCues": [
+        "gather context, take action, verify",
+        "each tool result informs the next step",
+        "from your message until Claude finishes responding",
+        "provides the tools and manages context",
+        "redirect without starting over"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/how-claude-code-works.md",
+      "https://code.claude.com/docs/en/glossary.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "loop-agentic-loop--97934ad5",
+      "conceptId": "loop-agentic-loop",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer asks Claude to fix a flaky date-parsing bug. Claude edits a file and replies that the bug is fixed, but it never ran anything to confirm it. The developer wants Claude to keep iterating until the fix is actually confirmed, not just plausible. What should the developer do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Switch to Plan mode before sending the request",
+          "correct": false,
+          "why": "Plan mode explores and proposes a plan without editing source files, so Claude could not apply and verify the fix."
+        },
+        {
+          "id": "B",
+          "text": "Give Claude a check it can run, such as the test that covers the bug, and ask it to iterate until it passes",
+          "correct": true,
+          "why": "A runnable check feeds results back into the loop, so Claude verifies and course-corrects instead of stopping after one attempt."
+        },
+        {
+          "id": "C",
+          "text": "Press Esc twice to rewind and send the same prompt again",
+          "correct": false,
+          "why": "Rewinding restores an earlier state but gives Claude no way to verify; the same prompt can end the same way."
+        },
+        {
+          "id": "D",
+          "text": "Start a new session so Claude has a fresh context window",
+          "correct": false,
+          "why": "A new session drops the conversation history and still provides no check to confirm the fix."
+        }
+      ],
+      "explanation": "The requirement is that Claude confirms the fix rather than stopping at a plausible edit. The verify-results phase needs something to check: each tool result, such as test output, informs the next step, so Claude iterates until the check passes. Rewinding or starting fresh changes the starting point but adds no verification, and Plan mode does not edit source files at all.",
+      "keywordCues": [
+        "never ran anything to confirm it",
+        "keep iterating until the fix is actually confirmed"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/how-claude-code-works.md",
+        "https://code.claude.com/docs/en/glossary.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador le pide a Claude arreglar un bug intermitente al parsear fechas. Claude edita un archivo y responde que el bug está arreglado, pero nunca ejecutó nada para confirmarlo. El desarrollador quiere que Claude siga iterando hasta que el arreglo quede confirmado, no solo plausible. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cambiar a Plan mode antes de enviar la petición",
+            "why": "Plan mode explora y propone un plan sin editar el código fuente, así que Claude no podría aplicar ni verificar el arreglo."
+          },
+          {
+            "id": "B",
+            "text": "Darle a Claude una verificación ejecutable, como el test que cubre el bug, y pedirle que itere hasta que pase",
+            "why": "Una verificación ejecutable devuelve resultados al loop, así Claude verifica y corrige en vez de detenerse tras un intento."
+          },
+          {
+            "id": "C",
+            "text": "Pulsar Esc dos veces para rebobinar y enviar el mismo prompt otra vez",
+            "why": "Rebobinar restaura un estado anterior pero no le da a Claude forma de verificar; el mismo prompt puede terminar igual."
+          },
+          {
+            "id": "D",
+            "text": "Empezar una sesión nueva para que Claude tenga una ventana de contexto limpia",
+            "why": "Una sesión nueva pierde el historial y tampoco aporta una verificación para confirmar el arreglo."
+          }
+        ],
+        "explanation": "El requisito es que Claude confirme el arreglo en vez de detenerse en una edición plausible. La fase de verificar necesita algo que comprobar: cada resultado de herramienta, como la salida de los tests, informa el siguiente paso, y Claude itera hasta que la verificación pase. Rebobinar o empezar de cero cambia el punto de partida pero no agrega verificación, y Plan mode ni siquiera edita el código fuente."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-agentic-loop--49b9832f",
+      "conceptId": "loop-agentic-loop",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude is in the middle of a refactor, running a series of tool calls, and you notice it is heading toward the wrong module. You want it to change direction, but without canceling the tool call currently running and without starting over. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Press Esc and then type the correction",
+          "correct": false,
+          "why": "Esc stops Claude immediately and cancels the running tool call, which the requirement rules out."
+        },
+        {
+          "id": "B",
+          "text": "Press Esc twice and rewind to before the refactor",
+          "correct": false,
+          "why": "Rewinding restores an earlier state, which is starting over rather than steering."
+        },
+        {
+          "id": "C",
+          "text": "Type the correction and press Enter while Claude keeps working",
+          "correct": true,
+          "why": "The message is queued; Claude reads it as soon as the current tool calls finish, within the same turn, and adjusts before its next step."
+        },
+        {
+          "id": "D",
+          "text": "Run /compact with a focus on the correct module",
+          "correct": false,
+          "why": "/compact summarizes the conversation to free context; it is not a way to redirect the task in progress."
+        }
+      ],
+      "explanation": "Two constraints decide it: change direction, but do not cancel the running tool call. Typing a correction and pressing Enter queues it, and Claude reads it once the running tool calls finish, inside the same turn. Esc is the tempting choice, but it cancels the running tool call immediately.",
+      "keywordCues": [
+        "without canceling the tool call currently running",
+        "without starting over"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/how-claude-code-works.md",
+        "https://code.claude.com/docs/en/glossary.md"
+      ],
+      "es": {
+        "stem": "Claude está a mitad de un refactor, ejecutando una serie de tool calls, y notas que va hacia el módulo equivocado. Quieres que cambie de dirección, pero sin cancelar la tool call en curso y sin empezar de nuevo. ¿Qué debes hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pulsar Esc y luego escribir la corrección",
+            "why": "Esc detiene a Claude de inmediato y cancela la tool call en curso, justo lo que el requisito descarta."
+          },
+          {
+            "id": "B",
+            "text": "Pulsar Esc dos veces y rebobinar a antes del refactor",
+            "why": "Rebobinar restaura un estado anterior: es empezar de nuevo, no reorientar."
+          },
+          {
+            "id": "C",
+            "text": "Escribir la corrección y pulsar Enter mientras Claude sigue trabajando",
+            "why": "El mensaje queda en cola; Claude lo lee en cuanto terminan las tool calls actuales, en el mismo turno, y ajusta antes del siguiente paso."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar /compact con foco en el módulo correcto",
+            "why": "/compact resume la conversación para liberar contexto; no sirve para reorientar la tarea en curso."
+          }
+        ],
+        "explanation": "Deciden dos restricciones: cambiar de dirección sin cancelar la tool call en curso. Escribir la corrección y pulsar Enter la deja en cola, y Claude la lee cuando terminan las tool calls actuales, dentro del mismo turno. Esc es la opción tentadora, pero cancela la tool call en curso de inmediato."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-agentic-loop--d6db0a85",
+      "conceptId": "loop-agentic-loop",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Your team mostly uses Claude Code in the terminal. A teammate wants to switch to the VS Code extension and worries that Claude will work differently there, with a different loop and a different set of built-in tools. What is accurate?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The IDE extension replaces the agentic loop with inline completions for the current file",
+          "correct": false,
+          "why": "Claude Code works across the whole project in every interface; it is not an inline assistant limited to one file."
+        },
+        {
+          "id": "B",
+          "text": "The agentic loop and tools are the same; the interface changes how you see and interact with Claude",
+          "correct": true,
+          "why": "The docs state the loop, tools and capabilities are identical everywhere; the interface only changes how you interact."
+        },
+        {
+          "id": "C",
+          "text": "Only the terminal can run the verify phase, because tests need a shell",
+          "correct": false,
+          "why": "Execution tools are part of the same loop in every interface; no phase is terminal-only."
+        },
+        {
+          "id": "D",
+          "text": "The extension uses a different model, so the tools it can call change",
+          "correct": false,
+          "why": "Tools come from the harness, not the model, and the harness behaves the same across interfaces."
+        }
+      ],
+      "explanation": "The question is what changes across interfaces. The agentic loop, tools and capabilities are the same everywhere you use Claude Code; the interface only determines how you see and interact with Claude, and the environment determines where code executes. The tempting distractor ties tools to the model, but tools are provided by the harness.",
+      "keywordCues": [
+        "switch to the VS Code extension",
+        "a different loop and a different set of built-in tools"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/how-claude-code-works.md",
+        "https://code.claude.com/docs/en/glossary.md"
+      ],
+      "es": {
+        "stem": "Tu equipo usa Claude Code sobre todo en la terminal. Un compañero quiere pasarse a la extensión de VS Code y le preocupa que Claude funcione distinto ahí, con otro loop y otro conjunto de herramientas integradas. ¿Qué es correcto?",
+        "options": [
+          {
+            "id": "A",
+            "text": "La extensión del IDE reemplaza el loop agéntico por completado en línea del archivo actual",
+            "why": "Claude Code trabaja sobre todo el proyecto en cualquier interfaz; no es un asistente en línea limitado a un archivo."
+          },
+          {
+            "id": "B",
+            "text": "El loop agéntico y las herramientas son los mismos; la interfaz cambia cómo ves e interactúas con Claude",
+            "why": "La documentación dice que el loop, las herramientas y las capacidades son idénticos en todas partes; la interfaz solo cambia la interacción."
+          },
+          {
+            "id": "C",
+            "text": "Solo la terminal puede hacer la fase de verificar, porque los tests necesitan un shell",
+            "why": "Las herramientas de ejecución son parte del mismo loop en cualquier interfaz; ninguna fase es exclusiva de la terminal."
+          },
+          {
+            "id": "D",
+            "text": "La extensión usa otro modelo, así que cambian las herramientas que puede llamar",
+            "why": "Las herramientas vienen del harness, no del modelo, y el harness se comporta igual en todas las interfaces."
+          }
+        ],
+        "explanation": "La pregunta es qué cambia entre interfaces. El loop agéntico, las herramientas y las capacidades son iguales en todas partes; la interfaz solo define cómo ves e interactúas con Claude, y el entorno define dónde corre el código. El distractor tentador ata las herramientas al modelo, pero las herramientas las provee el harness."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-agentic-loop--bd8730fc",
+      "conceptId": "loop-agentic-loop",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "You send \"fix the failing tests\". Without further input from you, Claude runs the test suite, reads the error output, searches for and reads the relevant source files, edits one, runs the tests again and then replies with a summary. Which two statements are accurate? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "All of that work is a single turn",
+          "correct": true,
+          "why": "A turn begins with your message and ends when Claude finishes responding, with any number of tool calls in between."
+        },
+        {
+          "id": "B",
+          "text": "Each tool call starts a new turn",
+          "correct": false,
+          "why": "Tool calls happen inside a turn; a new turn starts only when you send another message."
+        },
+        {
+          "id": "C",
+          "text": "Each tool result informed which step Claude took next",
+          "correct": true,
+          "why": "Each tool use returns information that feeds back into the loop and informs the next decision."
+        },
+        {
+          "id": "D",
+          "text": "Claude followed a fixed sequence that every request goes through",
+          "correct": false,
+          "why": "The loop adapts: a question might only need context gathering, while a bug fix cycles through all phases."
+        },
+        {
+          "id": "E",
+          "text": "The model itself ran the tests and edited the file, without the harness",
+          "correct": false,
+          "why": "The model reasons and chooses; the harness provides the tools that actually run commands and edit files."
+        }
+      ],
+      "explanation": "The scenario is one message followed by a chain of tool calls and a final reply, which is exactly one turn. Inside it, each tool result (the failing test output, the file contents, the rerun) informed the next step, which is the agentic loop in action. The loop is not a fixed script and the model does not act without the tools the harness provides.",
+      "keywordCues": [
+        "Without further input from you",
+        "runs the tests again and then replies"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/how-claude-code-works.md",
+        "https://code.claude.com/docs/en/glossary.md"
+      ],
+      "es": {
+        "stem": "Envías \"fix the failing tests\". Sin más intervención tuya, Claude corre la suite de tests, lee la salida de error, busca y lee los archivos fuente relevantes, edita uno, vuelve a correr los tests y luego responde con un resumen. ¿Qué dos afirmaciones son correctas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Todo ese trabajo es un solo turno",
+            "why": "Un turno empieza con tu mensaje y termina cuando Claude termina de responder, con cualquier cantidad de tool calls en medio."
+          },
+          {
+            "id": "B",
+            "text": "Cada tool call inicia un turno nuevo",
+            "why": "Las tool calls ocurren dentro de un turno; un turno nuevo empieza solo cuando envías otro mensaje."
+          },
+          {
+            "id": "C",
+            "text": "Cada resultado de herramienta informó qué paso dio Claude después",
+            "why": "Cada uso de herramienta devuelve información que vuelve al loop e informa la siguiente decisión."
+          },
+          {
+            "id": "D",
+            "text": "Claude siguió una secuencia fija por la que pasa toda petición",
+            "why": "El loop se adapta: una pregunta puede requerir solo reunir contexto, y un arreglo de bug recorre todas las fases."
+          },
+          {
+            "id": "E",
+            "text": "El modelo mismo corrió los tests y editó el archivo, sin el harness",
+            "why": "El modelo razona y elige; el harness provee las herramientas que realmente ejecutan comandos y editan archivos."
+          }
+        ],
+        "explanation": "El escenario es un mensaje seguido de una cadena de tool calls y una respuesta final: exactamente un turno. Dentro de él, cada resultado de herramienta (la salida del test fallido, el contenido de los archivos, la nueva corrida) informó el siguiente paso; eso es el loop agéntico. El loop no es un guion fijo y el modelo no actúa sin las herramientas que provee el harness."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-agentic-loop--ebc8f8d4",
+      "conceptId": "loop-agentic-loop",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Put the steps of the agentic loop for a bug fix in order, from first to last, as the docs describe one pass.",
+      "options": [
+        {
+          "id": "A",
+          "text": "You send a prompt",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Claude gathers context",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Claude takes action",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "Claude verifies results",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Your prompt starts the loop; Claude gathers context, takes action and verifies results, then repeats until the task is complete. The phases blend in practice, and you can interrupt at any point.",
+      "keywordCues": [
+        "from first to last",
+        "agentic loop"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/how-claude-code-works.md",
+        "https://code.claude.com/docs/en/glossary.md"
+      ],
+      "es": {
+        "stem": "Ordena los pasos del loop agéntico para arreglar un bug, del primero al último, tal como la documentación describe una pasada.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Envías un prompt",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Claude reúne contexto",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Claude actúa",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "Claude verifica resultados",
+            "why": ""
+          }
+        ],
+        "explanation": "Tu prompt inicia el loop; Claude reúne contexto, actúa y verifica resultados, y repite hasta completar la tarea. En la práctica las fases se mezclan y puedes interrumpir en cualquier momento."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "loop-agentic-loop--r0",
+      "conceptId": "loop-agentic-loop",
+      "kind": "recall",
+      "prompt": "Explain the agentic loop: its phases, who reasons, who acts, what a turn is, and what drives each next step.",
+      "promptEs": "Explica el loop agéntico: sus fases, quién razona, quién actúa, qué es un turno y qué impulsa cada paso siguiente.",
+      "idealAnswer": "Claude gathers context, takes action and verifies results, repeating until done; the phases blend and adapt to the task. The model reasons and the tools act, while Claude Code is the harness that provides tools, manages context and gates permissions. A turn runs from your message until Claude finishes responding, and each tool result informs the next decision.",
+      "rubric": [
+        "Three phases: gather context, take action, verify results, repeated",
+        "Model reasons, tools act, Claude Code is the harness",
+        "A turn spans your message to the end of Claude's response, with many tool calls",
+        "Each tool result feeds the next decision"
+      ]
+    }
+  ]
+}

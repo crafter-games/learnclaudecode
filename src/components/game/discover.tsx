@@ -7,6 +7,7 @@ import { play } from "@/lib/game/sfx";
 import { duckWhilePlaying } from "@/lib/game/music";
 import { edgePath, hasGlyph, labelLines, layoutDiagram, LINE_H } from "@/lib/game/diagram-layout";
 import { GameIcon, type GameIconName } from "./icons";
+import { Rich } from "./rich";
 
 const KIND_STYLE: Record<DiagramNode["kind"], { fill: string; text: string; icon: GameIconName | null; iconClass?: string }> = {
   service: { fill: "#ffc933", text: "#1c1840", icon: "mesh-network" },
@@ -248,7 +249,7 @@ export function Discover({
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green text-white">
                       <GameIcon name="check-mark" size={14} />
                     </span>
-                    {k}
+                    <span><Rich text={k} /></span>
                   </li>
                 ))}
               </ul>
@@ -260,7 +261,7 @@ export function Discover({
                   {overview.confusedWith.map((c) => (
                     <li key={c.unitOrService} className="rounded-xl border-2 border-ink bg-card-2 p-3">
                       <span className="font-black">{c.unitOrService}</span>
-                      <span className="block text-muted">{c.difference}</span>
+                      <span className="block text-muted"><Rich text={c.difference} /></span>
                     </li>
                   ))}
                 </ul>

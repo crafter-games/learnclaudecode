@@ -75,6 +75,12 @@ export function PlayClient() {
 
   useEffect(() => {
     setScene(view);
+    // A round is full-focus: the tab bar hides so it never covers the answer and action buttons.
+    if (view === "round") document.body.dataset.round = "1";
+    else delete document.body.dataset.round;
+    return () => {
+      delete document.body.dataset.round;
+    };
   }, [view]);
   useEffect(() => {
     preloadJingles();

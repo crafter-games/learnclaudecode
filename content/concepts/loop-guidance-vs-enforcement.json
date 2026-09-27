@@ -1,0 +1,637 @@
+{
+  "conceptId": "loop-guidance-vs-enforcement",
+  "card": {
+    "en": {
+      "tldr": "CLAUDE.md, skills and output styles are guidance: instructions Claude interprets. Hooks and permission rules are enforcement that holds regardless of what Claude decides, so anything that must never happen belongs there.",
+      "whenToUse": [
+        "A rule is a security boundary or must hold every time.",
+        "A CLAUDE.md rule was ignored once and the cost of that is unacceptable.",
+        "A convention needs judgment, so guidance in CLAUDE.md is enough."
+      ],
+      "keyFacts": [
+        "An instruction like \"never edit .env\" in CLAUDE.md or a skill is a request, not a guarantee.",
+        "A `PreToolUse` hook that blocks the edit is enforcement; hooks always fire on their event.",
+        "Permissions and hooks enforce limits regardless of what Claude decides.",
+        "Use CLAUDE.md for \"we do it this way here\"; use permissions or hooks for security boundaries and anything that must never happen.",
+        "Bash permission rules match the literal command string, so `Bash(rm *)` does not block `/bin/rm` or `find -delete`; use a `PreToolUse` hook or the sandbox for a hard guarantee."
+      ],
+      "gotchas": [
+        "Rewording or emphasizing a CLAUDE.md rule improves adherence but never makes it a guarantee.",
+        "If `/context` shows CLAUDE.md loaded but a rule is ignored, check the wording: vague, conflicting or buried rules get less attention.",
+        "Output styles are instructions too; neither they nor CLAUDE.md are enforced.",
+        "Hooks fire on fixed events: use them for actions that must happen the same way every time, not for work that needs judgment."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Extension map",
+          "difference": "That picks a feature for a recurring need; this decides whether the rule needs a guarantee."
+        },
+        {
+          "concept": "Checkpoints",
+          "difference": "They undo file edits afterward; they don't prevent an action and don't cover remote systems."
+        }
+      ],
+      "examCues": [
+        "must never happen",
+        "regardless of what Claude decides",
+        "deterministically, every time",
+        "security boundary",
+        "Claude ignored the rule in CLAUDE.md"
+      ]
+    },
+    "es": {
+      "tldr": "CLAUDE.md, las skills y los output styles son guía: instrucciones que Claude interpreta. Los hooks y las reglas de permisos son imposición que se cumple sin importar lo que Claude decida, así que todo lo que nunca debe pasar va ahí.",
+      "whenToUse": [
+        "Una regla es un límite de seguridad o debe cumplirse siempre.",
+        "Claude ignoró una vez una regla de CLAUDE.md y ese costo es inaceptable.",
+        "Una convención requiere criterio, así que basta con guía en CLAUDE.md."
+      ],
+      "keyFacts": [
+        "Una instrucción como \"never edit .env\" en CLAUDE.md o en una skill es una petición, no una garantía.",
+        "Un hook `PreToolUse` que bloquea la edición es imposición; los hooks siempre se disparan en su evento.",
+        "Los permisos y los hooks imponen límites sin importar lo que Claude decida.",
+        "Usa CLAUDE.md para \"aquí lo hacemos así\"; usa permisos o hooks para límites de seguridad y lo que nunca debe pasar.",
+        "Las reglas de permisos de Bash comparan el texto literal del comando, así que `Bash(rm *)` no bloquea `/bin/rm` ni `find -delete`; para una garantía dura usa un hook `PreToolUse` o el sandbox."
+      ],
+      "gotchas": [
+        "Reescribir o enfatizar una regla de CLAUDE.md mejora el cumplimiento, pero nunca la vuelve garantía.",
+        "Si `/context` muestra que CLAUDE.md cargó pero una regla se ignora, revisa la redacción: reglas vagas, contradictorias o enterradas reciben menos atención.",
+        "Los output styles también son instrucciones; ni ellos ni CLAUDE.md se imponen.",
+        "Los hooks se disparan en eventos fijos: úsalos para acciones que deben ocurrir igual cada vez, no para trabajo que requiere criterio."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Mapa de extensiones",
+          "difference": "Aquel elige una función para una necesidad recurrente; este decide si la regla necesita garantía."
+        },
+        {
+          "concept": "Checkpoints",
+          "difference": "Deshacen ediciones de archivos después; no impiden una acción ni cubren sistemas remotos."
+        }
+      ],
+      "examCues": [
+        "must never happen",
+        "regardless of what Claude decides",
+        "deterministically, every time",
+        "security boundary",
+        "Claude ignored the rule in CLAUDE.md"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/features-overview.md",
+      "https://code.claude.com/docs/en/debug-your-config.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "loop-guidance-vs-enforcement--73eebbd6",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A team's CLAUDE.md says \"Never edit .env files\", yet during a long session Claude edited .env to add a variable. The security lead wants edits to .env blocked every time, regardless of what Claude decides. Which two mechanisms meet that requirement? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "A PreToolUse hook that blocks edits to .env files",
+          "correct": true,
+          "why": "A PreToolUse hook fires before the tool runs and blocks the edit; that is enforcement, not a request."
+        },
+        {
+          "id": "B",
+          "text": "Rewriting the CLAUDE.md rule in capitals at the top of the file",
+          "correct": false,
+          "why": "Emphasis may help adherence, but CLAUDE.md is still guidance Claude interprets."
+        },
+        {
+          "id": "C",
+          "text": "A permission deny rule for edits to .env",
+          "correct": true,
+          "why": "Permission rules enforce limits regardless of what Claude decides."
+        },
+        {
+          "id": "D",
+          "text": "A skill that explains why .env must not change",
+          "correct": false,
+          "why": "A skill is also an instruction Claude interprets, so it gives no guarantee."
+        },
+        {
+          "id": "E",
+          "text": "An output style that reminds Claude about protected files",
+          "correct": false,
+          "why": "Output styles shape responses and are followed as instructions; they are not enforced."
+        }
+      ],
+      "explanation": "The requirement is a block that holds every time, no matter what Claude decides. Both a PreToolUse hook and a permission deny rule enforce limits outside Claude's judgment. Rewording CLAUDE.md is tempting, but any instruction in CLAUDE.md, a skill or an output style remains a request, not a guarantee.",
+      "keywordCues": [
+        "blocked every time",
+        "regardless of what Claude decides"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "El CLAUDE.md de un equipo dice \"Never edit .env files\", pero en una sesión larga Claude editó .env para agregar una variable. El responsable de seguridad quiere que las ediciones a .env se bloqueen siempre, sin importar lo que Claude decida. ¿Qué dos mecanismos cumplen ese requisito? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un hook PreToolUse que bloquee ediciones a archivos .env",
+            "why": "Un hook PreToolUse se dispara antes de que corra la herramienta y bloquea la edición; es imposición, no una petición."
+          },
+          {
+            "id": "B",
+            "text": "Reescribir la regla de CLAUDE.md en mayúsculas al inicio del archivo",
+            "why": "El énfasis puede ayudar al cumplimiento, pero CLAUDE.md sigue siendo guía que Claude interpreta."
+          },
+          {
+            "id": "C",
+            "text": "Una regla deny de permisos para ediciones a .env",
+            "why": "Las reglas de permisos imponen límites sin importar lo que Claude decida."
+          },
+          {
+            "id": "D",
+            "text": "Una skill que explique por qué .env no debe cambiar",
+            "why": "Una skill también es una instrucción que Claude interpreta, así que no da garantía."
+          },
+          {
+            "id": "E",
+            "text": "Un output style que le recuerde a Claude los archivos protegidos",
+            "why": "Los output styles dan forma a las respuestas y se siguen como instrucciones; no se imponen."
+          }
+        ],
+        "explanation": "El requisito es un bloqueo que se cumpla siempre, decida lo que decida Claude. Tanto un hook PreToolUse como una regla deny de permisos imponen límites fuera del criterio de Claude. Reescribir CLAUDE.md es tentador, pero cualquier instrucción en CLAUDE.md, una skill o un output style sigue siendo una petición, no una garantía."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--723e8537",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A team added a permission deny rule Bash(rm *) to stop Claude from deleting files through the shell. Later, Claude removed build artifacts with find . -name '*.tmp' -delete. They need a hard guarantee that shell deletions are blocked. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An ask rule for Bash(rm *) so every deletion needs approval",
+          "correct": false,
+          "why": "Bash rules match the literal command string, so an ask rule has the same gap as the deny rule."
+        },
+        {
+          "id": "B",
+          "text": "A PreToolUse hook on Bash that inspects the command and blocks deletions",
+          "correct": true,
+          "why": "The docs point to a PreToolUse hook (or the sandbox) for a hard guarantee that literal-string rules can't give."
+        },
+        {
+          "id": "C",
+          "text": "A line in CLAUDE.md forbidding find -delete",
+          "correct": false,
+          "why": "CLAUDE.md is guidance Claude interprets, not a guarantee."
+        },
+        {
+          "id": "D",
+          "text": "A skill with the team's safe cleanup procedure",
+          "correct": false,
+          "why": "A skill tells Claude how to do something; it does not block anything."
+        }
+      ],
+      "explanation": "The requirement is a hard guarantee, and the deny rule failed because Bash rules match the literal command string, not the underlying executable. A PreToolUse hook on Bash runs before every command and can block deletions however they are written; the docs also name the sandbox. An ask rule is the tempting fix, but it matches the same literal string and misses find -delete too.",
+      "keywordCues": [
+        "find . -name '*.tmp' -delete",
+        "hard guarantee"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Un equipo agregó la regla deny Bash(rm *) para impedir que Claude borre archivos desde el shell. Después, Claude eliminó artefactos de build con find . -name '*.tmp' -delete. Necesitan una garantía dura de que los borrados desde el shell se bloquean. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una regla ask para Bash(rm *) para que cada borrado pida aprobación",
+            "why": "Las reglas Bash comparan el texto literal del comando, así que una regla ask tiene el mismo hueco que la deny."
+          },
+          {
+            "id": "B",
+            "text": "Un hook PreToolUse sobre Bash que inspeccione el comando y bloquee borrados",
+            "why": "La documentación indica un hook PreToolUse (o el sandbox) para una garantía dura que las reglas de texto literal no dan."
+          },
+          {
+            "id": "C",
+            "text": "Una línea en CLAUDE.md que prohíba find -delete",
+            "why": "CLAUDE.md es guía que Claude interpreta, no una garantía."
+          },
+          {
+            "id": "D",
+            "text": "Una skill con el procedimiento seguro de limpieza del equipo",
+            "why": "Una skill le dice a Claude cómo hacer algo; no bloquea nada."
+          }
+        ],
+        "explanation": "El requisito es una garantía dura, y la regla deny falló porque las reglas Bash comparan el texto literal del comando, no el ejecutable. Un hook PreToolUse sobre Bash corre antes de cada comando y puede bloquear borrados sin importar cómo estén escritos; la documentación también menciona el sandbox. Una regla ask es la solución tentadora, pero compara el mismo texto literal y tampoco atrapa find -delete."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--116ebb93",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [
+        "loop-extension-map"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer wants Claude to know that API handlers live in src/api, that tests sit next to the file they cover, and that the build runs with pnpm build. These are team conventions that sometimes need judgment, not security boundaries. How should they give Claude this, with the least setup?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A PreToolUse hook that rejects writes outside the expected folders",
+          "correct": false,
+          "why": "A hook acts the same way on every matching event; conventions that need judgment are guidance, not enforcement."
+        },
+        {
+          "id": "B",
+          "text": "Permission deny rules for every folder except src/api",
+          "correct": false,
+          "why": "Deny rules are for security boundaries and would block legitimate work elsewhere."
+        },
+        {
+          "id": "C",
+          "text": "A plugin that packages the conventions",
+          "correct": false,
+          "why": "A plugin is for sharing a setup across repositories; it is extra setup for one project's conventions."
+        },
+        {
+          "id": "D",
+          "text": "Write them in the project's CLAUDE.md",
+          "correct": true,
+          "why": "CLAUDE.md is for \"we do it this way here\": conventions, build commands and where files belong."
+        }
+      ],
+      "explanation": "These are conventions that help Claude make good decisions and sometimes need judgment, so they are guidance. CLAUDE.md is designed for exactly that: project conventions, build commands and where files belong, loaded every session. A hook or deny rule is the tempting overreach; enforcement suits security boundaries and things that must never happen, not rules that need judgment.",
+      "keywordCues": [
+        "team conventions that sometimes need judgment",
+        "not security boundaries",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que Claude sepa que los handlers de la API viven en src/api, que los tests van junto al archivo que cubren y que el build corre con pnpm build. Son convenciones del equipo que a veces requieren criterio, no límites de seguridad. ¿Cómo debe dárselas a Claude, con la menor configuración?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un hook PreToolUse que rechace escrituras fuera de las carpetas esperadas",
+            "why": "Un hook actúa igual en cada evento que coincide; las convenciones que requieren criterio son guía, no imposición."
+          },
+          {
+            "id": "B",
+            "text": "Reglas deny de permisos para toda carpeta excepto src/api",
+            "why": "Las reglas deny son para límites de seguridad y bloquearían trabajo legítimo en otras carpetas."
+          },
+          {
+            "id": "C",
+            "text": "Un plugin que empaquete las convenciones",
+            "why": "Un plugin sirve para compartir una configuración entre repositorios; es configuración de más para las convenciones de un proyecto."
+          },
+          {
+            "id": "D",
+            "text": "Escribirlas en el CLAUDE.md del proyecto",
+            "why": "CLAUDE.md es para \"aquí lo hacemos así\": convenciones, comandos de build y dónde van los archivos."
+          }
+        ],
+        "explanation": "Son convenciones que ayudan a Claude a decidir bien y a veces requieren criterio, así que son guía. CLAUDE.md está hecho para eso: convenciones, comandos de build y dónde van los archivos, cargado en cada sesión. Un hook o una regla deny es el exceso tentador; la imposición es para límites de seguridad y lo que nunca debe pasar, no para reglas que requieren criterio."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--20038b8a",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Claude sometimes puts new test files in the wrong folder. Running /context confirms the project CLAUDE.md is loaded. The file is long, and the testing rule is a vague line near the bottom that another section contradicts. Placement is a team convention, not a security boundary. What is the best next step?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Restart the session so CLAUDE.md reloads",
+          "correct": false,
+          "why": "/context already shows the file loaded; reloading changes nothing about how the rule is written."
+        },
+        {
+          "id": "B",
+          "text": "Make the rule specific, remove the conflicting direction and keep the file concise",
+          "correct": true,
+          "why": "When the file is loaded but a rule is ignored, adherence drops from vague, conflicting or buried instructions; fix the writing."
+        },
+        {
+          "id": "C",
+          "text": "Move the rule into ~/.claude.json",
+          "correct": false,
+          "why": "~/.claude.json holds app state and UI toggles; it is not where instructions for Claude go."
+        },
+        {
+          "id": "D",
+          "text": "Replace the rule with a permission deny rule on the tests folder",
+          "correct": false,
+          "why": "Deny rules are for security boundaries; blocking the tests folder would stop legitimate test edits, and this is a convention."
+        }
+      ],
+      "explanation": "The docs say that if /context confirms CLAUDE.md loaded but Claude still doesn't follow an instruction, the issue is likely how it is written: adherence drops when a rule is vague, when two files or sections conflict, or when the file is long. Since placement is a convention rather than a boundary, better guidance is the right fix. Reaching for enforcement is tempting but suits things that must never happen.",
+      "keywordCues": [
+        "/context confirms the project CLAUDE.md is loaded",
+        "vague line",
+        "contradicts",
+        "not a security boundary"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Claude a veces pone archivos de test nuevos en la carpeta equivocada. Ejecutar /context confirma que el CLAUDE.md del proyecto cargó. El archivo es largo, y la regla de tests es una línea vaga cerca del final que otra sección contradice. La ubicación es una convención del equipo, no un límite de seguridad. ¿Cuál es el mejor siguiente paso?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reiniciar la sesión para que CLAUDE.md se recargue",
+            "why": "/context ya muestra que el archivo cargó; recargar no cambia cómo está escrita la regla."
+          },
+          {
+            "id": "B",
+            "text": "Hacer la regla específica, quitar la indicación contradictoria y mantener el archivo conciso",
+            "why": "Si el archivo cargó pero una regla se ignora, el cumplimiento baja por instrucciones vagas, contradictorias o enterradas; corrige la redacción."
+          },
+          {
+            "id": "C",
+            "text": "Mover la regla a ~/.claude.json",
+            "why": "~/.claude.json guarda estado de la app y opciones de interfaz; no es donde van las instrucciones para Claude."
+          },
+          {
+            "id": "D",
+            "text": "Reemplazar la regla por una regla deny de permisos sobre la carpeta de tests",
+            "why": "Las reglas deny son para límites de seguridad; bloquear la carpeta de tests impediría ediciones legítimas, y esto es una convención."
+          }
+        ],
+        "explanation": "La documentación dice que si /context confirma que CLAUDE.md cargó pero Claude no sigue una instrucción, el problema probablemente es cómo está escrita: el cumplimiento baja cuando una regla es vaga, cuando dos archivos o secciones se contradicen o cuando el archivo es largo. Como la ubicación es una convención y no un límite, la solución es mejor guía. Recurrir a la imposición es tentador, pero sirve para lo que nunca debe pasar."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--516f0cfe",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which hook event lets you block a tool call before it runs, turning a \"never do X\" instruction into enforcement?",
+      "options": [
+        {
+          "id": "A",
+          "text": "PreToolUse",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "A PreToolUse hook fires before the tool executes and can block it, for example rejecting an edit to .env. That is enforcement: it holds regardless of what Claude decides, unlike an instruction in CLAUDE.md or a skill.",
+      "keywordCues": [
+        "block a tool call before it runs"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "¿Qué evento de hook te permite bloquear una tool call antes de que corra, convirtiendo una instrucción \"nunca hagas X\" en imposición?",
+        "options": [
+          {
+            "id": "A",
+            "text": "PreToolUse",
+            "why": ""
+          }
+        ],
+        "explanation": "Un hook PreToolUse se dispara antes de que la herramienta se ejecute y puede bloquearla, por ejemplo rechazando una edición a .env. Eso es imposición: se cumple sin importar lo que Claude decida, a diferencia de una instrucción en CLAUDE.md o una skill."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--bafe200c",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this project .claude/settings.json so the protect-files.sh script runs before Claude's file edit and write tools, letting it block edits to .env.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "permissions",
+          "correct": false,
+          "why": "permissions holds allow, ask and deny rules, not hook definitions."
+        },
+        {
+          "id": "1b",
+          "text": "hooks",
+          "correct": true,
+          "why": "Hooks are defined under the \"hooks\" key in a settings file."
+        },
+        {
+          "id": "1c",
+          "text": "mcpServers",
+          "correct": false,
+          "why": "settings.json does not read an mcpServers key, and it is unrelated to hooks."
+        },
+        {
+          "id": "2a",
+          "text": "PostToolUse",
+          "correct": false,
+          "why": "PostToolUse runs after the tool, when the edit has already happened."
+        },
+        {
+          "id": "2b",
+          "text": "Stop",
+          "correct": false,
+          "why": "Stop fires at the end of each turn, not before a tool call."
+        },
+        {
+          "id": "2c",
+          "text": "PreToolUse",
+          "correct": true,
+          "why": "PreToolUse runs before the tool executes, so the script can block the edit."
+        },
+        {
+          "id": "3a",
+          "text": "Edit|Write",
+          "correct": true,
+          "why": "A single string with | matches both tool names, which are capitalized."
+        },
+        {
+          "id": "3b",
+          "text": "edit|write",
+          "correct": false,
+          "why": "Matching is case-sensitive; lowercase names match no tools."
+        },
+        {
+          "id": "3c",
+          "text": "Bash",
+          "correct": false,
+          "why": "Bash matches shell commands, not the file edit and write tools."
+        }
+      ],
+      "explanation": "Hooks live under the \"hooks\" key of settings.json, grouped by event. To block before the edit happens, the event must be PreToolUse; PostToolUse would be too late. The matcher is one case-sensitive string, and Edit|Write targets both file tools.",
+      "keywordCues": [
+        "runs before Claude's file edit and write tools",
+        "block edits to .env"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/debug-your-config.md"
+      ],
+      "es": {
+        "stem": "Completa este .claude/settings.json del proyecto para que el script protect-files.sh corra antes de las herramientas de edición y escritura de archivos de Claude, y así pueda bloquear ediciones a .env.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "permissions",
+            "why": "permissions contiene reglas allow, ask y deny, no definiciones de hooks."
+          },
+          {
+            "id": "1b",
+            "text": "hooks",
+            "why": "Los hooks se definen bajo la clave \"hooks\" de un archivo de settings."
+          },
+          {
+            "id": "1c",
+            "text": "mcpServers",
+            "why": "settings.json no lee una clave mcpServers, y no tiene relación con hooks."
+          },
+          {
+            "id": "2a",
+            "text": "PostToolUse",
+            "why": "PostToolUse corre después de la herramienta, cuando la edición ya ocurrió."
+          },
+          {
+            "id": "2b",
+            "text": "Stop",
+            "why": "Stop se dispara al final de cada turno, no antes de una tool call."
+          },
+          {
+            "id": "2c",
+            "text": "PreToolUse",
+            "why": "PreToolUse corre antes de que la herramienta se ejecute, así el script puede bloquear la edición."
+          },
+          {
+            "id": "3a",
+            "text": "Edit|Write",
+            "why": "Un solo string con | coincide con ambos nombres de herramienta, que van en mayúscula inicial."
+          },
+          {
+            "id": "3b",
+            "text": "edit|write",
+            "why": "La coincidencia distingue mayúsculas; en minúsculas no coincide con ninguna herramienta."
+          },
+          {
+            "id": "3c",
+            "text": "Bash",
+            "why": "Bash coincide con comandos de shell, no con las herramientas de edición y escritura de archivos."
+          }
+        ],
+        "explanation": "Los hooks van bajo la clave \"hooks\" de settings.json, agrupados por evento. Para bloquear antes de que ocurra la edición, el evento debe ser PreToolUse; PostToolUse llegaría tarde. El matcher es un solo string que distingue mayúsculas, y Edit|Write apunta a ambas herramientas de archivos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": {\n    \"{{2}}\": [\n      {\n        \"matcher\": \"{{3}}\",\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \".claude/hooks/protect-files.sh\" }\n        ]\n      }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "loop-guidance-vs-enforcement--r0",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "kind": "recall",
+      "prompt": "What is the difference between guidance and enforcement in Claude Code, and which mechanisms belong to each?",
+      "promptEs": "¿Cuál es la diferencia entre guía e imposición en Claude Code, y qué mecanismos pertenecen a cada una?",
+      "idealAnswer": "Guidance is instructions Claude interprets: CLAUDE.md, skills and output styles, good for conventions like \"we do it this way here\". Enforcement holds regardless of what Claude decides: PreToolUse hooks and permission rules. Security boundaries and anything that must never happen need enforcement.",
+      "rubric": [
+        "CLAUDE.md, skills and output styles are guidance Claude interprets",
+        "Hooks (PreToolUse) and permission rules enforce regardless of Claude's decision",
+        "Conventions go to guidance; security boundaries and must-never-happen rules go to enforcement"
+      ]
+    },
+    {
+      "id": "loop-guidance-vs-enforcement--r1",
+      "conceptId": "loop-guidance-vs-enforcement",
+      "kind": "why-not",
+      "prompt": "Claude edited .env once despite a CLAUDE.md rule. Why won't rewriting the rule in bold capitals solve it?",
+      "promptEs": "Claude editó .env una vez pese a una regla en CLAUDE.md. ¿Por qué reescribirla en mayúsculas y negrita no lo resuelve?",
+      "idealAnswer": "Any instruction in CLAUDE.md is a request Claude interprets, not a guarantee, so emphasis can raise adherence but never makes it certain. To block .env edits every time you need a PreToolUse hook or a permission deny rule, which hold regardless of what Claude decides.",
+      "rubric": [
+        "CLAUDE.md instructions are requests, not guarantees",
+        "Emphasis does not change that",
+        "Use a PreToolUse hook or permission deny rule for a guarantee"
+      ]
+    }
+  ]
+}

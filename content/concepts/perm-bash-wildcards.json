@@ -1,0 +1,472 @@
+{
+  "conceptId": "perm-bash-wildcards",
+  "card": {
+    "en": {
+      "tldr": "A Bash rule matches the command text, with `*` standing in for any text. Write the command you want and replace the varying part with `*` placed after the subcommand. Rules match the text as written, so they aren't a security boundary around a program.",
+      "whenToUse": [
+        "Pre-approving a family of commands such as every `npm run` script",
+        "Scoping a rule to one subcommand like `git log`",
+        "Predicting whether compound or wrapped commands still match",
+        "Deciding when a deny rule needs the sandbox or a hook behind it"
+      ],
+      "keyFacts": [
+        "Put the `*` after the subcommand: `Bash(git log *)` allows only `git log`, `Bash(git *)` every git command.",
+        "A trailing ` *` also matches the bare command: `Bash(ls *)` matches `ls` but not `lsof`; `Bash(ls*)` matches `lsof` too.",
+        "`Bash(ls:*)` is equivalent to `Bash(ls *)`; `:*` is only recognized at the end of a pattern.",
+        "Compound commands split on `&&`, `||`, `;`, `|`, `|&`, `&` and newlines; an allow must match each subcommand, a deny or ask applies if any subcommand matches.",
+        "Wrappers `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin`, `noglob` and bare `xargs` are stripped before matching; runners like `devbox run` or `npx` are not.",
+        "A `Bash(curl *)` deny doesn't stop `/usr/bin/curl` or `sh -c 'curl ...'`."
+      ],
+      "gotchas": [
+        "`Bash(git * main)` puts the wildcard before the subcommand, so it matches `git push origin main`; Claude Code warns at startup about such allow rules.",
+        "`Bash(devbox run *)` approves whatever follows `run`, including `devbox run rm -rf .`.",
+        "`Bash(command:rm *)` is ignored with a startup warning; use `Bash(rm *)`.",
+        "Argument-constraining patterns like `Bash(curl http://github.com/ *)` are fragile."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox",
+          "difference": "The sandbox enforces filesystem and network limits on the process, whatever the command text looks like."
+        },
+        {
+          "concept": "PreToolUse hook",
+          "difference": "A hook runs your own logic on the full command text instead of pattern matching."
+        }
+      ],
+      "examCues": [
+        "only git log commands",
+        "also matches the bare command",
+        "timeout 30 npm test",
+        "invoked as /usr/bin/curl",
+        "wildcard before the subcommand"
+      ]
+    },
+    "es": {
+      "tldr": "Una regla de Bash compara el texto del comando, donde `*` reemplaza cualquier texto. Escribe el comando que quieres y cambia la parte variable por `*`, ubicado después del subcomando. Las reglas comparan el texto tal como está escrito, así que no son un límite de seguridad alrededor de un programa.",
+      "whenToUse": [
+        "Preaprobar una familia de comandos, como todo script de `npm run`",
+        "Limitar una regla a un subcomando como `git log`",
+        "Predecir si comandos compuestos o envueltos siguen coincidiendo",
+        "Decidir cuándo un deny necesita el sandbox o un hook detrás"
+      ],
+      "keyFacts": [
+        "Pon el `*` después del subcomando: `Bash(git log *)` permite solo `git log`, `Bash(git *)` todo git.",
+        "Un ` *` final también cubre el comando solo: `Bash(ls *)` coincide con `ls` pero no con `lsof`; `Bash(ls*)` también atrapa `lsof`.",
+        "`Bash(ls:*)` equivale a `Bash(ls *)`; `:*` solo se reconoce al final del patrón.",
+        "Los compuestos se dividen en `&&`, `||`, `;`, `|`, `|&`, `&` y saltos de línea; un allow debe coincidir con cada subcomando, un deny o ask aplica si coincide cualquiera.",
+        "Los wrappers `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin`, `noglob` y `xargs` sin flags se quitan antes de comparar; runners como `devbox run` o `npx` no.",
+        "Un deny `Bash(curl *)` no frena `/usr/bin/curl` ni `sh -c 'curl ...'`."
+      ],
+      "gotchas": [
+        "`Bash(git * main)` pone el comodín antes del subcomando, así que coincide con `git push origin main`; Claude Code advierte al iniciar sobre esos allow.",
+        "`Bash(devbox run *)` aprueba lo que venga después de `run`, incluso `devbox run rm -rf .`.",
+        "`Bash(command:rm *)` se ignora con una advertencia al iniciar; usa `Bash(rm *)`.",
+        "Los patrones que intentan restringir argumentos, como `Bash(curl http://github.com/ *)`, son frágiles."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox",
+          "difference": "El sandbox impone límites de archivos y red al proceso, sin importar cómo se vea el texto del comando."
+        },
+        {
+          "concept": "Hook PreToolUse",
+          "difference": "Un hook corre tu propia lógica sobre el texto completo en vez de comparar patrones."
+        }
+      ],
+      "examCues": [
+        "only git log commands",
+        "also matches the bare command",
+        "timeout 30 npm test",
+        "invoked as /usr/bin/curl",
+        "wildcard before the subcommand"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permissions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "perm-bash-wildcards--b1258ce0",
+      "conceptId": "perm-bash-wildcards",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer wants Claude to run any `git log` variation, such as `git log --oneline -20`, without prompting, while every other git command keeps prompting. Which allow rule gives the least access that still covers this?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Bash(git *)`",
+          "correct": false,
+          "why": "It approves every git command, including `git push`."
+        },
+        {
+          "id": "B",
+          "text": "`Bash(git log)`",
+          "correct": false,
+          "why": "Without `*` it matches only the exact command `git log`."
+        },
+        {
+          "id": "C",
+          "text": "`Bash(git * log)`",
+          "correct": false,
+          "why": "The wildcard stands in for the subcommand, so it can match other git subcommands; Claude Code warns about it."
+        },
+        {
+          "id": "D",
+          "text": "`Bash(git log *)`",
+          "correct": true,
+          "why": "The words before `*` limit the rule to `git log`, and the trailing ` *` also covers bare `git log`."
+        }
+      ],
+      "explanation": "Claude Code matches everything before the first `*` as written, so the program and subcommand must come before the wildcard. `Bash(git log *)` covers every `git log` form, including the bare command. `Bash(git *)` is too broad and `Bash(git log)` matches only one exact command. Putting `*` before the subcommand opens the rule to other subcommands.",
+      "keywordCues": [
+        "any `git log` variation",
+        "every other git command keeps prompting",
+        "least access"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que Claude corra cualquier variante de `git log`, como `git log --oneline -20`, sin preguntar, mientras todo otro comando git sigue preguntando. ¿Qué regla allow da el menor acceso que igual lo cubre?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Bash(git *)`",
+            "why": "Aprueba todo comando git, incluso `git push`."
+          },
+          {
+            "id": "B",
+            "text": "`Bash(git log)`",
+            "why": "Sin `*` solo coincide con el comando exacto `git log`."
+          },
+          {
+            "id": "C",
+            "text": "`Bash(git * log)`",
+            "why": "El comodín reemplaza al subcomando, así que puede coincidir con otros subcomandos de git; Claude Code advierte sobre esto."
+          },
+          {
+            "id": "D",
+            "text": "`Bash(git log *)`",
+            "why": "Las palabras antes del `*` limitan la regla a `git log`, y el ` *` final también cubre `git log` solo."
+          }
+        ],
+        "explanation": "Claude Code compara tal cual todo lo anterior al primer `*`, así que el programa y el subcomando deben ir antes del comodín. `Bash(git log *)` cubre toda forma de `git log`, incluido el comando solo. `Bash(git *)` es demasiado amplio y `Bash(git log)` coincide con un solo comando exacto. Poner `*` antes del subcomando abre la regla a otros subcomandos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-bash-wildcards--976c799c",
+      "conceptId": "perm-bash-wildcards",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A security team has `Bash(curl *)` in deny, but notices Claude could still reach the network with `/usr/bin/curl` or `sh -c 'curl ...'`. They need network access blocked by the operating system for the shell process, regardless of how the command text is written. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A second deny rule `Bash(/usr/bin/curl *)`.",
+          "correct": false,
+          "why": "Still text matching, so `sh -c 'curl ...'` and other forms slip through."
+        },
+        {
+          "id": "B",
+          "text": "Change the rule to an ask rule `Bash(curl *)`.",
+          "correct": false,
+          "why": "Ask rules match the same text, so the same invocations escape."
+        },
+        {
+          "id": "C",
+          "text": "Enable sandboxing and restrict its network allowlist.",
+          "correct": true,
+          "why": "The sandbox enforces network limits at the OS level on Bash and its child processes, independent of command text."
+        },
+        {
+          "id": "D",
+          "text": "Add an instruction to `CLAUDE.md` forbidding curl in any form.",
+          "correct": false,
+          "why": "CLAUDE.md steers the model but doesn't enforce a boundary."
+        }
+      ],
+      "explanation": "A Bash rule matches the command text Claude writes, so it doesn't catch the same program invoked by path or inside `sh -c`. The requirement is OS-level enforcement that doesn't depend on the command text, which is what sandboxing provides for Bash and its child processes. More deny or ask patterns still rely on text. CLAUDE.md is guidance only.",
+      "keywordCues": [
+        "blocked by the operating system",
+        "regardless of how the command text is written"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un equipo de seguridad tiene `Bash(curl *)` en deny, pero nota que Claude igual podría llegar a la red con `/usr/bin/curl` o `sh -c 'curl ...'`. Necesitan que el sistema operativo bloquee la red del proceso de shell, sin importar cómo esté escrito el comando. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un segundo deny `Bash(/usr/bin/curl *)`.",
+            "why": "Sigue siendo comparación de texto, así que `sh -c 'curl ...'` y otras formas se escapan."
+          },
+          {
+            "id": "B",
+            "text": "Cambiar la regla a un ask `Bash(curl *)`.",
+            "why": "Las reglas ask comparan el mismo texto, así que se escapan las mismas invocaciones."
+          },
+          {
+            "id": "C",
+            "text": "Activar el sandbox y restringir su lista de red permitida.",
+            "why": "El sandbox impone límites de red a nivel de sistema operativo sobre Bash y sus procesos hijos, sin depender del texto."
+          },
+          {
+            "id": "D",
+            "text": "Agregar una instrucción en `CLAUDE.md` que prohíba curl en cualquier forma.",
+            "why": "CLAUDE.md guía al modelo pero no impone un límite."
+          }
+        ],
+        "explanation": "Una regla de Bash compara el texto que escribe Claude, así que no atrapa el mismo programa invocado por ruta o dentro de `sh -c`. El requisito es imposición a nivel de sistema operativo que no dependa del texto, y eso lo da el sandbox para Bash y sus procesos hijos. Más patrones deny o ask siguen dependiendo del texto. CLAUDE.md solo guía."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-bash-wildcards--ecf30b1d",
+      "conceptId": "perm-bash-wildcards",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In Manual mode, a project allows `Bash(npm test *)` and has no other rules. Claude runs `npm test && rm -rf dist`. What happens?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It runs without a prompt, because the command starts with `npm test`.",
+          "correct": false,
+          "why": "Claude Code is aware of shell operators; a prefix match doesn't cover the whole compound command."
+        },
+        {
+          "id": "B",
+          "text": "It is blocked outright, because compound commands are never allowed.",
+          "correct": false,
+          "why": "Nothing denies it; unmatched subcommands go through the normal permission flow."
+        },
+        {
+          "id": "C",
+          "text": "It runs without a prompt, because `&&` is stripped like a wrapper.",
+          "correct": false,
+          "why": "`&&` is a command separator, not a stripped wrapper."
+        },
+        {
+          "id": "D",
+          "text": "Claude Code prompts, because `rm -rf dist` must match an allow rule on its own.",
+          "correct": true,
+          "why": "An allow rule must match each subcommand independently, and nothing allows `rm -rf dist`."
+        }
+      ],
+      "explanation": "Claude Code splits compound commands on separators like `&&` and requires an allow rule to match each subcommand independently. `npm test` is covered, but `rm -rf dist` isn't, so the normal Manual-mode prompt applies. A prefix match on the first subcommand isn't enough. Nothing is denied, so the command isn't blocked outright.",
+      "keywordCues": [
+        "allows `Bash(npm test *)`",
+        "`npm test && rm -rf dist`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "En modo Manual, un proyecto permite `Bash(npm test *)` y no tiene otras reglas. Claude corre `npm test && rm -rf dist`. ¿Qué pasa?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Corre sin preguntar, porque el comando empieza con `npm test`.",
+            "why": "Claude Code entiende los operadores de shell; un match de prefijo no cubre todo el compuesto."
+          },
+          {
+            "id": "B",
+            "text": "Se bloquea directo, porque los compuestos nunca se permiten.",
+            "why": "Nada lo deniega; los subcomandos sin match pasan por el flujo normal de permisos."
+          },
+          {
+            "id": "C",
+            "text": "Corre sin preguntar, porque `&&` se quita como un wrapper.",
+            "why": "`&&` es un separador de comandos, no un wrapper que se quita."
+          },
+          {
+            "id": "D",
+            "text": "Claude Code pregunta, porque `rm -rf dist` debe coincidir por sí solo con un allow.",
+            "why": "Un allow debe coincidir con cada subcomando por separado, y nada permite `rm -rf dist`."
+          }
+        ],
+        "explanation": "Claude Code divide los compuestos en separadores como `&&` y exige que un allow coincida con cada subcomando por separado. `npm test` está cubierto, pero `rm -rf dist` no, así que aplica la pregunta normal del modo Manual. Un match de prefijo en el primer subcomando no alcanza. Nada está denegado, así que no se bloquea directo."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-bash-wildcards--7e4dcbd9",
+      "conceptId": "perm-bash-wildcards",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "In Manual mode, your only permission rule is `Bash(npm test *)` in allow. Which two commands run without a prompt? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`timeout 30 npm test`",
+          "correct": true,
+          "why": "`timeout` is a built-in wrapper stripped before matching."
+        },
+        {
+          "id": "B",
+          "text": "`devbox run npm test`",
+          "correct": false,
+          "why": "Environment runners like `devbox run` are not in the wrapper list."
+        },
+        {
+          "id": "C",
+          "text": "`NODE_ENV=test npm test`",
+          "correct": true,
+          "why": "A leading assignment of a known-safe variable like `NODE_ENV` is stripped before matching."
+        },
+        {
+          "id": "D",
+          "text": "`xargs -n1 npm test`",
+          "correct": false,
+          "why": "`xargs` is stripped only without flags; with `-n1` it's matched as an `xargs` command."
+        },
+        {
+          "id": "E",
+          "text": "`npm test &&`",
+          "correct": false,
+          "why": "A dangling `&&` makes the command unparseable, so allow rules don't approve it."
+        }
+      ],
+      "explanation": "Before matching, Claude Code strips a fixed set of wrappers such as `timeout`, plus a leading assignment of certain known-safe environment variables like `NODE_ENV`. Environment runners like `devbox run` aren't stripped, and `xargs` is stripped only when it has no flags. A command ending in `&&` is treated as unparseable, so no allow rule approves it.",
+      "keywordCues": [
+        "only permission rule is `Bash(npm test *)`",
+        "run without a prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "En modo Manual, tu única regla de permisos es `Bash(npm test *)` en allow. ¿Qué dos comandos corren sin preguntar? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`timeout 30 npm test`",
+            "why": "`timeout` es un wrapper incorporado que se quita antes de comparar."
+          },
+          {
+            "id": "B",
+            "text": "`devbox run npm test`",
+            "why": "Los runners de entorno como `devbox run` no están en la lista de wrappers."
+          },
+          {
+            "id": "C",
+            "text": "`NODE_ENV=test npm test`",
+            "why": "Una asignación inicial de una variable conocida y segura como `NODE_ENV` se quita antes de comparar."
+          },
+          {
+            "id": "D",
+            "text": "`xargs -n1 npm test`",
+            "why": "`xargs` solo se quita sin flags; con `-n1` se compara como comando `xargs`."
+          },
+          {
+            "id": "E",
+            "text": "`npm test &&`",
+            "why": "Un `&&` sin nada después hace el comando imposible de analizar, así que ningún allow lo aprueba."
+          }
+        ],
+        "explanation": "Antes de comparar, Claude Code quita un conjunto fijo de wrappers como `timeout`, además de una asignación inicial de ciertas variables de entorno conocidas y seguras como `NODE_ENV`. Los runners de entorno como `devbox run` no se quitan, y `xargs` solo se quita cuando no tiene flags. Un comando que termina en `&&` se trata como imposible de analizar, así que ningún allow lo aprueba."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-bash-wildcards--76e1e16c",
+      "conceptId": "perm-bash-wildcards",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Write the permission rule that matches only `git log` commands with any arguments, including bare `git log`.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash(git log *)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Bash(git log:*)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Put the wildcard after the subcommand: `Bash(git log *)` matches every `git log` command, and a trailing ` *` also matches the bare command. The `:*` suffix is an equivalent way to write a trailing wildcard, so `Bash(git log:*)` matches the same commands.",
+      "keywordCues": [
+        "only `git log` commands",
+        "including bare `git log`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Escribe la regla de permisos que coincide solo con comandos `git log` con cualquier argumento, incluido `git log` solo.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Bash(git log *)",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Bash(git log:*)",
+            "why": ""
+          }
+        ],
+        "explanation": "Pon el comodín después del subcomando: `Bash(git log *)` coincide con todo comando `git log`, y un ` *` final también cubre el comando solo. El sufijo `:*` es una forma equivalente de escribir un comodín final, así que `Bash(git log:*)` coincide con los mismos comandos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "perm-bash-wildcards--r0",
+      "conceptId": "perm-bash-wildcards",
+      "kind": "recall",
+      "prompt": "How do you write a Bash rule for one subcommand's variations, and which invocations does a Bash deny rule fail to catch?",
+      "promptEs": "¿Cómo escribes una regla de Bash para las variantes de un subcomando, y qué invocaciones no atrapa un deny de Bash?",
+      "idealAnswer": "Write the command and replace the varying part with `*` after the subcommand, like `Bash(git log *)`, which also matches bare `git log`. Rules match the command text as written, so a deny like `Bash(curl *)` misses `/usr/bin/curl` or `sh -c 'curl ...'`; use the sandbox or a PreToolUse hook when the block must hold.",
+      "rubric": [
+        "Wildcard goes after the subcommand",
+        "Trailing space-star also matches the bare command",
+        "Rules match text as written, missing path or sh -c forms",
+        "Sandbox or PreToolUse hook for a real boundary"
+      ]
+    }
+  ]
+}

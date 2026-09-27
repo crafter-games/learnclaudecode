@@ -1,0 +1,399 @@
+{
+  "conceptId": "perm-read-edit-paths",
+  "card": {
+    "en": {
+      "tldr": "`Read(...)` and `Edit(...)` rules use gitignore patterns with four anchors, and choosing the wrong anchor silently points the rule at another directory. `WebFetch(domain:...)` gates fetches by hostname. Use them to fence which files and domains Claude's tools may touch.",
+      "whenToUse": [
+        "Blocking Claude from reading secrets such as `.env` files",
+        "Protecting a directory from edits for the whole team",
+        "Writing a user-level rule that must apply in every project",
+        "Allowing web fetches only to specific domains"
+      ],
+      "keyFacts": [
+        "`//path` is absolute from the filesystem root; `~/path` is from your home directory.",
+        "`/path` is relative to the settings source: the primary working directory for project and local settings, `~/.claude` for user settings.",
+        "`path` or `./path` is relative to the current directory; a bare filename like `Read(.env)` matches at any depth under it.",
+        "Write file rules as `Edit(...)`: `Write`, `NotebookEdit` and `MultiEdit` path rules are accepted but never consulted, with a startup warning.",
+        "A `Read` deny also blocks the Edit and Write tools on the same path.",
+        "`WebFetch(domain:example.com)` matches by hostname; `*.example.com` matches subdomains but not `example.com` itself."
+      ],
+      "gotchas": [
+        "`/Users/alice/file` isn't absolute in a rule; use `//Users/alice/file`.",
+        "`Read(/secrets/**)` in user settings blocks `~/.claude/secrets/**`, not a project's `secrets` directory.",
+        "Read and Edit deny rules don't stop a script that opens files itself or `grep -r` without naming the file; use the sandbox for OS-level blocking.",
+        "NotebookEdit isn't covered by a `Read` deny; add an `Edit` deny for paths no tool may change."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox filesystem paths",
+          "difference": "In `sandbox.filesystem` arrays `/path` is absolute; in Read/Edit rules you need `//path`."
+        },
+        {
+          "concept": "Bash rules",
+          "difference": "Bash rules match command text with `*`; Read/Edit rules match file paths with gitignore patterns."
+        }
+      ],
+      "examCues": [
+        "block reading .env",
+        "absolute path in a Read rule",
+        "in user settings for every project",
+        "prevent edits to a directory",
+        "only fetch from this domain"
+      ]
+    },
+    "es": {
+      "tldr": "Las reglas `Read(...)` y `Edit(...)` usan patrones gitignore con cuatro anclas, y elegir mal el ancla apunta la regla a otro directorio sin avisar. `WebFetch(domain:...)` controla los fetch por hostname. Úsalas para cercar qué archivos y dominios pueden tocar las herramientas de Claude.",
+      "whenToUse": [
+        "Impedir que Claude lea secretos como archivos `.env`",
+        "Proteger un directorio de ediciones para todo el equipo",
+        "Escribir una regla de usuario que aplique en todos los proyectos",
+        "Permitir fetch solo a dominios específicos"
+      ],
+      "keyFacts": [
+        "`//ruta` es absoluta desde la raíz del sistema de archivos; `~/ruta` parte de tu home.",
+        "`/ruta` es relativa al origen del settings: el directorio de trabajo principal en settings de proyecto y locales, `~/.claude` en settings de usuario.",
+        "`ruta` o `./ruta` es relativa al directorio actual; un nombre de archivo solo como `Read(.env)` coincide a cualquier profundidad debajo.",
+        "Escribe las reglas de archivos como `Edit(...)`: las reglas de ruta con `Write`, `NotebookEdit` o `MultiEdit` se aceptan pero nunca se consultan, con una advertencia al iniciar.",
+        "Un deny de `Read` también bloquea las herramientas Edit y Write en esa ruta.",
+        "`WebFetch(domain:example.com)` compara por hostname; `*.example.com` cubre subdominios pero no `example.com`."
+      ],
+      "gotchas": [
+        "`/Users/alice/file` no es absoluta en una regla; usa `//Users/alice/file`.",
+        "`Read(/secrets/**)` en settings de usuario bloquea `~/.claude/secrets/**`, no el directorio `secrets` de un proyecto.",
+        "Los deny de Read y Edit no frenan un script que abre archivos por su cuenta ni un `grep -r` que no nombra el archivo; usa el sandbox para bloquear a nivel de sistema operativo.",
+        "Un deny de `Read` no cubre NotebookEdit; agrega un deny de `Edit` para rutas que ninguna herramienta debe cambiar."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Rutas del sandbox",
+          "difference": "En los arrays de `sandbox.filesystem` `/ruta` es absoluta; en reglas Read/Edit necesitas `//ruta`."
+        },
+        {
+          "concept": "Reglas de Bash",
+          "difference": "Las reglas de Bash comparan texto de comandos con `*`; las de Read/Edit comparan rutas con patrones gitignore."
+        }
+      ],
+      "examCues": [
+        "block reading .env",
+        "absolute path in a Read rule",
+        "in user settings for every project",
+        "prevent edits to a directory",
+        "only fetch from this domain"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permissions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "perm-read-edit-paths--39c5100d",
+      "conceptId": "perm-read-edit-paths",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team wants to stop Claude from modifying anything in the `migrations/` directory at the project root. The rule must be shared with everyone who clones the repo. Which deny rule and location should they use?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Edit(/migrations/**)` in `.claude/settings.json`",
+          "correct": true,
+          "why": "In project settings `/path` anchors at the primary working directory, and `Edit` rules apply to all built-in editing tools."
+        },
+        {
+          "id": "B",
+          "text": "`Write(/migrations/**)` in `.claude/settings.json`",
+          "correct": false,
+          "why": "Path rules for `Write` are accepted but never consulted; file permissions check only `Edit` and `Read`."
+        },
+        {
+          "id": "C",
+          "text": "`Edit(//migrations/**)` in `.claude/settings.json`",
+          "correct": false,
+          "why": "`//` anchors at the filesystem root, so it targets `/migrations`, not the project directory."
+        },
+        {
+          "id": "D",
+          "text": "`Edit(/migrations/**)` in `~/.claude/settings.json`",
+          "correct": false,
+          "why": "In user settings `/path` resolves under `~/.claude`, and user settings aren't shared."
+        }
+      ],
+      "explanation": "File modification rules must use `Edit`, which applies to all built-in tools that edit files; `Write` path rules are never consulted. A single leading slash anchors at the settings source, which is the primary working directory for `.claude/settings.json`. The double slash would point at the filesystem root instead. User settings would anchor at `~/.claude` and wouldn't reach teammates.",
+      "keywordCues": [
+        "`migrations/` directory at the project root",
+        "shared with everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere impedir que Claude modifique cualquier cosa del directorio `migrations/` en la raíz del proyecto. La regla debe compartirse con todos los que clonen el repo. ¿Qué regla deny y qué ubicación deben usar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Edit(/migrations/**)` en `.claude/settings.json`",
+            "why": "En settings de proyecto `/ruta` ancla en el directorio de trabajo principal, y las reglas `Edit` aplican a todas las herramientas de edición."
+          },
+          {
+            "id": "B",
+            "text": "`Write(/migrations/**)` en `.claude/settings.json`",
+            "why": "Las reglas de ruta con `Write` se aceptan pero nunca se consultan; los permisos de archivo solo miran `Edit` y `Read`."
+          },
+          {
+            "id": "C",
+            "text": "`Edit(//migrations/**)` en `.claude/settings.json`",
+            "why": "`//` ancla en la raíz del sistema de archivos, así que apunta a `/migrations`, no al proyecto."
+          },
+          {
+            "id": "D",
+            "text": "`Edit(/migrations/**)` en `~/.claude/settings.json`",
+            "why": "En settings de usuario `/ruta` se resuelve bajo `~/.claude`, y esos settings no se comparten."
+          }
+        ],
+        "explanation": "Las reglas de modificación de archivos deben usar `Edit`, que aplica a todas las herramientas que editan archivos; las reglas de ruta con `Write` nunca se consultan. Una sola barra inicial ancla en el origen del settings, que para `.claude/settings.json` es el directorio de trabajo principal. La doble barra apuntaría a la raíz del sistema de archivos. Los settings de usuario anclarían en `~/.claude` y no llegarían al equipo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-read-edit-paths--775ea9e7",
+      "conceptId": "perm-read-edit-paths",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer keeps every repository under `~/code`. From a single place, without touching each project, they want to block Claude from reading any `.env` file in all of those repositories. Which deny rule should they add to `~/.claude/settings.json`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Read(/code/**/.env)`",
+          "correct": false,
+          "why": "In user settings a single `/` anchors at `~/.claude`, so this targets `~/.claude/code`."
+        },
+        {
+          "id": "B",
+          "text": "`Read(~/code/**/.env)`",
+          "correct": true,
+          "why": "`~/` anchors at the home directory, so the rule covers every repository under `~/code` from user settings."
+        },
+        {
+          "id": "C",
+          "text": "`Edit(~/code/**/.env)`",
+          "correct": false,
+          "why": "An `Edit` deny blocks changes, not reads; a `Read` deny is what blocks reading."
+        },
+        {
+          "id": "D",
+          "text": "`Read(./code/**/.env)`",
+          "correct": false,
+          "why": "`./` is relative to the current directory, which changes with each session."
+        }
+      ],
+      "explanation": "To write a user-settings rule that applies inside every project, the docs say to use a `//` absolute path or a `~/` home-relative path. A single leading slash in user settings resolves under `~/.claude`, which is the trap. A `./` pattern depends on the session's current directory. Reading is blocked by a `Read` deny, not an `Edit` deny.",
+      "keywordCues": [
+        "from a single place",
+        "without touching each project",
+        "`~/.claude/settings.json`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador guarda todos sus repositorios bajo `~/code`. Desde un solo lugar, sin tocar cada proyecto, quiere impedir que Claude lea cualquier `.env` en todos esos repositorios. ¿Qué regla deny debe agregar a `~/.claude/settings.json`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Read(/code/**/.env)`",
+            "why": "En settings de usuario una sola `/` ancla en `~/.claude`, así que apunta a `~/.claude/code`."
+          },
+          {
+            "id": "B",
+            "text": "`Read(~/code/**/.env)`",
+            "why": "`~/` ancla en el home, así que la regla cubre cada repositorio bajo `~/code` desde los settings de usuario."
+          },
+          {
+            "id": "C",
+            "text": "`Edit(~/code/**/.env)`",
+            "why": "Un deny de `Edit` bloquea cambios, no lecturas; lo que bloquea leer es un deny de `Read`."
+          },
+          {
+            "id": "D",
+            "text": "`Read(./code/**/.env)`",
+            "why": "`./` es relativo al directorio actual, que cambia en cada sesión."
+          }
+        ],
+        "explanation": "Para que una regla en settings de usuario aplique dentro de cada proyecto, la documentación indica usar una ruta absoluta con `//` o una relativa al home con `~/`. Una sola barra inicial en settings de usuario se resuelve bajo `~/.claude`, y esa es la trampa. Un patrón con `./` depende del directorio actual de la sesión. Leer se bloquea con un deny de `Read`, no de `Edit`."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-read-edit-paths--bb043b5c",
+      "conceptId": "perm-read-edit-paths",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A project denies `Read(./.env)` and Claude runs from the directory that holds `.env`. The team wants to know which access paths remain open and would still need the sandbox to block. Which two actions are NOT stopped by the rule? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Claude runs a Python script that opens `.env` itself.",
+          "correct": true,
+          "why": "Read deny rules don't apply to subprocesses that read files indirectly."
+        },
+        {
+          "id": "B",
+          "text": "Claude runs `cat .env` with Bash.",
+          "correct": false,
+          "why": "`cat` is a file command Claude Code recognizes in Bash, so the Read deny applies."
+        },
+        {
+          "id": "C",
+          "text": "Claude uses the Edit tool on `.env`.",
+          "correct": false,
+          "why": "A `Read` deny also blocks the Edit and Write tools on the same path."
+        },
+        {
+          "id": "D",
+          "text": "Claude runs `grep -r API_KEY .`",
+          "correct": true,
+          "why": "A command that reads files without naming them isn't covered by the deny rule."
+        },
+        {
+          "id": "E",
+          "text": "Claude uses the Read tool on `.env`.",
+          "correct": false,
+          "why": "This is exactly what a Read deny rule blocks."
+        }
+      ],
+      "explanation": "Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`. A `Read` deny also blocks the Edit and Write tools on the same path. They don't apply to commands that read files without naming them, like `grep -r pattern .`, or to scripts that open files themselves. For OS-level blocking of every process, enable the sandbox.",
+      "keywordCues": [
+        "denies `Read(./.env)`",
+        "remain open",
+        "would still need the sandbox"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un proyecto tiene deny `Read(./.env)` y Claude corre desde el directorio que contiene `.env`. El equipo quiere saber qué vías de acceso quedan abiertas y todavía necesitarían el sandbox. ¿Qué dos acciones NO frena la regla? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Claude corre un script de Python que abre `.env` por su cuenta.",
+            "why": "Los deny de Read no aplican a subprocesos que leen archivos de forma indirecta."
+          },
+          {
+            "id": "B",
+            "text": "Claude corre `cat .env` con Bash.",
+            "why": "`cat` es un comando de archivos que Claude Code reconoce en Bash, así que el deny de Read aplica."
+          },
+          {
+            "id": "C",
+            "text": "Claude usa la herramienta Edit sobre `.env`.",
+            "why": "Un deny de `Read` también bloquea Edit y Write en la misma ruta."
+          },
+          {
+            "id": "D",
+            "text": "Claude corre `grep -r API_KEY .`",
+            "why": "Un comando que lee archivos sin nombrarlos no queda cubierto por el deny."
+          },
+          {
+            "id": "E",
+            "text": "Claude usa la herramienta Read sobre `.env`.",
+            "why": "Es justo lo que bloquea un deny de Read."
+          }
+        ],
+        "explanation": "Los deny de Read y Edit aplican a las herramientas de archivos de Claude y a comandos de archivos que Claude Code reconoce en Bash, como `cat`. Un deny de `Read` también bloquea Edit y Write en esa ruta. No aplican a comandos que leen archivos sin nombrarlos, como `grep -r pattern .`, ni a scripts que abren archivos por su cuenta. Para bloquear a todo proceso a nivel de sistema operativo, activa el sandbox."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-read-edit-paths--6ff755fb",
+      "conceptId": "perm-read-edit-paths",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Write the deny rule that blocks reading any `.env` file anywhere on the filesystem.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Read(//**/.env)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`//` anchors the pattern at the filesystem root and `**` matches across directories, so `Read(//**/.env)` blocks every `.env` anywhere. A plain `Read(.env)` only covers `.env` files at or under the current directory.",
+      "keywordCues": [
+        "any `.env` file anywhere on the filesystem"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Escribe la regla deny que bloquea leer cualquier archivo `.env` en cualquier parte del sistema de archivos.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Read(//**/.env)",
+            "why": ""
+          }
+        ],
+        "explanation": "`//` ancla el patrón en la raíz del sistema de archivos y `**` cruza directorios, así que `Read(//**/.env)` bloquea todo `.env` en cualquier lugar. Un `Read(.env)` simple solo cubre los `.env` en el directorio actual o debajo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "perm-read-edit-paths--r0",
+      "conceptId": "perm-read-edit-paths",
+      "kind": "recall",
+      "prompt": "Name the four path anchors in Read and Edit rules and what each is relative to.",
+      "promptEs": "Nombra las cuatro anclas de ruta en reglas Read y Edit y respecto a qué es relativa cada una.",
+      "idealAnswer": "`//path` is absolute from the filesystem root and `~/path` starts at the home directory. `/path` is relative to the settings source, the primary working directory for project or local settings and `~/.claude` for user settings, while `path` or `./path` is relative to the current directory.",
+      "rubric": [
+        "// is absolute from the filesystem root",
+        "~/ is relative to home",
+        "/ is relative to the settings source (project dir or ~/.claude)",
+        "path or ./path is relative to the current directory"
+      ]
+    },
+    {
+      "id": "perm-read-edit-paths--r1",
+      "conceptId": "perm-read-edit-paths",
+      "kind": "why-not",
+      "prompt": "You copy `/etc/secrets/**` from a sandbox filesystem setting into a `Read(...)` deny rule. Why doesn't it block the absolute path?",
+      "promptEs": "Copias `/etc/secrets/**` de una configuración de filesystem del sandbox a un deny `Read(...)`. ¿Por qué no bloquea la ruta absoluta?",
+      "idealAnswer": "In sandbox filesystem paths a leading `/` is absolute, but in Read and Edit rules a single `/` anchors at the settings source, such as the project directory. To target the absolute path in a permission rule you must write `Read(//etc/secrets/**)`.",
+      "rubric": [
+        "Sandbox paths treat /path as absolute",
+        "Permission rules treat /path as relative to the settings source",
+        "Use // for absolute paths in Read/Edit rules"
+      ]
+    }
+  ]
+}

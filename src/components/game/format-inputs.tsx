@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { play } from "@/lib/game/sfx";
 import { GameIcon } from "./icons";
+import { Rich } from "./rich";
 
 type Option = { id: string; text: string };
 type Phase = "answering" | "wrong" | "revealed";
@@ -18,12 +19,14 @@ export function OrderInput({
   setSelected,
   phase,
   correctIds,
+  firstPick,
 }: {
   options: Option[];
   selected: string[];
   setSelected: (s: string[]) => void;
   phase: Phase;
   correctIds: string[];
+  firstPick: string[];
 }) {
   const reduce = useReducedMotion();
   const revealed = phase === "revealed";
@@ -56,7 +59,10 @@ export function OrderInput({
             >
               {placed ? pos + 1 : ""}
             </span>
-            <span className="flex-1 font-extrabold leading-snug">{o.text}</span>
+            <span className="flex-1 font-extrabold leading-snug"><Rich text={o.text} /></span>
+            {revealed && firstPick.length > 0 && firstPick.indexOf(o.id) !== i && (
+              <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[0.8em] font-black text-ink">tú: {firstPick.indexOf(o.id) + 1}</span>
+            )}
           </motion.button>
         );
       })}
@@ -70,11 +76,13 @@ export function CommandInput({
   setValue,
   phase,
   answerText,
+  typed,
 }: {
   value: string;
   setValue: (v: string) => void;
   phase: Phase;
   answerText: string | null;
+  typed: string;
 }) {
   const revealed = phase === "revealed";
   return (
@@ -84,7 +92,7 @@ export function CommandInput({
           &gt;
         </span>
         <input
-          value={value}
+          value={revealed ? typed : value}
           onChange={(e) => setValue(e.target.value)}
           enterKeyHint="done"
           onKeyDown={(e) => {

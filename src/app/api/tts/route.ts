@@ -47,7 +47,8 @@ export const GET = handle(async (req: Request) => {
       const r = recall.get(id);
       if (r) text = lang === "es" ? r.promptEs : r.prompt;
     }
-    if (text) audio = await speakShared(text, lang);
+    // Backticks mark code on screen; TTS would read them as symbols.
+    if (text) audio = await speakShared(text.replace(/`/g, ""), lang);
   }
   if (!audio) return fail("Nada que leer", 404);
   return new Response(new Uint8Array(audio), {

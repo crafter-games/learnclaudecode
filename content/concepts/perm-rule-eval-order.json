@@ -1,0 +1,718 @@
+{
+  "conceptId": "perm-rule-eval-order",
+  "card": {
+    "en": {
+      "tldr": "Permission rules live in three lists: allow, ask and deny. Claude Code checks deny first, then ask, then allow; the first match decides and a more specific rule never jumps the queue. Use this to predict what happens when several rules match the same call.",
+      "whenToUse": [
+        "Predicting the outcome when a broad deny and a narrow allow both match",
+        "Blocking a tool across every scope so no other level can re-allow it",
+        "Choosing between removing a tool entirely and blocking only some calls",
+        "Viewing or editing rules and their source file with /permissions"
+      ],
+      "keyFacts": [
+        "Evaluation order is deny, then ask, then allow; rule specificity doesn't change it.",
+        "A deny at any settings level can't be overridden by an allow at another level; managed deny even beats `--allowedTools`.",
+        "A bare tool name in deny (`Bash`, `WebFetch`, `mcp__*`) removes the tool from Claude's context; a scoped rule like `Bash(rm *)` only blocks matching calls.",
+        "`Bash(*)` is equivalent to `Bash`.",
+        "A PreToolUse hook returning `allow` can't bypass a matching deny or ask rule; a hook exiting with code 2 blocks before rules are evaluated.",
+        "`/permissions` lists every rule and the `settings.json` file it comes from."
+      ],
+      "gotchas": [
+        "An allow rule can't carve an exception out of a deny rule, however specific it is.",
+        "A matching ask rule still prompts even when a more specific allow rule also matches.",
+        "Project `permissions.allow` rules apply only after you accept workspace trust; deny and ask rules apply regardless.",
+        "Instructions in CLAUDE.md don't change what Claude Code allows."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox",
+          "difference": "The sandbox is OS-level enforcement on shell processes; permission rules match tool calls before they run."
+        },
+        {
+          "concept": "CLAUDE.md instructions",
+          "difference": "Prompt text only steers the model; rules are enforced by Claude Code."
+        }
+      ],
+      "examCues": [
+        "a broad deny and a narrow allow",
+        "no other scope can re-allow it",
+        "Claude should never see the tool",
+        "the hook returns allow but it still prompts",
+        "which rule wins"
+      ]
+    },
+    "es": {
+      "tldr": "Las reglas de permisos viven en tres listas: allow, ask y deny. Claude Code revisa primero deny, luego ask y luego allow; el primer match decide y una regla más específica nunca se adelanta. Úsalo para predecir qué pasa cuando varias reglas coinciden con la misma llamada.",
+      "whenToUse": [
+        "Predecir el resultado cuando coinciden un deny amplio y un allow estrecho",
+        "Bloquear una herramienta en todas las scopes para que ningún otro nivel la vuelva a permitir",
+        "Elegir entre quitar una herramienta por completo o bloquear solo algunas llamadas",
+        "Ver o editar reglas y su archivo de origen con /permissions"
+      ],
+      "keyFacts": [
+        "El orden de evaluación es deny, luego ask, luego allow; la especificidad de la regla no lo cambia.",
+        "Un deny en cualquier nivel de settings no se puede anular con un allow de otro nivel; un deny managed le gana incluso a `--allowedTools`.",
+        "Un nombre de herramienta pelado en deny (`Bash`, `WebFetch`, `mcp__*`) la quita del contexto de Claude; una regla con alcance como `Bash(rm *)` solo bloquea las llamadas que coinciden.",
+        "`Bash(*)` equivale a `Bash`.",
+        "Un hook PreToolUse que devuelve `allow` no puede saltarse un deny o ask que coincide; un hook que sale con código 2 bloquea antes de evaluar las reglas.",
+        "`/permissions` lista cada regla y el `settings.json` del que viene."
+      ],
+      "gotchas": [
+        "Un allow no puede abrir una excepción dentro de un deny, por específico que sea.",
+        "Un ask que coincide sigue preguntando aunque también coincida un allow más específico.",
+        "Las reglas `permissions.allow` del proyecto solo aplican después de aceptar la confianza del workspace; deny y ask aplican igual.",
+        "Las instrucciones en CLAUDE.md no cambian lo que Claude Code permite."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Sandbox",
+          "difference": "El sandbox impone límites a nivel de sistema operativo sobre procesos de shell; las reglas comparan llamadas antes de que corran."
+        },
+        {
+          "concept": "Instrucciones en CLAUDE.md",
+          "difference": "El texto del prompt solo guía al modelo; las reglas las hace cumplir Claude Code."
+        }
+      ],
+      "examCues": [
+        "a broad deny and a narrow allow",
+        "no other scope can re-allow it",
+        "Claude should never see the tool",
+        "the hook returns allow but it still prompts",
+        "which rule wins"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/permissions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "perm-rule-eval-order--de467266",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your team's `.claude/settings.json` denies `Bash(aws *)`. A developer adds `Bash(aws s3 ls)` to the allow list in their own `.claude/settings.local.json`, expecting that one read-only listing to run without a prompt. What happens when Claude runs `aws s3 ls`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It runs without a prompt, because the more specific allow rule wins.",
+          "correct": false,
+          "why": "Specificity never changes the order; an allow can't carve an exception out of a deny."
+        },
+        {
+          "id": "B",
+          "text": "It runs without a prompt, because local settings take precedence over project settings.",
+          "correct": false,
+          "why": "A deny from any scope is evaluated before allow rules from any other scope."
+        },
+        {
+          "id": "C",
+          "text": "It is blocked, because deny rules are evaluated before allow rules.",
+          "correct": true,
+          "why": "Deny is checked first and the first match decides, so the broad deny blocks the call."
+        },
+        {
+          "id": "D",
+          "text": "Claude Code prompts, because conflicting rules fall back to ask.",
+          "correct": false,
+          "why": "There is no conflict fallback; the deny matches first and blocks."
+        }
+      ],
+      "explanation": "Claude Code evaluates deny, then ask, then allow, and the first match decides. `Bash(aws *)` matches `aws s3 ls`, so the call is blocked before the allow list is consulted. Rule specificity doesn't change the order, and a deny in one scope blocks an allow in any other scope. Precedence between settings files doesn't let an allow override a deny.",
+      "keywordCues": [
+        "denies `Bash(aws *)`",
+        "adds `Bash(aws s3 ls)` to the allow list",
+        "own `.claude/settings.local.json`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "El `.claude/settings.json` de tu equipo tiene un deny `Bash(aws *)`. Un desarrollador agrega `Bash(aws s3 ls)` a allow en su propio `.claude/settings.local.json`, esperando que ese listado de solo lectura corra sin preguntar. ¿Qué pasa cuando Claude corre `aws s3 ls`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Corre sin preguntar, porque gana la regla allow más específica.",
+            "why": "La especificidad nunca cambia el orden; un allow no abre excepciones dentro de un deny."
+          },
+          {
+            "id": "B",
+            "text": "Corre sin preguntar, porque los settings locales tienen prioridad sobre los del proyecto.",
+            "why": "Un deny de cualquier scope se evalúa antes que los allow de cualquier otra scope."
+          },
+          {
+            "id": "C",
+            "text": "Se bloquea, porque las reglas deny se evalúan antes que las allow.",
+            "why": "Deny se revisa primero y el primer match decide, así que el deny amplio bloquea la llamada."
+          },
+          {
+            "id": "D",
+            "text": "Claude Code pregunta, porque las reglas en conflicto caen en ask.",
+            "why": "No existe ese respaldo por conflicto; el deny coincide primero y bloquea."
+          }
+        ],
+        "explanation": "Claude Code evalúa deny, luego ask, luego allow, y el primer match decide. `Bash(aws *)` coincide con `aws s3 ls`, así que la llamada se bloquea antes de mirar allow. La especificidad no cambia el orden y un deny de una scope bloquea un allow de cualquier otra. La precedencia entre archivos de settings no permite que un allow anule un deny."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--363d3d63",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team wants Claude to never even attempt web fetches in their repository: the WebFetch tool should not appear in Claude's context at all. The setting must apply to everyone who clones the repo. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `\"deny\": [\"WebFetch(domain:*)\"]` to `.claude/settings.json`.",
+          "correct": false,
+          "why": "The `domain:*` form keeps the tool and refuses each fetch, so Claude still sees WebFetch."
+        },
+        {
+          "id": "B",
+          "text": "Add `\"deny\": [\"WebFetch\"]` to `.claude/settings.json`.",
+          "correct": true,
+          "why": "A bare tool name in deny removes the tool from Claude's context, and project settings are shared."
+        },
+        {
+          "id": "C",
+          "text": "Add `\"deny\": [\"WebFetch\"]` to `.claude/settings.local.json`.",
+          "correct": false,
+          "why": "Local settings are personal, so the rule wouldn't reach teammates who clone the repo."
+        },
+        {
+          "id": "D",
+          "text": "Add a line to `CLAUDE.md` telling Claude not to fetch web pages.",
+          "correct": false,
+          "why": "CLAUDE.md only shapes what Claude tries; it doesn't change what Claude Code allows."
+        }
+      ],
+      "explanation": "The requirement is that the tool disappears from Claude's context and that the rule is shared. A bare tool name in a deny rule removes the tool entirely, while a scoped rule like `WebFetch(domain:*)` keeps the tool and refuses each call. Putting the rule in `.claude/settings.json` shares it with the team, unlike `.claude/settings.local.json`. CLAUDE.md text is guidance, not enforcement.",
+      "keywordCues": [
+        "should not appear in Claude's context at all",
+        "everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que Claude ni siquiera intente traer páginas web en su repositorio: la herramienta WebFetch no debe aparecer en el contexto de Claude. La configuración debe aplicar a todos los que clonen el repo. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `\"deny\": [\"WebFetch(domain:*)\"]` a `.claude/settings.json`.",
+            "why": "La forma `domain:*` mantiene la herramienta y rechaza cada fetch, así que Claude sigue viendo WebFetch."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `\"deny\": [\"WebFetch\"]` a `.claude/settings.json`.",
+            "why": "Un nombre de herramienta pelado en deny la quita del contexto de Claude, y los settings del proyecto se comparten."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `\"deny\": [\"WebFetch\"]` a `.claude/settings.local.json`.",
+            "why": "Los settings locales son personales, así que la regla no llega a quienes clonan el repo."
+          },
+          {
+            "id": "D",
+            "text": "Agregar una línea en `CLAUDE.md` pidiendo a Claude que no traiga páginas web.",
+            "why": "CLAUDE.md solo guía lo que Claude intenta; no cambia lo que Claude Code permite."
+          }
+        ],
+        "explanation": "El requisito es que la herramienta desaparezca del contexto de Claude y que la regla se comparta. Un nombre de herramienta pelado en deny la quita por completo, mientras que una regla con alcance como `WebFetch(domain:*)` mantiene la herramienta y rechaza cada llamada. Ponerla en `.claude/settings.json` la comparte con el equipo, a diferencia de `.claude/settings.local.json`. El texto de CLAUDE.md es guía, no imposición."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--c57e8fcd",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer wants every Bash command to run without prompts, except a few that a script must reject after inspecting the full command text with custom logic. The block must hold even though Bash is otherwise allowed. What should they configure?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `Bash` to deny and a PreToolUse hook that returns `allow` for the safe commands.",
+          "correct": false,
+          "why": "A hook's allow can't bypass a deny rule, and a bare `Bash` deny removes the tool entirely."
+        },
+        {
+          "id": "B",
+          "text": "Add `Bash` to allow and a PreToolUse hook that exits with code 2 for the rejected commands.",
+          "correct": true,
+          "why": "A blocking hook stops the call before permission rules are evaluated, so it applies even with an allow rule."
+        },
+        {
+          "id": "C",
+          "text": "Add `Bash` to allow and list the rejected commands as `Bash(...)` deny rules.",
+          "correct": false,
+          "why": "Deny rules only match command text patterns; they can't run custom inspection logic."
+        },
+        {
+          "id": "D",
+          "text": "Switch to `bypassPermissions` mode and list the rejected commands in `CLAUDE.md`.",
+          "correct": false,
+          "why": "CLAUDE.md doesn't enforce anything, so the listed commands would still run."
+        }
+      ],
+      "explanation": "The requirement combines no prompts for Bash with a rejection decided by custom logic. The docs describe exactly this: put `Bash` in allow and register a PreToolUse hook that rejects specific commands, since a hook exiting with code 2 blocks before rules are evaluated. Plain deny rules can't run custom logic. A bare `Bash` deny removes the tool, and no hook allow can undo a deny.",
+      "keywordCues": [
+        "every Bash command to run without prompts",
+        "inspecting the full command text with custom logic"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que todo comando Bash corra sin preguntar, salvo unos pocos que un script debe rechazar tras inspeccionar el texto completo del comando con lógica propia. El bloqueo debe cumplirse aunque Bash esté permitido. ¿Qué debe configurar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `Bash` a deny y un hook PreToolUse que devuelva `allow` para los comandos seguros.",
+            "why": "El allow de un hook no salta un deny, y un deny de `Bash` pelado quita la herramienta por completo."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `Bash` a allow y un hook PreToolUse que salga con código 2 para los comandos rechazados.",
+            "why": "Un hook que bloquea detiene la llamada antes de evaluar las reglas, así que aplica aunque haya allow."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `Bash` a allow y listar los comandos rechazados como reglas deny `Bash(...)`.",
+            "why": "Las reglas deny solo comparan patrones de texto; no pueden correr lógica de inspección propia."
+          },
+          {
+            "id": "D",
+            "text": "Pasar al modo `bypassPermissions` y listar los comandos rechazados en `CLAUDE.md`.",
+            "why": "CLAUDE.md no impone nada, así que esos comandos igual correrían."
+          }
+        ],
+        "explanation": "El requisito combina Bash sin preguntas con un rechazo decidido por lógica propia. La documentación describe justo esto: poner `Bash` en allow y registrar un hook PreToolUse que rechace comandos específicos, porque un hook que sale con código 2 bloquea antes de evaluar las reglas. Las reglas deny simples no corren lógica propia. Un deny de `Bash` pelado quita la herramienta, y ningún allow de un hook deshace un deny."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--290d988c",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Your user settings `~/.claude/settings.json` allow `Bash(docker *)`. The project's trusted `.claude/settings.json` denies `Bash(docker push *)`. No other rules exist and you are in Manual mode. Which two outcomes occur? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`docker push myimage` is blocked.",
+          "correct": true,
+          "why": "The project deny matches and deny is evaluated before any allow, from any scope."
+        },
+        {
+          "id": "B",
+          "text": "`docker ps` runs without a prompt.",
+          "correct": true,
+          "why": "No deny or ask rule matches, so the user-level allow approves it."
+        },
+        {
+          "id": "C",
+          "text": "`docker push myimage` prompts for approval instead of being blocked.",
+          "correct": false,
+          "why": "A matching deny blocks outright; it doesn't downgrade to a prompt."
+        },
+        {
+          "id": "D",
+          "text": "`docker push myimage` runs, because user settings allow it explicitly.",
+          "correct": false,
+          "why": "A user-level allow can't override a deny from another scope."
+        },
+        {
+          "id": "E",
+          "text": "Adding `Bash(docker push *)` to allow in `.claude/settings.local.json` would let pushes run.",
+          "correct": false,
+          "why": "An allow can't carve an exception out of a deny, regardless of scope."
+        }
+      ],
+      "explanation": "Deny rules from any scope are evaluated before allow rules from any scope, and the first match decides. `docker push myimage` matches the project deny, so it is blocked no matter what any allow says. `docker ps` matches no deny or ask rule, so the user-level `Bash(docker *)` allow approves it. Adding more allow rules elsewhere can't undo a deny.",
+      "keywordCues": [
+        "user settings",
+        "allow `Bash(docker *)`",
+        "project's",
+        "denies `Bash(docker push *)`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Tus settings de usuario `~/.claude/settings.json` permiten `Bash(docker *)`. El `.claude/settings.json` del proyecto, ya confiado, tiene deny `Bash(docker push *)`. No hay otras reglas y estás en modo Manual. ¿Qué dos resultados ocurren? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`docker push myimage` se bloquea.",
+            "why": "El deny del proyecto coincide y deny se evalúa antes que cualquier allow, de cualquier scope."
+          },
+          {
+            "id": "B",
+            "text": "`docker ps` corre sin preguntar.",
+            "why": "Ningún deny ni ask coincide, así que el allow de usuario lo aprueba."
+          },
+          {
+            "id": "C",
+            "text": "`docker push myimage` pide aprobación en vez de bloquearse.",
+            "why": "Un deny que coincide bloquea directo; no se rebaja a una pregunta."
+          },
+          {
+            "id": "D",
+            "text": "`docker push myimage` corre, porque los settings de usuario lo permiten explícitamente.",
+            "why": "Un allow de usuario no anula un deny de otra scope."
+          },
+          {
+            "id": "E",
+            "text": "Agregar `Bash(docker push *)` a allow en `.claude/settings.local.json` dejaría correr los push.",
+            "why": "Un allow no abre excepciones dentro de un deny, sin importar la scope."
+          }
+        ],
+        "explanation": "Los deny de cualquier scope se evalúan antes que los allow de cualquier scope, y el primer match decide. `docker push myimage` coincide con el deny del proyecto, así que se bloquea diga lo que diga cualquier allow. `docker ps` no coincide con ningún deny ni ask, así que el allow de usuario `Bash(docker *)` lo aprueba. Agregar más allow en otro lado no deshace un deny."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--520eb263",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command opens the dialog that lists every permission rule and the settings file each one comes from?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/permissions",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/permissions` opens the dialog that lists all permission rules and the `settings.json` file each rule comes from. You can add or remove rules there, even while Claude is working; the change applies from Claude's next tool call.",
+      "keywordCues": [
+        "lists every permission rule",
+        "settings file each one comes from"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando de barra abre el diálogo que lista cada regla de permisos y el archivo de settings del que viene?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/permissions",
+            "why": ""
+          }
+        ],
+        "explanation": "`/permissions` abre el diálogo que lista todas las reglas de permisos y el `settings.json` del que viene cada una. Ahí puedes agregar o quitar reglas, incluso mientras Claude trabaja; el cambio aplica desde la siguiente llamada a herramienta de Claude."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--b1c75d14",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Put these checks in the order Claude Code applies them to a tool call, from first to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allow rules",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Deny rules",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "A PreToolUse hook that exits with code 2",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "Ask rules",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "PreToolUse hooks run before the permission prompt, and a hook exiting with code 2 stops the call before permission rules are evaluated. The rules themselves are evaluated deny, then ask, then allow, and the first match decides. That is why a narrow allow can never override a broad deny or ask.",
+      "keywordCues": [
+        "from first to last"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Ordena estos chequeos como Claude Code los aplica a una llamada a herramienta, del primero al último.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reglas allow",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Reglas deny",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Un hook PreToolUse que sale con código 2",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "Reglas ask",
+            "why": ""
+          }
+        ],
+        "explanation": "Los hooks PreToolUse corren antes del prompt de permisos, y un hook que sale con código 2 detiene la llamada antes de evaluar las reglas. Las reglas se evalúan deny, luego ask, luego allow, y el primer match decide. Por eso un allow estrecho nunca anula un deny o ask amplio."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "C",
+        "B",
+        "D",
+        "A"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "perm-rule-eval-order--d7f449b2",
+      "conceptId": "perm-rule-eval-order",
+      "secondaryConcepts": [
+        "perm-bash-wildcards"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make Claude run every git command without a prompt, ask for confirmation before any `git push`, and never allow a force push.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "allow",
+          "correct": true,
+          "why": "Allow approves matching git commands that no deny or ask rule catches."
+        },
+        {
+          "id": "1b",
+          "text": "ask",
+          "correct": false,
+          "why": "It would prompt for every git command."
+        },
+        {
+          "id": "1c",
+          "text": "deny",
+          "correct": false,
+          "why": "It would block every git command."
+        },
+        {
+          "id": "2a",
+          "text": "deny",
+          "correct": false,
+          "why": "It would block every push instead of asking."
+        },
+        {
+          "id": "2b",
+          "text": "ask",
+          "correct": true,
+          "why": "Ask is evaluated before allow, so pushes prompt despite `Bash(git *)`."
+        },
+        {
+          "id": "2c",
+          "text": "allow",
+          "correct": false,
+          "why": "Pushes would run without confirmation."
+        },
+        {
+          "id": "3a",
+          "text": "ask",
+          "correct": false,
+          "why": "Force pushes would still be possible after a prompt."
+        },
+        {
+          "id": "3b",
+          "text": "allow",
+          "correct": false,
+          "why": "Force pushes would still prompt through the ask rule, not be blocked."
+        },
+        {
+          "id": "3c",
+          "text": "deny",
+          "correct": true,
+          "why": "Deny is checked first, so force pushes are blocked outright."
+        }
+      ],
+      "explanation": "Rules are evaluated deny, then ask, then allow. A push written as `git push --force ...` matches the deny first and is blocked. Any other push matches the ask rule before the broad allow, so it prompts. Remaining git commands only match the allow rule and run without a prompt. The deny matches the command text as written, so other spellings such as `git push -f` fall to the ask rule instead; add deny rules for those forms (or use a hook) when the block must be complete.",
+      "keywordCues": [
+        "without a prompt",
+        "ask for confirmation",
+        "never allow a force push"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Haz que Claude corra todo comando git sin preguntar, pida confirmación antes de cualquier `git push` y nunca permita un force push.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "allow",
+            "why": "Allow aprueba los comandos git que ningún deny ni ask atrapa."
+          },
+          {
+            "id": "1b",
+            "text": "ask",
+            "why": "Preguntaría por todo comando git."
+          },
+          {
+            "id": "1c",
+            "text": "deny",
+            "why": "Bloquearía todo comando git."
+          },
+          {
+            "id": "2a",
+            "text": "deny",
+            "why": "Bloquearía todo push en vez de preguntar."
+          },
+          {
+            "id": "2b",
+            "text": "ask",
+            "why": "Ask se evalúa antes que allow, así que los push preguntan pese a `Bash(git *)`."
+          },
+          {
+            "id": "2c",
+            "text": "allow",
+            "why": "Los push correrían sin confirmación."
+          },
+          {
+            "id": "3a",
+            "text": "ask",
+            "why": "El force push seguiría siendo posible tras una pregunta."
+          },
+          {
+            "id": "3b",
+            "text": "allow",
+            "why": "El force push preguntaría por la regla ask, pero no quedaría bloqueado."
+          },
+          {
+            "id": "3c",
+            "text": "deny",
+            "why": "Deny se revisa primero, así que el force push se bloquea directo."
+          }
+        ],
+        "explanation": "Las reglas se evalúan deny, luego ask, luego allow. Un push escrito como `git push --force ...` coincide primero con el deny y se bloquea. Cualquier otro push coincide con el ask antes que con el allow amplio, así que pregunta. Los demás comandos git solo coinciden con allow y corren sin preguntar. El deny compara el texto tal como está escrito, así que otras formas como `git push -f` caen en el ask; agrega deny para esas formas (o usa un hook) si el bloqueo debe ser completo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": [\"Bash(git *)\"],\n    \"{{2}}\": [\"Bash(git push *)\"],\n    \"{{3}}\": [\"Bash(git push --force *)\"]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "perm-rule-eval-order--r0",
+      "conceptId": "perm-rule-eval-order",
+      "kind": "recall",
+      "prompt": "Explain how Claude Code decides a tool call when a broad deny rule and a narrower allow rule both match it.",
+      "promptEs": "Explica cómo decide Claude Code una llamada cuando coinciden un deny amplio y un allow más estrecho.",
+      "idealAnswer": "Claude Code evaluates deny rules first, then ask, then allow, and the first match decides. Specificity doesn't change that order, so the broad deny blocks the call even though a narrower allow also matches, and this holds across all settings scopes.",
+      "rubric": [
+        "Order is deny, then ask, then allow",
+        "First match decides",
+        "Specificity doesn't change the order",
+        "A deny from any scope beats an allow from another"
+      ]
+    },
+    {
+      "id": "perm-rule-eval-order--r1",
+      "conceptId": "perm-rule-eval-order",
+      "kind": "why-not",
+      "prompt": "A team writes 'never run git push' in CLAUDE.md to stop pushes. Why doesn't this block them, and what should they use instead?",
+      "promptEs": "Un equipo escribe 'nunca corras git push' en CLAUDE.md para frenar los push. ¿Por qué no los bloquea y qué deberían usar?",
+      "idealAnswer": "CLAUDE.md only shapes what Claude tries to do; it doesn't change what Claude Code allows, so it isn't an enforced boundary. Permission rules are enforced by Claude Code, so a deny rule such as `Bash(git push *)` in settings actually blocks the matching call.",
+      "rubric": [
+        "CLAUDE.md is guidance, not enforcement",
+        "Permission rules are enforced by Claude Code",
+        "Use a deny rule like Bash(git push *)"
+      ]
+    }
+  ]
+}

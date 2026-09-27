@@ -10,17 +10,14 @@ export interface Chip {
 }
 
 const RULES: [RegExp, Chip][] = [
-  [/cost|cheap|budget|price|spend|economic/i, { icon: "coins", label: "Menor costo" }],
-  [/operational overhead|manage|maintenance|administ|serverless|fully managed/i, { icon: "cog", label: "Menos operación" }],
-  [/highly available|high availability|availability zone|multi-az|fault[- ]toleran|resilien|failover|outage|disaster|rpo|rto/i, { icon: "checked-shield", label: "Alta disponibilidad" }],
-  [/latency|performance|throughput|fast|milliseconds|iops|scal/i, { icon: "focused-lightning", label: "Rendimiento" }],
-  [/secur|encrypt|least privilege|compliance|audit|private|public internet|access control|permission/i, { icon: "plain-padlock", label: "Seguridad" }],
-  [/decoupl|asynchron|queue|buffer|event|loosely/i, { icon: "linked-rings", label: "Desacoplar" }],
-  [/global|region|worldwide|geograph|edge/i, { icon: "world", label: "Global / multi-región" }],
-  [/order|exactly once|duplicate|fifo/i, { icon: "stack", label: "Orden / sin duplicados" }],
-  [/real[- ]time|stream|near real/i, { icon: "radar-sweep", label: "Tiempo real" }],
-  [/archiv|retain|retention|long-term|years|infrequent/i, { icon: "cardboard-box", label: "Retención / archivo" }],
-  [/migrat|on-premises|on premises|hybrid/i, { icon: "castle", label: "Híbrido / migración" }],
+  [/everyone|whole team|teammates|clones? the repo|shared|commit(ted)? to the repo|checked in/i, { icon: "mesh-network", label: "Para todo el equipo" }],
+  [/only (you|your|for you)|your own|personal|your machine|not (be )?committed|other projects|without affecting/i, { icon: "plain-padlock", label: "Solo tú / local" }],
+  [/never|block|prevent|must not|secret|.env|credential|deny|without giving/i, { icon: "checked-shield", label: "Seguridad" }],
+  [/every time|always|deterministic|guarantee|automatically|regardless/i, { icon: "cycle", label: "Siempre, determinista" }],
+  [/CI|pipeline|script|headless|non-interactive|cron|scheduled|unattended/i, { icon: "cog", label: "Automatización" }],
+  [/context|tokens?|cost|cheaper|compact|long session/i, { icon: "coins", label: "Contexto y costo" }],
+  [/least setup|fewest steps|simplest|quickest|without installing|minimal/i, { icon: "focused-lightning", label: "Mínimo esfuerzo" }],
+  [/parallel|at the same time|isolat|worktree|separate branch/i, { icon: "stack", label: "En paralelo" }],
 ];
 
 export function chipsFor(cues: string[], stem = ""): Chip[] {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AudioButton } from "./audio-button";
 import { Badge, Card } from "./ui";
+import { Rich } from "./game/rich";
 
 export interface CardBody {
   tldr: string;
@@ -49,7 +50,7 @@ export function ConceptCard({
           </button>
         </div>
       </div>
-      <p className="leading-relaxed">{body.tldr}</p>
+      <p className="leading-relaxed"><Rich text={body.tldr} /></p>
       <Section title={lang === "es" ? "Cuándo usarlo" : "When to use"} items={body.whenToUse} />
       <Section title={lang === "es" ? "Datos clave" : "Key facts"} items={body.keyFacts} />
       <Section title={lang === "es" ? "Trampas" : "Gotchas"} items={body.gotchas} tone="warn" />
@@ -59,7 +60,7 @@ export function ConceptCard({
           <ul className="space-y-1.5 text-sm">
             {body.confusedWith.map((c) => (
               <li key={c.concept} className="rounded-lg bg-surface-2 p-2.5">
-                <span className="font-medium">{c.concept}:</span> {c.difference}
+                <span className="font-medium"><Rich text={c.concept} />:</span> <Rich text={c.difference} />
               </li>
             ))}
           </ul>
@@ -94,7 +95,7 @@ function Section({ title, items, tone }: { title: string; items: string[]; tone?
       <h3 className={`mb-1.5 text-sm font-semibold ${tone === "warn" ? "text-warn" : ""}`}>{title}</h3>
       <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">
         {items.map((i) => (
-          <li key={i}>{i}</li>
+          <li key={i}><Rich text={i} /></li>
         ))}
       </ul>
     </div>

@@ -1,0 +1,594 @@
+{
+  "conceptId": "loop-extension-map",
+  "card": {
+    "en": {
+      "tldr": "Pick the extension by the recurring trigger, not by habit. Each one also has a different context cost, which matters as your setup grows.",
+      "whenToUse": [
+        "Claude repeats a mistake or you retype the same prompt or playbook.",
+        "Claude needs data or actions from a system it cannot see.",
+        "A side task floods the conversation, or the same setup is needed in another repo."
+      ],
+      "keyFacts": [
+        "Convention or command wrong twice: CLAUDE.md. Same prompt or playbook retyped: a skill.",
+        "Data from a system Claude can't see: an MCP server. Side task flooding context: a subagent.",
+        "Something that must happen every time without asking: a hook. A second repo needs the same setup: a plugin.",
+        "CLAUDE.md loads in full at session start and costs context on every request.",
+        "Skills load descriptions at start and full content when used; `disable-model-invocation: true` hides a skill from Claude until you invoke it.",
+        "MCP loads tool names at start with schemas deferred; subagents use a separate window; hooks cost zero unless they return output."
+      ],
+      "gotchas": [
+        "By default a skill runs in your main context window; to keep intermediate work out, use a subagent (or a skill with context: fork).",
+        "A skill teaches how to use a system; it does not connect to it. That is MCP.",
+        "Long reference material bloats CLAUDE.md; keep it under 200 lines and move reference content to skills.",
+        "A plugin packages skills, hooks, subagents and MCP servers; it is not a new kind of instruction."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Guidance vs enforcement",
+          "difference": "Here you pick a feature for a recurring need; there you decide whether a rule must be guaranteed."
+        },
+        {
+          "concept": "Output styles",
+          "difference": "Used when you keep asking for shorter, longer or differently formatted responses."
+        }
+      ],
+      "examCues": [
+        "gets it wrong twice",
+        "keep typing the same prompt",
+        "a browser tab Claude can't see",
+        "floods the conversation with output",
+        "a second repository needs the same setup"
+      ]
+    },
+    "es": {
+      "tldr": "Elige la extensión según el disparador que se repite, no por costumbre. Cada una tiene además un costo de contexto distinto, que importa a medida que crece tu configuración.",
+      "whenToUse": [
+        "Claude repite un error o tú repites el mismo prompt o procedimiento.",
+        "Claude necesita datos o acciones de un sistema que no ve.",
+        "Una tarea lateral inunda la conversación, o la misma configuración hace falta en otro repo."
+      ],
+      "keyFacts": [
+        "Convención o comando fallado dos veces: CLAUDE.md. Mismo prompt o procedimiento repetido: una skill.",
+        "Datos de un sistema que Claude no ve: un servidor MCP. Tarea lateral que inunda el contexto: un subagente.",
+        "Algo que debe pasar cada vez sin pedirlo: un hook. Un segundo repo necesita la misma configuración: un plugin.",
+        "CLAUDE.md carga completo al iniciar la sesión y cuesta contexto en cada petición.",
+        "Las skills cargan descripciones al inicio y el contenido completo al usarse; `disable-model-invocation: true` oculta una skill a Claude hasta que tú la invocas.",
+        "MCP carga nombres de herramientas al inicio con los esquemas diferidos; los subagentes usan una ventana aparte; los hooks cuestan cero salvo que devuelvan salida."
+      ],
+      "gotchas": [
+        "Por defecto una skill corre en tu ventana de contexto principal; para dejar fuera el trabajo intermedio usa un subagente (o una skill con context: fork).",
+        "Una skill enseña a usar un sistema; no se conecta a él. Eso es MCP.",
+        "El material de referencia largo infla CLAUDE.md; mantenlo bajo 200 líneas y mueve la referencia a skills.",
+        "Un plugin empaqueta skills, hooks, subagentes y servidores MCP; no es un nuevo tipo de instrucción."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Guía vs garantía",
+          "difference": "Aquí eliges una función para una necesidad recurrente; allá decides si una regla debe estar garantizada."
+        },
+        {
+          "concept": "Output styles",
+          "difference": "Se usan cuando pides una y otra vez respuestas más cortas, más largas o con otro formato."
+        }
+      ],
+      "examCues": [
+        "gets it wrong twice",
+        "keep typing the same prompt",
+        "a browser tab Claude can't see",
+        "floods the conversation with output",
+        "a second repository needs the same setup"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/features-overview.md",
+      "https://code.claude.com/docs/en/how-claude-code-works.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "loop-extension-map--9c749ad7",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Every morning a developer copies open incident details from the team's incident tracker in the browser and pastes them into Claude Code so it can correlate them with recent commits. Claude has no way to see the tracker itself. They want Claude to pull that data directly, with the connection and authentication handled for it. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A skill that documents the tracker's fields and how to read incidents",
+          "correct": false,
+          "why": "A skill adds knowledge about the tracker but gives Claude no access to its data."
+        },
+        {
+          "id": "B",
+          "text": "A subagent dedicated to incident research",
+          "correct": false,
+          "why": "A subagent isolates context but has the same tools; it still cannot see the tracker."
+        },
+        {
+          "id": "C",
+          "text": "An MCP server for the incident tracker",
+          "correct": true,
+          "why": "MCP connects Claude to external services, with the connection and authentication handled by the server."
+        },
+        {
+          "id": "D",
+          "text": "The incident list pasted into CLAUDE.md",
+          "correct": false,
+          "why": "CLAUDE.md is static context loaded at start; it would be stale and still needs manual copying."
+        }
+      ],
+      "explanation": "The trigger is data Claude cannot see, copied by hand from a browser tab. That maps to an MCP server, which gives Claude purpose-built tools for the external system with connection and authentication handled by the server. A skill is tempting, but it only teaches how to use a system; it can complement MCP, not replace it.",
+      "keywordCues": [
+        "Claude has no way to see the tracker itself",
+        "connection and authentication handled"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Cada mañana un desarrollador copia los incidentes abiertos del tracker del equipo en el navegador y los pega en Claude Code para que los relacione con commits recientes. Claude no tiene forma de ver el tracker por sí mismo. Quieren que Claude obtenga esos datos directamente, con la conexión y la autenticación resueltas. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una skill que documente los campos del tracker y cómo leer incidentes",
+            "why": "Una skill aporta conocimiento sobre el tracker pero no le da a Claude acceso a sus datos."
+          },
+          {
+            "id": "B",
+            "text": "Un subagente dedicado a investigar incidentes",
+            "why": "Un subagente aísla el contexto pero tiene las mismas herramientas; sigue sin ver el tracker."
+          },
+          {
+            "id": "C",
+            "text": "Un servidor MCP para el tracker de incidentes",
+            "why": "MCP conecta a Claude con servicios externos, y el servidor se encarga de la conexión y la autenticación."
+          },
+          {
+            "id": "D",
+            "text": "La lista de incidentes pegada en CLAUDE.md",
+            "why": "CLAUDE.md es contexto estático cargado al inicio; quedaría desactualizado y seguiría requiriendo copiar a mano."
+          }
+        ],
+        "explanation": "El disparador es un dato que Claude no ve y que se copia a mano desde el navegador. Eso corresponde a un servidor MCP, que da a Claude herramientas específicas para el sistema externo, con la conexión y la autenticación a cargo del servidor. Una skill es tentadora, pero solo enseña a usar un sistema; puede complementar a MCP, no reemplazarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-extension-map--47a896af",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Before each release, a developer asks Claude to scan the whole codebase for uses of a deprecated API. The search reads dozens of files and fills the main conversation with output they never look at again; they only need the final list of locations. What should they use so the main conversation stays clean?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A subagent that does the search and returns a summary",
+          "correct": true,
+          "why": "A subagent works in its own context window; its tool calls stay out of your context and only a summary returns."
+        },
+        {
+          "id": "B",
+          "text": "A skill with the search instructions, invoked with a slash command",
+          "correct": false,
+          "why": "By default a skill's content loads into the main window, so the search output would still flood it."
+        },
+        {
+          "id": "C",
+          "text": "Running /compact after each search",
+          "correct": false,
+          "why": "Compaction reacts after the context is full and may drop detail; it does not keep the work out in the first place."
+        },
+        {
+          "id": "D",
+          "text": "A PostToolUse hook that runs the search",
+          "correct": false,
+          "why": "A hook runs a fixed action on an event, and its output lands in context; it does not isolate an exploratory task."
+        }
+      ],
+      "explanation": "The requirement is keeping intermediate work out of the main conversation while getting only the result. A subagent runs in a separate context window and returns a summary, so dozens of file reads never touch your context. A skill is the tempting distractor, but it adds its content to your main window and the search output would land there too.",
+      "keywordCues": [
+        "fills the main conversation with output they never look at again",
+        "only need the final list"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Antes de cada release, un desarrollador pide a Claude revisar todo el código buscando usos de una API obsoleta. La búsqueda lee decenas de archivos y llena la conversación principal con salida que nunca vuelve a mirar; solo necesita la lista final de ubicaciones. ¿Qué debe usar para que la conversación principal quede limpia?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un subagente que haga la búsqueda y devuelva un resumen",
+            "why": "Un subagente trabaja en su propia ventana de contexto; sus tool calls quedan fuera de tu contexto y solo vuelve un resumen."
+          },
+          {
+            "id": "B",
+            "text": "Una skill con las instrucciones de búsqueda, invocada con un slash command",
+            "why": "Por defecto, el contenido de una skill se carga en la ventana principal, así que la salida de la búsqueda la llenaría igual."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar /compact después de cada búsqueda",
+            "why": "La compactación reacciona cuando el contexto ya se llenó y puede perder detalle; no evita que el trabajo entre."
+          },
+          {
+            "id": "D",
+            "text": "Un hook PostToolUse que ejecute la búsqueda",
+            "why": "Un hook ejecuta una acción fija ante un evento y su salida llega al contexto; no aísla una tarea exploratoria."
+          }
+        ],
+        "explanation": "El requisito es mantener el trabajo intermedio fuera de la conversación principal y recibir solo el resultado. Un subagente corre en una ventana de contexto separada y devuelve un resumen, así decenas de lecturas no tocan tu contexto. La skill es el distractor tentador, pero agrega su contenido a tu ventana principal y la salida de la búsqueda caería ahí también."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-extension-map--55c08844",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A platform team built a setup in one repository: a review skill, a formatting hook, a security-reviewer subagent and an MCP server for their deploy system. Five other repositories now need the same setup, and they want each team to install it as one unit and pick up updates without copying files by hand. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Reference the files from each repository's CLAUDE.md with @path imports",
+          "correct": false,
+          "why": "@path imports bring in instruction text; they don't install hooks, subagents or MCP servers."
+        },
+        {
+          "id": "B",
+          "text": "Package the setup as a plugin and distribute it through a marketplace",
+          "correct": true,
+          "why": "A plugin bundles skills, hooks, subagents and MCP servers into one installable unit, and a marketplace distributes it."
+        },
+        {
+          "id": "C",
+          "text": "Copy the .claude folder into each repository",
+          "correct": false,
+          "why": "Copying works once but is exactly the manual file copying they want to avoid, and it drifts on updates."
+        },
+        {
+          "id": "D",
+          "text": "Move everything into each developer's user-level ~/.claude directory",
+          "correct": false,
+          "why": "User-level config is per developer, not an installable unit shared across teams and repositories."
+        }
+      ],
+      "explanation": "The trigger is a second (and third) repository needing the same setup, installable as one unit. A plugin is the packaging layer that bundles skills, hooks, subagents and MCP servers, and a marketplace distributes it to others. Copying the .claude folder is the tempting shortcut, but it is the manual copying the team wants to avoid.",
+      "keywordCues": [
+        "Five other repositories now need the same setup",
+        "install it as one unit"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma armó una configuración en un repositorio: una skill de revisión, un hook de formateo, un subagente revisor de seguridad y un servidor MCP para su sistema de deploy. Otros cinco repositorios necesitan ahora la misma configuración, y quieren que cada equipo la instale como una unidad y reciba actualizaciones sin copiar archivos a mano. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Referenciar los archivos desde el CLAUDE.md de cada repositorio con imports @path",
+            "why": "Los imports @path traen texto de instrucciones; no instalan hooks, subagentes ni servidores MCP."
+          },
+          {
+            "id": "B",
+            "text": "Empaquetar la configuración como plugin y distribuirla con un marketplace",
+            "why": "Un plugin agrupa skills, hooks, subagentes y servidores MCP en una unidad instalable, y un marketplace lo distribuye."
+          },
+          {
+            "id": "C",
+            "text": "Copiar la carpeta .claude a cada repositorio",
+            "why": "Copiar sirve una vez, pero es justo la copia manual que quieren evitar, y se desincroniza con las actualizaciones."
+          },
+          {
+            "id": "D",
+            "text": "Mover todo al directorio de usuario ~/.claude de cada desarrollador",
+            "why": "La configuración de usuario es por desarrollador, no una unidad instalable compartida entre equipos y repositorios."
+          }
+        ],
+        "explanation": "El disparador es que otros repositorios necesitan la misma configuración, instalable como una unidad. Un plugin es la capa de empaquetado que agrupa skills, hooks, subagentes y servidores MCP, y un marketplace lo distribuye. Copiar la carpeta .claude es el atajo tentador, pero es la copia manual que el equipo quiere evitar."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-extension-map--fc0f93a3",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Two things keep happening on a team. Claude has run npm install twice although the project uses pnpm, and a developer types the same five-line code review prompt at the start of every review. They want to fix both using the feature each trigger calls for. Which two changes should they make? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add \"Use pnpm, not npm\" to the project's CLAUDE.md",
+          "correct": true,
+          "why": "A convention Claude gets wrong twice belongs in CLAUDE.md, which loads every session."
+        },
+        {
+          "id": "B",
+          "text": "Save the review prompt as a user-invocable skill",
+          "correct": true,
+          "why": "A prompt you keep typing to start a task becomes a skill you trigger with /<name>."
+        },
+        {
+          "id": "C",
+          "text": "Connect an MCP server that exposes pnpm",
+          "correct": false,
+          "why": "MCP connects external services; the problem is a convention Claude forgets, not missing access."
+        },
+        {
+          "id": "D",
+          "text": "Set an output style that tells Claude to use pnpm",
+          "correct": false,
+          "why": "Output styles set role, tone and response format; project facts like the package manager belong in CLAUDE.md."
+        },
+        {
+          "id": "E",
+          "text": "Paste the review prompt into CLAUDE.md",
+          "correct": false,
+          "why": "CLAUDE.md loads on every request and can't be triggered as a workflow; a review prompt needed only sometimes fits a skill."
+        }
+      ],
+      "explanation": "Each trigger maps to one feature. A convention Claude gets wrong twice goes in CLAUDE.md, and a prompt you keep typing to start a task is saved as a user-invocable skill. Putting the review prompt in CLAUDE.md would pay its context cost on every request and could not be triggered with /<name>.",
+      "keywordCues": [
+        "run npm install twice",
+        "types the same five-line code review prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "En un equipo pasan dos cosas una y otra vez. Claude ejecutó npm install dos veces aunque el proyecto usa pnpm, y un desarrollador escribe el mismo prompt de revisión de cinco líneas al inicio de cada revisión. Quieren resolver ambas con la función que pide cada disparador. ¿Qué dos cambios deben hacer? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar \"Use pnpm, not npm\" al CLAUDE.md del proyecto",
+            "why": "Una convención que Claude falla dos veces va en CLAUDE.md, que carga en cada sesión."
+          },
+          {
+            "id": "B",
+            "text": "Guardar el prompt de revisión como una skill invocable por el usuario",
+            "why": "Un prompt que sigues escribiendo para empezar una tarea se vuelve una skill que disparas con /<name>."
+          },
+          {
+            "id": "C",
+            "text": "Conectar un servidor MCP que exponga pnpm",
+            "why": "MCP conecta servicios externos; el problema es una convención que Claude olvida, no falta de acceso."
+          },
+          {
+            "id": "D",
+            "text": "Configurar un output style que diga a Claude usar pnpm",
+            "why": "Los output styles fijan rol, tono y formato de respuesta; datos del proyecto como el gestor de paquetes van en CLAUDE.md."
+          },
+          {
+            "id": "E",
+            "text": "Pegar el prompt de revisión en CLAUDE.md",
+            "why": "CLAUDE.md carga en cada petición y no se puede disparar como flujo; un prompt que solo se usa a veces encaja en una skill."
+          }
+        ],
+        "explanation": "Cada disparador corresponde a una función. Una convención que Claude falla dos veces va en CLAUDE.md, y un prompt que sigues escribiendo para empezar una tarea se guarda como skill invocable por el usuario. Poner el prompt de revisión en CLAUDE.md pagaría su costo de contexto en cada petición y no podría dispararse con /<name>."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-extension-map--bc42f1aa",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make this deploy skill invisible to Claude until you invoke it yourself, so Claude never triggers it on its own and its description costs no context.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "disable-model-invocation",
+          "correct": true,
+          "why": "This frontmatter field hides the skill from Claude until you invoke it manually."
+        },
+        {
+          "id": "1b",
+          "text": "context",
+          "correct": false,
+          "why": "context: fork runs a skill in an isolated context; it does not stop Claude from invoking it."
+        },
+        {
+          "id": "1c",
+          "text": "skillOverrides",
+          "correct": false,
+          "why": "skillOverrides is a settings key for skills you didn't write, not a SKILL.md frontmatter field."
+        },
+        {
+          "id": "2a",
+          "text": "true",
+          "correct": true,
+          "why": "Setting it to true turns the skill into user-only, with zero context cost until invoked."
+        },
+        {
+          "id": "2b",
+          "text": "false",
+          "correct": false,
+          "why": "false keeps the default: the description loads and Claude can invoke it on its own."
+        },
+        {
+          "id": "2c",
+          "text": "fork",
+          "correct": false,
+          "why": "fork is a value for the context field, not for disable-model-invocation."
+        }
+      ],
+      "explanation": "By default a skill's description loads at session start so Claude can decide when to use it. Setting disable-model-invocation: true in the frontmatter hides it from Claude until you invoke it with /deploy, so it costs no context and never fires on its own. The docs recommend this for skills with side effects, such as deploys.",
+      "keywordCues": [
+        "invisible to Claude until you invoke it",
+        "description costs no context"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Haz que esta skill de deploy sea invisible para Claude hasta que tú la invoques, para que Claude nunca la dispare por su cuenta y su descripción no cueste contexto.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "disable-model-invocation",
+            "why": "Este campo del frontmatter oculta la skill a Claude hasta que la invocas manualmente."
+          },
+          {
+            "id": "1b",
+            "text": "context",
+            "why": "context: fork ejecuta una skill en un contexto aislado; no impide que Claude la invoque."
+          },
+          {
+            "id": "1c",
+            "text": "skillOverrides",
+            "why": "skillOverrides es una clave de settings para skills que no escribiste, no un campo del frontmatter de SKILL.md."
+          },
+          {
+            "id": "2a",
+            "text": "true",
+            "why": "Con true la skill pasa a ser solo del usuario, con costo de contexto cero hasta invocarla."
+          },
+          {
+            "id": "2b",
+            "text": "false",
+            "why": "false mantiene el comportamiento por defecto: la descripción carga y Claude puede invocarla solo."
+          },
+          {
+            "id": "2c",
+            "text": "fork",
+            "why": "fork es un valor del campo context, no de disable-model-invocation."
+          }
+        ],
+        "explanation": "Por defecto, la descripción de una skill carga al iniciar la sesión para que Claude decida cuándo usarla. Poner disable-model-invocation: true en el frontmatter la oculta a Claude hasta que la invocas con /deploy, así no cuesta contexto y nunca se dispara sola. La documentación lo recomienda para skills con efectos secundarios, como un deploy."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "---\nname: deploy\ndescription: Deploy the app to production\n{{1}}: {{2}}\n---\n\nRun the deployment checklist in order.",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "loop-extension-map--f5cab0e0",
+      "conceptId": "loop-extension-map",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "You suspect your extensions are eating too much of the context window. Which command shows what is using space in the current session?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/context shows everything occupying the context window, broken down by category: system prompt, tools, MCP tools, memory files, skills and conversation messages. Use it to check whether CLAUDE.md or skill descriptions are loaded and how much they cost.",
+      "keywordCues": [
+        "what is using space"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/features-overview.md",
+        "https://code.claude.com/docs/en/how-claude-code-works.md"
+      ],
+      "es": {
+        "stem": "Sospechas que tus extensiones consumen demasiado de la ventana de contexto. ¿Qué comando muestra qué está ocupando espacio en la sesión actual?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/context",
+            "why": ""
+          }
+        ],
+        "explanation": "/context muestra todo lo que ocupa la ventana de contexto, desglosado por categoría: system prompt, herramientas, herramientas MCP, archivos de memoria, skills y mensajes. Sirve para confirmar si CLAUDE.md o las descripciones de skills cargaron y cuánto cuestan."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "loop-extension-map--r0",
+      "conceptId": "loop-extension-map",
+      "kind": "recall",
+      "prompt": "Map each recurring trigger to its extension: repeated mistake, retyped prompt, unseen data, flooding side task, must-happen-every-time, second repo.",
+      "promptEs": "Asocia cada disparador recurrente con su extensión: error repetido, prompt repetido, datos que no ve, tarea que inunda, debe pasar siempre, segundo repo.",
+      "idealAnswer": "A convention Claude gets wrong twice goes in CLAUDE.md and a prompt you keep retyping becomes a skill. Data Claude can't see needs an MCP server, a side task that floods context goes to a subagent, something that must happen every time is a hook, and a second repo gets a plugin.",
+      "rubric": [
+        "Repeated mistake to CLAUDE.md; retyped prompt or playbook to a skill",
+        "Unseen external data to an MCP server",
+        "Flooding side task to a subagent; every-time action to a hook",
+        "Second repository to a plugin"
+      ]
+    },
+    {
+      "id": "loop-extension-map--r1",
+      "conceptId": "loop-extension-map",
+      "kind": "why-not",
+      "prompt": "Your deploy checklist is long and used only before releases. Why not put it in CLAUDE.md instead of a skill?",
+      "promptEs": "Tu checklist de deploy es largo y solo se usa antes de cada release. ¿Por qué no ponerlo en CLAUDE.md en vez de en una skill?",
+      "idealAnswer": "CLAUDE.md loads in full at session start and costs context on every request, and it cannot be triggered as a workflow. A skill loads only its description until used and can be invoked with /deploy, so occasional workflows belong in skills.",
+      "rubric": [
+        "CLAUDE.md loads fully every session and costs context on every request",
+        "Skills load descriptions at start and full content only when used",
+        "A skill can be triggered with /<name>; CLAUDE.md cannot"
+      ]
+    }
+  ]
+}

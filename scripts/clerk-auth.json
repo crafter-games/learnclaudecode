@@ -1,0 +1,6 @@
+{
+  "connection_oauth_google": { "enabled": false },
+  "auth_email": { "sign_in_strategies": [], "verification_strategies": ["email_code"], "verify_at_sign_up": true, "used_for_sign_in": true, "used_for_sign_up": true, "required_for_sign_up": true },
+  "auth_password": { "enabled": true },
+  "auth_passkey": { "show_sign_in_button": false }
+}

@@ -1,0 +1,557 @@
+{
+  "conceptId": "cost-usage-command",
+  "card": {
+    "en": {
+      "tldr": "/usage (aliases /cost and /stats) shows what your session consumed: a locally estimated cost, token counts per model and a Prompt cache (main) line. On Pro, Max, Team and Enterprise it also breaks down what counts against your plan. Use it for 'what did it cost'; use /context for 'what is in my window'.",
+      "whenToUse": [
+        "You want the session's estimated cost and tokens per model.",
+        "A first message after a break felt expensive and you suspect a cache miss.",
+        "Your plan limits drain fast and you want to know which skills, subagents, plugins or MCP servers are responsible.",
+        "You want a report on how you work rather than on tokens: run /insights."
+      ],
+      "keyFacts": [
+        "/cost and /stats are aliases of /usage; /stats opens on the Stats tab.",
+        "The Session block's dollar figure is computed locally from token counts at list price, unless an admin sets a modelPricing table in managed settings; it is an estimate, and the Claude Console Usage page is authoritative for billing.",
+        "The Session block resets when /clear starts a new session.",
+        "The Prompt cache (main) line shows the request count, share of input tokens from cache, misses (with a likely cause when known), expected rebuilds from compaction or tool-result clearing, and whether the cache is warm or cold. It covers the main conversation only, not subagents.",
+        "On subscription plans the breakdown attributes recent usage to skills, subagents, plugins and MCP servers, flags heavy behaviors such as long context or cache misses, and lists the heaviest /loop and scheduled tasks. Press d or w to switch between 24 hours and 7 days.",
+        "/insights writes an HTML report on how you work to ~/.claude/usage-data/report.html; its analysis tokens count against your plan or API usage."
+      ],
+      "gotchas": [
+        "For Pro and Max subscribers the session cost figure is not relevant for billing; usage is included in the subscription.",
+        "The plan breakdown is computed from local session history on this machine, so usage from other devices or claude.ai is not included.",
+        "The prompt cache line ignores subagents, so a subagent-heavy session can look healthier than its total usage.",
+        "/usage itself may send requests to check status, so it is not strictly free."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/context",
+          "difference": "Shows what is occupying the context window right now and whether memory files loaded; it does not report cost."
+        },
+        {
+          "concept": "/insights",
+          "difference": "Analyzes how you work across recent sessions and writes an HTML report; it is not a token or cost counter."
+        }
+      ],
+      "examCues": [
+        "how much this session has cost so far",
+        "whether the prompt cache is hitting",
+        "what counts against my plan limits",
+        "which MCP server is using my usage",
+        "cache is warm or cold"
+      ]
+    },
+    "es": {
+      "tldr": "/usage (alias /cost y /stats) muestra lo que consumió tu sesión: un costo estimado localmente, tokens por modelo y una línea Prompt cache (main). En Pro, Max, Team y Enterprise también desglosa qué cuenta contra tu plan. Úsalo para 'cuánto costó'; usa /context para 'qué hay en mi ventana'.",
+      "whenToUse": [
+        "Quieres el costo estimado de la sesión y los tokens por modelo.",
+        "Un primer mensaje tras una pausa se sintió caro y sospechas un cache miss.",
+        "Tus límites del plan se agotan rápido y quieres saber qué skills, subagentes, plugins o servidores MCP son responsables.",
+        "Quieres un reporte sobre cómo trabajas y no sobre tokens: corre /insights."
+      ],
+      "keyFacts": [
+        "/cost y /stats son alias de /usage; /stats abre en la pestaña Stats.",
+        "El monto en dólares del Session block se calcula localmente a partir de los tokens a precio de lista, salvo que un admin defina una tabla modelPricing en managed settings; es una estimación, y la página Usage de la Claude Console es la fuente oficial de facturación.",
+        "El Session block se reinicia cuando /clear empieza una sesión nueva.",
+        "La línea Prompt cache (main) muestra el número de requests, la proporción de tokens de entrada servidos desde caché, los misses (con causa probable cuando se conoce), los rebuilds esperados por compactación o limpieza de resultados de tools, y si la caché está warm o cold. Cubre solo la conversación principal, no los subagentes.",
+        "En planes de suscripción, el desglose atribuye el uso reciente a skills, subagentes, plugins y servidores MCP, marca comportamientos pesados como contexto largo o cache misses, y lista las tareas /loop y programadas más pesadas. Presiona d o w para alternar entre 24 horas y 7 días.",
+        "/insights escribe un reporte HTML sobre cómo trabajas en ~/.claude/usage-data/report.html; los tokens de su análisis cuentan contra tu plan o tu uso de API."
+      ],
+      "gotchas": [
+        "Para suscriptores Pro y Max, el costo de la sesión no es relevante para la facturación; el uso está incluido en la suscripción.",
+        "El desglose del plan se calcula con el historial local de esta máquina, así que no incluye el uso de otros dispositivos ni de claude.ai.",
+        "La línea de caché ignora los subagentes, así que una sesión con muchos subagentes puede parecer más sana que su uso total.",
+        "/usage mismo puede enviar requests para consultar estado, así que no es estrictamente gratis."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/context",
+          "difference": "Muestra qué ocupa la ventana de contexto ahora y si cargaron los memory files; no reporta costo."
+        },
+        {
+          "concept": "/insights",
+          "difference": "Analiza cómo trabajas en tus sesiones recientes y escribe un reporte HTML; no es un contador de tokens ni de costo."
+        }
+      ],
+      "examCues": [
+        "how much this session has cost so far",
+        "whether the prompt cache is hitting",
+        "what counts against my plan limits",
+        "which MCP server is using my usage",
+        "cache is warm or cold"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/costs.md",
+      "https://code.claude.com/docs/en/prompt-caching.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cost-usage-command--e443dd8c",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [
+        "ctx-context-command"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer who authenticates with an API key has been refactoring for two hours. Before starting the next step, she wants to see roughly how much this session has cost so far and how many tokens each model used, without leaving the terminal. What should she run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context",
+          "correct": false,
+          "why": "It breaks down what occupies the context window right now, not the session's cost or tokens per model."
+        },
+        {
+          "id": "B",
+          "text": "/insights",
+          "correct": false,
+          "why": "It writes an HTML report on how you work across recent sessions, not a cost figure for the current session."
+        },
+        {
+          "id": "C",
+          "text": "/usage",
+          "correct": true,
+          "why": "Its Session block shows a locally estimated total cost and token usage per model for the current session."
+        },
+        {
+          "id": "D",
+          "text": "Open the Claude Console usage page",
+          "correct": false,
+          "why": "It is authoritative for billing, but it means leaving the terminal and does not show this session alone."
+        }
+      ],
+      "explanation": "The requirement is the current session's cost and per-model tokens, from the terminal. /usage shows exactly that in its Session block, computed locally from token counts. /context is the tempting look-alike, but it answers what is in the window, not what it cost. The Console usage page is the billing authority, yet it fails the 'without leaving the terminal' constraint.",
+      "keywordCues": [
+        "how much this session has cost so far",
+        "how many tokens each model used",
+        "without leaving the terminal"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora que se autentica con API key lleva dos horas refactorizando. Antes del siguiente paso quiere ver aproximadamente cuánto ha costado esta sesión y cuántos tokens usó cada modelo, sin salir de la terminal. ¿Qué debe ejecutar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/context",
+            "why": "Desglosa qué ocupa la ventana de contexto ahora, no el costo de la sesión ni los tokens por modelo."
+          },
+          {
+            "id": "B",
+            "text": "/insights",
+            "why": "Escribe un reporte HTML sobre cómo trabajas en tus sesiones recientes, no un costo de la sesión actual."
+          },
+          {
+            "id": "C",
+            "text": "/usage",
+            "why": "Su Session block muestra el costo total estimado localmente y el uso de tokens por modelo de la sesión actual."
+          },
+          {
+            "id": "D",
+            "text": "Abrir la página de uso de la Claude Console",
+            "why": "Es la fuente oficial de facturación, pero implica salir de la terminal y no muestra solo esta sesión."
+          }
+        ],
+        "explanation": "El requisito es el costo de la sesión actual y los tokens por modelo, desde la terminal. /usage muestra exactamente eso en su Session block, calculado localmente a partir de los tokens. /context es el parecido tentador, pero responde qué hay en la ventana, no cuánto costó. La página de uso de la Console es la autoridad de facturación, pero no cumple 'sin salir de la terminal'."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-usage-command--c8e695c7",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [
+        "ctx-context-command"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A Max subscriber notices his plan limits draining much faster than usual this week. He suspects a newly added MCP server and some custom subagents, and wants to see what share of recent usage each of them accounts for, with the least setup. What should he do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /usage and read the plan usage breakdown",
+          "correct": true,
+          "why": "On subscription plans it attributes recent usage to skills, subagents, plugins and individual MCP servers as percentages."
+        },
+        {
+          "id": "B",
+          "text": "Run /context and compare the MCP tools category",
+          "correct": false,
+          "why": "It shows what occupies the current window, not how recent usage was spent across servers and subagents."
+        },
+        {
+          "id": "C",
+          "text": "Set up OpenTelemetry export with OTEL_LOG_TOOL_DETAILS=1",
+          "correct": false,
+          "why": "It can attribute usage, but requires a collector and configuration, so it fails 'with the least setup'."
+        },
+        {
+          "id": "D",
+          "text": "Run /insights and read the friction section",
+          "correct": false,
+          "why": "It reports how you work and where things go wrong, not the usage share per MCP server or subagent."
+        }
+      ],
+      "explanation": "The decisive requirement is a per-source share of recent plan usage with no setup. On Pro, Max, Team and Enterprise, /usage shows an attribution breakdown by skills, subagents, plugins and MCP servers. OpenTelemetry also carries MCP and agent attribution, but it needs a collector, which violates 'least setup'. /context and /insights answer different questions: window contents and working habits.",
+      "keywordCues": [
+        "plan limits draining",
+        "what share of recent usage",
+        "with the least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Un suscriptor Max nota que sus límites del plan se agotan mucho más rápido que de costumbre esta semana. Sospecha de un servidor MCP recién agregado y de algunos subagentes personalizados, y quiere ver qué proporción del uso reciente corresponde a cada uno, con la menor configuración posible. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr /usage y leer el desglose de uso del plan",
+            "why": "En planes de suscripción atribuye el uso reciente a skills, subagentes, plugins y servidores MCP individuales, en porcentajes."
+          },
+          {
+            "id": "B",
+            "text": "Correr /context y comparar la categoría de tools MCP",
+            "why": "Muestra qué ocupa la ventana actual, no cómo se repartió el uso reciente entre servidores y subagentes."
+          },
+          {
+            "id": "C",
+            "text": "Configurar el export de OpenTelemetry con OTEL_LOG_TOOL_DETAILS=1",
+            "why": "Puede atribuir el uso, pero requiere un collector y configuración, así que no cumple 'con la menor configuración'."
+          },
+          {
+            "id": "D",
+            "text": "Correr /insights y leer la sección de fricción",
+            "why": "Reporta cómo trabajas y dónde fallan las cosas, no la proporción de uso por servidor MCP o subagente."
+          }
+        ],
+        "explanation": "El requisito decisivo es la proporción del uso reciente del plan por fuente, sin configuración. En Pro, Max, Team y Enterprise, /usage muestra un desglose de atribución por skills, subagentes, plugins y servidores MCP. OpenTelemetry también lleva atribución de MCP y agentes, pero necesita un collector, lo que viola 'la menor configuración'. /context e /insights responden otras preguntas: el contenido de la ventana y tus hábitos de trabajo."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-usage-command--ec6dbe0f",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [
+        "ctx-context-command"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "After a long lunch break, a developer's first message in a large session seemed to consume far more usage than usual. She wants to confirm whether that request missed the prompt cache and whether the cache is warm right now, without writing any status line script. What should she check?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The Memory files list in /context",
+          "correct": false,
+          "why": "It confirms which CLAUDE.md and rules loaded, not cache hits, misses or warm state."
+        },
+        {
+          "id": "B",
+          "text": "The Prompt cache (main) line in /usage",
+          "correct": true,
+          "why": "It shows the share of input from cache, misses with the time of the last one, and whether the cache is warm or cold."
+        },
+        {
+          "id": "C",
+          "text": "The prompt_cache object in a status line",
+          "correct": false,
+          "why": "It exposes the same numbers, but only to a status line script, which she wants to avoid writing."
+        },
+        {
+          "id": "D",
+          "text": "A claude --debug-file log of the session",
+          "correct": false,
+          "why": "It records runtime diagnostics for troubleshooting; the documented per-session cache summary is in /usage."
+        }
+      ],
+      "explanation": "The requirement is a cache hit/miss summary and current warm state with no scripting. /usage adds a Prompt cache (main) line after the first response, with misses, a likely cause when known, and warm or cold with the TTL. The status line's prompt_cache object carries the same data, which makes it tempting, but it requires writing a script. /context is about window contents, not caching.",
+      "keywordCues": [
+        "missed the prompt cache",
+        "whether the cache is warm right now",
+        "without writing any status line script"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Tras un almuerzo largo, el primer mensaje de una desarrolladora en una sesión grande pareció consumir mucho más uso de lo normal. Quiere confirmar si ese request falló la caché de prompts y si la caché está warm ahora, sin escribir ningún script de status line. ¿Qué debe revisar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "La lista Memory files en /context",
+            "why": "Confirma qué CLAUDE.md y reglas cargaron, no los aciertos, misses ni el estado warm de la caché."
+          },
+          {
+            "id": "B",
+            "text": "La línea Prompt cache (main) en /usage",
+            "why": "Muestra la proporción de entrada desde caché, los misses con la hora del último y si la caché está warm o cold."
+          },
+          {
+            "id": "C",
+            "text": "El objeto prompt_cache en una status line",
+            "why": "Expone los mismos números, pero solo a un script de status line, que ella quiere evitar escribir."
+          },
+          {
+            "id": "D",
+            "text": "Un log de la sesión con claude --debug-file",
+            "why": "Registra diagnósticos de ejecución; el resumen de caché por sesión documentado está en /usage."
+          }
+        ],
+        "explanation": "El requisito es un resumen de aciertos y misses de caché y el estado warm actual, sin scripts. /usage agrega una línea Prompt cache (main) tras la primera respuesta, con los misses, una causa probable cuando se conoce, y warm o cold con el TTL. El objeto prompt_cache de la status line tiene los mismos datos, por eso tienta, pero exige escribir un script. /context trata del contenido de la ventana, no de la caché."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-usage-command--e045219e",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer on a Team plan wants to share numbers from /usage with her finance partner and explain how they relate to real spend. She uses Claude Code on her laptop and her desktop, and sometimes chats on claude.ai. Which two statements about what /usage shows are accurate? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The Session block's dollar figure is a local estimate; the billing source of truth lives elsewhere.",
+          "correct": true,
+          "why": "It is computed locally from token counts at list price, or at managed modelPricing rates, and is not an invoice."
+        },
+        {
+          "id": "B",
+          "text": "The plan breakdown on her laptop excludes usage from her desktop and claude.ai.",
+          "correct": true,
+          "why": "It is computed from local session history on that machine, so other devices and claude.ai are not included."
+        },
+        {
+          "id": "C",
+          "text": "The Session block keeps accumulating across /clear until Claude Code exits.",
+          "correct": false,
+          "why": "The totals reset when /clear starts a new session."
+        },
+        {
+          "id": "D",
+          "text": "The Prompt cache (main) line includes the requests her subagents made.",
+          "correct": false,
+          "why": "It covers the main conversation only, not subagents."
+        },
+        {
+          "id": "E",
+          "text": "Running /insights to add context is free and does not count against her plan.",
+          "correct": false,
+          "why": "The /insights analysis runs through the same account, and its tokens count against the plan."
+        }
+      ],
+      "explanation": "The requirement is to describe /usage figures accurately for finance. The Session block's cost is an estimate computed locally, and the plan breakdown only sees this machine's session history, so her other devices and claude.ai are missing. The tempting distractors misstate scope: the Session block resets on /clear, the cache line ignores subagents, and /insights consumes plan usage.",
+      "keywordCues": [
+        "relate to real spend",
+        "on her laptop and her desktop",
+        "sometimes chats on claude.ai",
+        "(Choose two.)"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora en un plan Team quiere compartir números de /usage con su contraparte de finanzas y explicar cómo se relacionan con el gasto real. Usa Claude Code en su laptop y en su desktop, y a veces chatea en claude.ai. ¿Qué dos afirmaciones sobre lo que muestra /usage son correctas? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El monto en dólares del Session block es una estimación local; la fuente oficial de facturación está en otro lado.",
+            "why": "Se calcula localmente a partir de los tokens a precio de lista, o a las tarifas de modelPricing administradas, y no es una factura."
+          },
+          {
+            "id": "B",
+            "text": "El desglose del plan en su laptop excluye el uso de su desktop y de claude.ai.",
+            "why": "Se calcula con el historial de sesiones local de esa máquina, así que no incluye otros dispositivos ni claude.ai."
+          },
+          {
+            "id": "C",
+            "text": "El Session block sigue acumulando a través de /clear hasta que Claude Code se cierra.",
+            "why": "Los totales se reinician cuando /clear empieza una sesión nueva."
+          },
+          {
+            "id": "D",
+            "text": "La línea Prompt cache (main) incluye los requests de sus subagentes.",
+            "why": "Cubre solo la conversación principal, no los subagentes."
+          },
+          {
+            "id": "E",
+            "text": "Correr /insights para dar contexto es gratis y no cuenta contra su plan.",
+            "why": "El análisis de /insights corre con la misma cuenta y sus tokens cuentan contra el plan."
+          }
+        ],
+        "explanation": "El requisito es describir con precisión los números de /usage para finanzas. El costo del Session block es una estimación calculada localmente, y el desglose del plan solo ve el historial de esta máquina, así que faltan sus otros dispositivos y claude.ai. Los distractores tentadores se equivocan en el alcance: el Session block se reinicia con /clear, la línea de caché ignora los subagentes y /insights consume uso del plan."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-usage-command--b0e4b5df",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command shows the session's estimated cost, tokens per model and the Prompt cache (main) line?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/cost",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "/stats",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/usage shows the Session block with the estimated cost, token usage per model and, after the first response, the Prompt cache (main) line. /cost and /stats are aliases for the same command; /stats opens on the Stats tab.",
+      "keywordCues": [
+        "estimated cost",
+        "tokens per model",
+        "Prompt cache (main)"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando slash muestra el costo estimado de la sesión, los tokens por modelo y la línea Prompt cache (main)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/usage",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/cost",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "/stats",
+            "why": ""
+          }
+        ],
+        "explanation": "/usage muestra el Session block con el costo estimado, el uso de tokens por modelo y, tras la primera respuesta, la línea Prompt cache (main). /cost y /stats son alias del mismo comando; /stats abre en la pestaña Stats."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-usage-command--2199a244",
+      "conceptId": "cost-usage-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which slash command analyzes your recent sessions and writes an HTML report to ~/.claude/usage-data/report.html?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/insights",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/insights analyzes your recent sessions on this machine and writes an HTML report on what you work on, friction points and suggestions. The latest report goes to ~/.claude/usage-data/report.html, with timestamped copies kept in the same directory.",
+      "keywordCues": [
+        "analyzes your recent sessions",
+        "HTML report"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando slash analiza tus sesiones recientes y escribe un reporte HTML en ~/.claude/usage-data/report.html?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/insights",
+            "why": ""
+          }
+        ],
+        "explanation": "/insights analiza tus sesiones recientes en esta máquina y escribe un reporte HTML sobre en qué trabajas, tus puntos de fricción y sugerencias. El reporte más reciente va a ~/.claude/usage-data/report.html, y se guardan copias con fecha en el mismo directorio."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cost-usage-command--r0",
+      "conceptId": "cost-usage-command",
+      "kind": "recall",
+      "prompt": "What does /usage show, and which parts depend on your plan?",
+      "promptEs": "¿Qué muestra /usage y qué partes dependen de tu plan?",
+      "idealAnswer": "/usage, also /cost or /stats, shows a Session block with a locally estimated cost and tokens per model that resets on /clear, plus a Prompt cache (main) line with hits, misses and warm or cold state for the main conversation. On Pro, Max, Team and Enterprise it adds a breakdown attributing recent usage to skills, subagents, plugins and MCP servers and flagging heavy behaviors, computed from this machine's history only.",
+      "rubric": [
+        "Session block: local cost estimate and tokens per model, reset by /clear",
+        "Prompt cache (main) line: hits, misses, warm or cold, main conversation only",
+        "Subscription plans: attribution to skills, subagents, plugins, MCP servers and behavior flags",
+        "Local machine history only; billing authority is elsewhere"
+      ]
+    },
+    {
+      "id": "cost-usage-command--r1",
+      "conceptId": "cost-usage-command",
+      "kind": "why-not",
+      "prompt": "Why doesn't /context answer 'how much did this session cost and is my cache hitting'?",
+      "promptEs": "¿Por qué /context no responde 'cuánto costó esta sesión y si mi caché está acertando'?",
+      "idealAnswer": "/context shows what is occupying the context window right now, by category, and which memory files loaded. It has no cost estimate or cache statistics. Those live in /usage: the Session block's estimated cost and the Prompt cache (main) line.",
+      "rubric": [
+        "/context shows current window contents and loaded memory files",
+        "It reports no cost or cache hit/miss data",
+        "/usage is the command for cost and cache statistics"
+      ]
+    }
+  ]
+}

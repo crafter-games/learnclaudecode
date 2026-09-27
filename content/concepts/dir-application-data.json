@@ -1,0 +1,446 @@
+{
+  "conceptId": "dir-application-data",
+  "card": {
+    "en": {
+      "tldr": "`~/.claude` also stores plaintext data written as you work: transcripts, checkpoint snapshots, plans and debug logs. A sweep deletes it after `cleanupPeriodDays`; `claude project purge` deletes one project's state right away.",
+      "whenToUse": [
+        "Shortening how long transcripts with sensitive output stay on disk",
+        "Wiping a project's transcripts, auto memory and prompt history now",
+        "Running Claude without writing transcripts at all",
+        "Deciding which files under `~/.claude` are safe to delete"
+      ],
+      "keyFacts": [
+        "Transcripts: `~/.claude/projects/<project>/<session>.jsonl`; checkpoint snapshots: `file-history/<session>/`; also `plans/` and `debug/`.",
+        "`cleanupPeriodDays` defaults to 30 days, minimum 1; `0` fails with a validation error.",
+        "The sweep never deletes auto memory files (`projects/<project>/memory/`) or `history.jsonl`.",
+        "`claude project purge <path>` deletes the project's transcripts, auto memory, per-session `tasks/`, `debug/` and `file-history/` entries, its prompt lines in `history.jsonl` and its entry in `~/.claude.json`. Flags: `--dry-run`, `--yes`, `--all`, `-i`.",
+        "`CLAUDE_CODE_SKIP_PROMPT_HISTORY` skips transcripts and prompt history in any mode; `--no-session-persistence` does it for one `claude -p` run."
+      ],
+      "gotchas": [
+        "Transcripts are not encrypted: a secret read from `.env` or printed by a command lands in the `.jsonl` file.",
+        "`claude project purge --all` deletes `history.jsonl` outright instead of filtering it.",
+        "Purge doesn't touch `shell-snapshots/`, `backups/`, or the scratchpad and pasted images under the temp directory.",
+        "Don't delete `~/.claude.json`, `~/.claude/settings.json` or `~/.claude/plugins/`: they hold auth, preferences and installed plugins."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Checkpointing",
+          "difference": "Rewind uses `file-history/`; deleting it or letting it age out removes checkpoint restore for past sessions."
+        },
+        {
+          "concept": "Deleting a background session",
+          "difference": "`claude rm <id>` leaves the transcript on disk; `claude project purge` removes it."
+        }
+      ],
+      "examCues": [
+        "keep transcripts no longer than",
+        "secret ended up in a transcript",
+        "remove everything stored for this project",
+        "without writing a transcript",
+        "safe to delete from ~/.claude"
+      ]
+    },
+    "es": {
+      "tldr": "`~/.claude` también guarda datos en texto plano mientras trabajas: transcripts, snapshots de checkpoints, planes y logs de debug. Un barrido los borra tras `cleanupPeriodDays`; `claude project purge` borra al instante el estado de un proyecto.",
+      "whenToUse": [
+        "Acortar cuánto tiempo quedan en disco transcripts con output sensible",
+        "Borrar ya los transcripts, la auto memory y el historial de prompts de un proyecto",
+        "Correr Claude sin escribir ningún transcript",
+        "Decidir qué archivos de `~/.claude` se pueden borrar sin riesgo"
+      ],
+      "keyFacts": [
+        "Transcripts: `~/.claude/projects/<project>/<session>.jsonl`; snapshots de checkpoints: `file-history/<session>/`; además `plans/` y `debug/`.",
+        "`cleanupPeriodDays` vale 30 días por defecto, mínimo 1; `0` falla con un error de validación.",
+        "El barrido nunca borra los archivos de auto memory (`projects/<project>/memory/`) ni `history.jsonl`.",
+        "`claude project purge <path>` borra los transcripts del proyecto, su auto memory, las entradas por sesión de `tasks/`, `debug/` y `file-history/`, sus líneas en `history.jsonl` y su entrada en `~/.claude.json`. Flags: `--dry-run`, `--yes`, `--all`, `-i`.",
+        "`CLAUDE_CODE_SKIP_PROMPT_HISTORY` evita transcripts e historial de prompts en cualquier modo; `--no-session-persistence` lo hace para una sola ejecución de `claude -p`."
+      ],
+      "gotchas": [
+        "Los transcripts no están cifrados: un secreto leído de `.env` o impreso por un comando queda en el archivo `.jsonl`.",
+        "`claude project purge --all` borra `history.jsonl` entero en vez de filtrarlo.",
+        "Purge no toca `shell-snapshots/`, `backups/`, ni el scratchpad y las imágenes pegadas del directorio temporal.",
+        "No borres `~/.claude.json`, `~/.claude/settings.json` ni `~/.claude/plugins/`: guardan tu autenticación, preferencias y plugins instalados."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Checkpointing",
+          "difference": "Rewind usa `file-history/`; si lo borras o envejece, pierdes el restore de checkpoints de sesiones pasadas."
+        },
+        {
+          "concept": "Borrar una sesión en background",
+          "difference": "`claude rm <id>` deja el transcript en disco; `claude project purge` lo elimina."
+        }
+      ],
+      "examCues": [
+        "keep transcripts no longer than",
+        "secret ended up in a transcript",
+        "remove everything stored for this project",
+        "without writing a transcript",
+        "safe to delete from ~/.claude"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/claude-directory.md",
+      "https://code.claude.com/docs/en/sessions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "dir-application-data--3fb380e8",
+      "conceptId": "dir-application-data",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your security team requires that local Claude Code transcripts stay on developer laptops for no more than 7 days. Developers still want to resume and rewind this week's sessions. What should each developer configure so old transcripts are removed automatically?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `CLAUDE_CODE_SKIP_PROMPT_HISTORY` in the shell",
+          "correct": false,
+          "why": "It stops writing transcripts at all, so developers lose resume and rewind for recent sessions."
+        },
+        {
+          "id": "B",
+          "text": "Set `\"cleanupPeriodDays\": 7` in settings",
+          "correct": true,
+          "why": "The sweep deletes transcripts and related session data older than that period, while recent sessions stay available."
+        },
+        {
+          "id": "C",
+          "text": "Set `\"cleanupPeriodDays\": 0` in settings",
+          "correct": false,
+          "why": "`0` fails with a validation error; the minimum is 1."
+        },
+        {
+          "id": "D",
+          "text": "Run `claude project purge --all` once",
+          "correct": false,
+          "why": "It deletes everything once, including this week's sessions and history, and does nothing for data written afterwards."
+        }
+      ],
+      "explanation": "The requirement is an automatic age limit that keeps recent sessions usable. `cleanupPeriodDays` sets the age after which the sweep deletes transcripts, so 7 meets it. Skipping transcripts entirely is tempting for privacy, but it breaks resume and rewind; a one-off purge isn't automatic.",
+      "keywordCues": [
+        "no more than 7 days",
+        "still want to resume",
+        "removed automatically"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Tu equipo de seguridad exige que los transcripts locales de Claude Code no permanezcan más de 7 días en las laptops. Los desarrolladores igual quieren retomar y hacer rewind de las sesiones de esta semana. ¿Qué debe configurar cada desarrollador para que los transcripts viejos se borren automáticamente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Definir `CLAUDE_CODE_SKIP_PROMPT_HISTORY` en la shell",
+            "why": "Deja de escribir transcripts por completo, así que se pierde resume y rewind de las sesiones recientes."
+          },
+          {
+            "id": "B",
+            "text": "Poner `\"cleanupPeriodDays\": 7` en settings",
+            "why": "El barrido borra los transcripts y datos de sesión más antiguos que ese período, y las sesiones recientes siguen disponibles."
+          },
+          {
+            "id": "C",
+            "text": "Poner `\"cleanupPeriodDays\": 0` en settings",
+            "why": "`0` falla con un error de validación; el mínimo es 1."
+          },
+          {
+            "id": "D",
+            "text": "Correr `claude project purge --all` una vez",
+            "why": "Borra todo una sola vez, incluidas las sesiones e historial de esta semana, y no hace nada con lo que se escriba después."
+          }
+        ],
+        "explanation": "El requisito es un límite de antigüedad automático que mantenga usables las sesiones recientes. `cleanupPeriodDays` fija la antigüedad a partir de la cual el barrido borra transcripts, así que 7 lo cumple. No escribir transcripts tienta por privacidad, pero rompe resume y rewind; un purge puntual no es automático."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-application-data--882e5fcf",
+      "conceptId": "dir-application-data",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A nightly CI job runs `claude -p` against a repository that contains customer data. The job must not leave a transcript of that run on the runner, and you don't want to change anything else about the runner's environment. What should you add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`--no-session-persistence` on the `claude -p` command",
+          "correct": true,
+          "why": "It suppresses transcript writes for that one non-interactive run."
+        },
+        {
+          "id": "B",
+          "text": "`--bare` on the `claude -p` command",
+          "correct": false,
+          "why": "Bare mode skips the age-based sweep in that session; it doesn't stop the transcript from being written."
+        },
+        {
+          "id": "C",
+          "text": "`\"cleanupPeriodDays\": 1` in the runner's settings",
+          "correct": false,
+          "why": "The transcript is still written and stays on disk until it's a day old."
+        },
+        {
+          "id": "D",
+          "text": "`claude rm <id>` after the run finishes",
+          "correct": false,
+          "why": "Deleting a background session with `claude rm` leaves its transcript on disk."
+        }
+      ],
+      "explanation": "The run must not write a transcript, and only that run should change. `--no-session-persistence` alongside `-p` does exactly that. `--bare` is tempting because it's also a `-p` option about sessions, but it only skips the cleanup sweep, and a short retention still writes the file first.",
+      "keywordCues": [
+        "claude -p",
+        "must not leave a transcript of that run",
+        "don't want to change anything else"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Un job nocturno de CI corre `claude -p` sobre un repositorio con datos de clientes. El job no debe dejar un transcript de esa ejecución en el runner, y no quieres cambiar nada más del entorno del runner. ¿Qué debes agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`--no-session-persistence` en el comando `claude -p`",
+            "why": "Suprime la escritura de transcripts para esa única ejecución no interactiva."
+          },
+          {
+            "id": "B",
+            "text": "`--bare` en el comando `claude -p`",
+            "why": "El modo bare omite el barrido por antigüedad en esa sesión; no evita que se escriba el transcript."
+          },
+          {
+            "id": "C",
+            "text": "`\"cleanupPeriodDays\": 1` en los settings del runner",
+            "why": "El transcript igual se escribe y queda en disco hasta que tenga un día."
+          },
+          {
+            "id": "D",
+            "text": "`claude rm <id>` cuando termina la ejecución",
+            "why": "Borrar una sesión en background con `claude rm` deja su transcript en disco."
+          }
+        ],
+        "explanation": "La ejecución no debe escribir un transcript y solo esa ejecución debe cambiar. `--no-session-persistence` junto con `-p` hace exactamente eso. `--bare` tienta porque también es una opción de `-p` relacionada con sesiones, pero solo omite el barrido, y una retención corta igual escribe el archivo primero."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-application-data--ed9b0673",
+      "conceptId": "dir-application-data",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Last week Claude read a `.env` file in `~/work/billing`, so an API key is now in that project's local transcripts. You want it off your disk now without touching other projects' data, and from now on you want transcripts kept at most 3 days. Which two actions meet both goals? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `claude project purge ~/work/billing`",
+          "correct": true,
+          "why": "It deletes that project's transcripts and related state after showing the plan, leaving other projects alone."
+        },
+        {
+          "id": "B",
+          "text": "Run `claude project purge --all`",
+          "correct": false,
+          "why": "It purges every project and deletes `history.jsonl` outright, touching other projects' data."
+        },
+        {
+          "id": "C",
+          "text": "Set `\"cleanupPeriodDays\": 3` in `~/.claude/settings.json`",
+          "correct": true,
+          "why": "From then on the sweep deletes transcripts older than 3 days."
+        },
+        {
+          "id": "D",
+          "text": "Delete `~/.claude.json`",
+          "correct": false,
+          "why": "It holds auth and app state, not transcripts, and the docs say not to delete it."
+        },
+        {
+          "id": "E",
+          "text": "Set `\"cleanupPeriodDays\": 0` in `~/.claude/settings.json`",
+          "correct": false,
+          "why": "`0` fails with a validation error; it doesn't delete anything."
+        }
+      ],
+      "explanation": "Two requirements: remove one project's existing data now, and cap future retention. `claude project purge` with the project path handles the first without touching other projects, and `cleanupPeriodDays: 3` handles the second. `--all` is tempting but violates the 'other projects' constraint, and `0` is rejected as invalid.",
+      "keywordCues": [
+        "off your disk now",
+        "without touching other projects' data",
+        "kept at most 3 days"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "La semana pasada Claude leyó un archivo `.env` en `~/work/billing`, así que ahora hay una API key en los transcripts locales de ese proyecto. Quieres sacarla de tu disco ya sin tocar los datos de otros proyectos, y de ahora en adelante quieres conservar transcripts como máximo 3 días. ¿Qué dos acciones cumplen ambos objetivos? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `claude project purge ~/work/billing`",
+            "why": "Borra los transcripts y el estado relacionado de ese proyecto tras mostrar el plan, sin tocar otros proyectos."
+          },
+          {
+            "id": "B",
+            "text": "Correr `claude project purge --all`",
+            "why": "Purga todos los proyectos y borra `history.jsonl` entero, tocando datos de otros proyectos."
+          },
+          {
+            "id": "C",
+            "text": "Poner `\"cleanupPeriodDays\": 3` en `~/.claude/settings.json`",
+            "why": "Desde entonces el barrido borra transcripts con más de 3 días."
+          },
+          {
+            "id": "D",
+            "text": "Borrar `~/.claude.json`",
+            "why": "Guarda autenticación y estado de la app, no transcripts, y la documentación dice que no lo borres."
+          },
+          {
+            "id": "E",
+            "text": "Poner `\"cleanupPeriodDays\": 0` en `~/.claude/settings.json`",
+            "why": "`0` falla con un error de validación; no borra nada."
+          }
+        ],
+        "explanation": "Dos requisitos: quitar ya los datos de un proyecto y limitar la retención futura. `claude project purge` con la ruta del proyecto cubre lo primero sin tocar otros proyectos, y `cleanupPeriodDays: 3` cubre lo segundo. `--all` tienta pero rompe la restricción de otros proyectos, y `0` se rechaza como inválido."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-application-data--667b13ea",
+      "conceptId": "dir-application-data",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Before deleting anything, you want `claude project purge ~/work/my-repo` to only print its deletion plan. Which flag do you add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--dry-run",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--dry-run` previews the purge plan, listing each matching item and why it's included, without deleting anything.",
+      "keywordCues": [
+        "only print its deletion plan",
+        "before deleting anything"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Antes de borrar nada, quieres que `claude project purge ~/work/my-repo` solo imprima su plan de borrado. ¿Qué flag agregas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--dry-run",
+            "why": ""
+          }
+        ],
+        "explanation": "`--dry-run` muestra el plan del purge, listando cada elemento que coincide y por qué se incluye, sin borrar nada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-application-data--5d1238cf",
+      "conceptId": "dir-application-data",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A cleanup script runs `claude project purge ~/work/my-repo` and must not stop at the confirmation prompt. Which flag do you add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--yes",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "-y",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--yes` skips the confirmation prompt so the purge can run unattended in scripts.",
+      "keywordCues": [
+        "script",
+        "must not stop at the confirmation prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Un script de limpieza corre `claude project purge ~/work/my-repo` y no debe detenerse en la confirmación. ¿Qué flag agregas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--yes",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "-y",
+            "why": ""
+          }
+        ],
+        "explanation": "`--yes` omite el prompt de confirmación para que el purge corra sin supervisión en scripts."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "dir-application-data--r0",
+      "conceptId": "dir-application-data",
+      "kind": "recall",
+      "prompt": "What session data does ~/.claude keep, what does the cleanupPeriodDays sweep delete and spare, and how do you wipe one project now?",
+      "promptEs": "¿Qué datos de sesión guarda ~/.claude, qué borra y qué respeta el barrido de cleanupPeriodDays, y cómo borras ya un proyecto?",
+      "idealAnswer": "`~/.claude` keeps plaintext transcripts under `projects/<project>/`, checkpoint snapshots in `file-history/`, plans and debug logs. The sweep deletes them after `cleanupPeriodDays`, 30 days by default with a minimum of 1, but never deletes auto memory files or `history.jsonl`. `claude project purge <path>` removes a project's transcripts, auto memory and prompt history lines right away.",
+      "rubric": [
+        "Transcripts, file-history snapshots, plans are stored in plaintext",
+        "cleanupPeriodDays sweep, default 30 days, minimum 1",
+        "Sweep spares auto memory and history.jsonl",
+        "claude project purge <path> removes one project's state now"
+      ]
+    }
+  ]
+}

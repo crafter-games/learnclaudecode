@@ -1,0 +1,484 @@
+{
+  "conceptId": "ctx-context-command",
+  "card": {
+    "en": {
+      "tldr": "/context shows a live colored grid of what is filling your context window, by category, with optimization suggestions. Its Memory files list confirms which CLAUDE.md, rules and auto memory files loaded. It answers what is in the window right now, not what the session cost; that is /usage.",
+      "whenToUse": [
+        "Confirming that a CLAUDE.md or rules file actually loaded.",
+        "Finding what is filling the window, such as heavy MCP tools or memory bloat.",
+        "Checking how close you are to the limit before a long new task."
+      ],
+      "keyFacts": [
+        "/context visualizes current context usage as a colored grid by category.",
+        "It shows optimization suggestions for context-heavy tools, memory bloat and capacity warnings.",
+        "The Memory files list shows which CLAUDE.md, CLAUDE.local.md, rules and auto memory files loaded.",
+        "/context all expands the per-item breakdown, for example tokens used by each loaded MCP tool.",
+        "/usage (aliases /cost and /stats) shows session cost, plan usage limits and activity stats instead."
+      ],
+      "gotchas": [
+        "/memory lists memory file locations, even ones that don't exist yet, so it does not prove a file loaded.",
+        "If a CLAUDE.md is missing from Memory files, Claude can't see it.",
+        "/context shows usage but frees nothing; use /compact or /clear to free space."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/usage",
+          "difference": "Answers what the session cost and how much of your plan you used, not what fills the window."
+        },
+        {
+          "concept": "/memory",
+          "difference": "Opens and edits CLAUDE.md and auto memory files; /context confirms which ones loaded."
+        }
+      ],
+      "examCues": [
+        "confirm the file loaded",
+        "what is filling the context window",
+        "which category is using the most context",
+        "tokens each MCP tool uses",
+        "Memory files"
+      ]
+    },
+    "es": {
+      "tldr": "/context muestra una grilla de colores en vivo con lo que llena tu ventana de contexto, por categoría, con sugerencias de optimización. Su lista Memory files confirma qué CLAUDE.md, reglas y archivos de auto memoria cargaron. Responde qué hay en la ventana ahora, no cuánto costó la sesión; eso es /usage.",
+      "whenToUse": [
+        "Confirmar que un CLAUDE.md o archivo de reglas realmente cargó.",
+        "Encontrar qué llena la ventana, como tools MCP pesadas o memoria inflada.",
+        "Ver qué tan cerca estás del límite antes de una tarea larga nueva."
+      ],
+      "keyFacts": [
+        "/context visualiza el uso actual del contexto como una grilla de colores por categoría.",
+        "Muestra sugerencias de optimización para tools pesadas en contexto, memoria inflada y alertas de capacidad.",
+        "La lista Memory files muestra qué CLAUDE.md, CLAUDE.local.md, reglas y archivos de auto memoria cargaron.",
+        "/context all expande el desglose por elemento, por ejemplo los tokens de cada tool MCP cargada.",
+        "/usage (alias /cost y /stats) muestra en cambio el costo de la sesión, los límites del plan y estadísticas de actividad."
+      ],
+      "gotchas": [
+        "/memory lista ubicaciones de memory files, incluso de archivos que aún no existen, así que no prueba que un archivo cargó.",
+        "Si un CLAUDE.md no aparece en Memory files, Claude no lo ve.",
+        "/context muestra el uso pero no libera nada; para liberar espacio usa /compact o /clear."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/usage",
+          "difference": "Responde cuánto costó la sesión y cuánto de tu plan usaste, no qué llena la ventana."
+        },
+        {
+          "concept": "/memory",
+          "difference": "Abre y edita CLAUDE.md y archivos de auto memoria; /context confirma cuáles cargaron."
+        }
+      ],
+      "examCues": [
+        "confirm the file loaded",
+        "what is filling the context window",
+        "which category is using the most context",
+        "tokens each MCP tool uses",
+        "Memory files"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/context-window.md",
+      "https://code.claude.com/docs/en/commands.md",
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "ctx-context-command--7d72a7f8",
+      "conceptId": "ctx-context-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer created .claude/CLAUDE.md with the project's test commands, but Claude keeps running the wrong ones. Before rewriting the instructions, he wants to confirm that the file is actually loaded in the current session. What should he run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory",
+          "correct": false,
+          "why": "It lists memory file locations, including files that don't exist yet, and opens them for editing; it does not confirm what loaded."
+        },
+        {
+          "id": "B",
+          "text": "/context",
+          "correct": true,
+          "why": "Its Memory files list shows which CLAUDE.md and rules files loaded into this session."
+        },
+        {
+          "id": "C",
+          "text": "/usage",
+          "correct": false,
+          "why": "It shows session cost and plan usage, not which files are in context."
+        },
+        {
+          "id": "D",
+          "text": "/init",
+          "correct": false,
+          "why": "It generates or suggests improvements to a CLAUDE.md; it does not check what loaded."
+        }
+      ],
+      "explanation": "The requirement is to confirm that the file is loaded right now. The docs say to run /context and check the list under Memory files; if a CLAUDE.md is missing there, Claude can't see it. /memory is the tempting option because it deals with CLAUDE.md, but it lists locations, even for files that don't exist yet. /usage answers a cost question, not a content one.",
+      "keywordCues": [
+        "confirm that the file is actually loaded",
+        "in the current session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador creó .claude/CLAUDE.md con los comandos de test del proyecto, pero Claude sigue ejecutando otros. Antes de reescribir las instrucciones, quiere confirmar que el archivo realmente está cargado en la sesión actual. ¿Qué debe ejecutar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/memory",
+            "why": "Lista ubicaciones de memory files, incluso de archivos que aún no existen, y los abre para editar; no confirma qué cargó."
+          },
+          {
+            "id": "B",
+            "text": "/context",
+            "why": "Su lista Memory files muestra qué CLAUDE.md y archivos de reglas cargaron en esta sesión."
+          },
+          {
+            "id": "C",
+            "text": "/usage",
+            "why": "Muestra el costo de la sesión y el uso del plan, no qué archivos están en contexto."
+          },
+          {
+            "id": "D",
+            "text": "/init",
+            "why": "Genera un CLAUDE.md o sugiere mejoras; no verifica qué cargó."
+          }
+        ],
+        "explanation": "El requisito es confirmar que el archivo está cargado ahora. La documentación dice correr /context y revisar la lista Memory files; si un CLAUDE.md no aparece ahí, Claude no lo ve. /memory es la opción tentadora porque trata con CLAUDE.md, pero lista ubicaciones, incluso de archivos que no existen. /usage responde una pregunta de costo, no de contenido."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-context-command--4c23957d",
+      "conceptId": "ctx-context-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer notices Claude forgetting earlier instructions in a long session and suspects that a few MCP servers or an oversized memory file are crowding the window. She wants to see, for this session right now, which categories fill the context and get suggestions on what to trim, without changing anything yet. What should she run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact",
+          "correct": false,
+          "why": "It frees space by summarizing the conversation, which changes the session and does not show what was filling it."
+        },
+        {
+          "id": "B",
+          "text": "/usage",
+          "correct": false,
+          "why": "It reports session cost, plan limits and activity stats, not the contents of the window by category."
+        },
+        {
+          "id": "C",
+          "text": "/insights",
+          "correct": false,
+          "why": "It generates an HTML report about recent sessions on the machine, not a live view of this window."
+        },
+        {
+          "id": "D",
+          "text": "/context",
+          "correct": true,
+          "why": "It shows a live grid by category with suggestions for context-heavy tools, memory bloat and capacity warnings."
+        }
+      ],
+      "explanation": "The decisive requirements are a live, per-category view of this session plus suggestions, without changing anything. /context shows exactly that, including optimization suggestions for context-heavy tools and memory bloat. /compact is tempting because it addresses a full window, but it acts before you know the cause. /usage and /insights answer cost and usage-pattern questions instead.",
+      "keywordCues": [
+        "which categories fill the context",
+        "get suggestions on what to trim",
+        "without changing anything yet"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora nota que Claude olvida instrucciones anteriores en una sesión larga y sospecha que algunos servidores MCP o un memory file enorme están llenando la ventana. Quiere ver, para esta sesión ahora mismo, qué categorías llenan el contexto y recibir sugerencias sobre qué recortar, sin cambiar nada todavía. ¿Qué debe ejecutar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/compact",
+            "why": "Libera espacio resumiendo la conversación, lo que cambia la sesión y no muestra qué la llenaba."
+          },
+          {
+            "id": "B",
+            "text": "/usage",
+            "why": "Reporta costo de la sesión, límites del plan y estadísticas, no el contenido de la ventana por categoría."
+          },
+          {
+            "id": "C",
+            "text": "/insights",
+            "why": "Genera un reporte HTML sobre sesiones recientes en la máquina, no una vista en vivo de esta ventana."
+          },
+          {
+            "id": "D",
+            "text": "/context",
+            "why": "Muestra una grilla en vivo por categoría con sugerencias para tools pesadas, memoria inflada y alertas de capacidad."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son una vista en vivo por categoría de esta sesión con sugerencias, sin cambiar nada. /context muestra justamente eso, incluidas sugerencias para tools pesadas en contexto y memoria inflada. /compact tienta porque ataca una ventana llena, pero actúa antes de que conozcas la causa. /usage e /insights responden preguntas de costo y de patrones de uso."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-context-command--2cf458c6",
+      "conceptId": "ctx-context-command",
+      "secondaryConcepts": [
+        "cost-usage-command"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team lead on an API plan wants to know how much the current session has cost so far and the token counts behind that figure, to decide whether long sessions are worth it. Which command answers this directly?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context",
+          "correct": false,
+          "why": "It shows what fills the context window now, not what the session has cost."
+        },
+        {
+          "id": "B",
+          "text": "/status",
+          "correct": false,
+          "why": "It shows status information and settings sources, not session cost."
+        },
+        {
+          "id": "C",
+          "text": "/usage",
+          "correct": true,
+          "why": "Its Session block shows token usage and a locally estimated cost for the current session."
+        },
+        {
+          "id": "D",
+          "text": "/insights",
+          "correct": false,
+          "why": "It analyzes how you use Claude Code across recent sessions, not this session's cost."
+        }
+      ],
+      "explanation": "The requirement is cost and token counts for the current session. /usage, with aliases /cost and /stats, shows a Session block with token usage and an estimated cost aimed at API users. /context is the tempting look-alike because it also talks about tokens, but it answers what is in the window, not what it cost. /insights produces a report on usage patterns, not a session bill.",
+      "keywordCues": [
+        "how much the current session has cost",
+        "token counts behind that figure"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un líder de equipo con plan de API quiere saber cuánto ha costado la sesión actual y los conteos de tokens detrás de esa cifra, para decidir si valen la pena las sesiones largas. ¿Qué comando responde esto directamente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/context",
+            "why": "Muestra qué llena la ventana de contexto ahora, no cuánto costó la sesión."
+          },
+          {
+            "id": "B",
+            "text": "/status",
+            "why": "Muestra información de estado y fuentes de settings, no el costo de la sesión."
+          },
+          {
+            "id": "C",
+            "text": "/usage",
+            "why": "Su bloque Session muestra el uso de tokens y un costo estimado localmente para la sesión actual."
+          },
+          {
+            "id": "D",
+            "text": "/insights",
+            "why": "Analiza cómo usas Claude Code en sesiones recientes, no el costo de esta sesión."
+          }
+        ],
+        "explanation": "El requisito es el costo y los tokens de la sesión actual. /usage, con alias /cost y /stats, muestra un bloque Session con uso de tokens y un costo estimado pensado para usuarios de API. /context es el parecido tentador porque también habla de tokens, pero responde qué hay en la ventana, no cuánto costó. /insights produce un reporte de patrones de uso, no la cuenta de la sesión."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-context-command--499dc421",
+      "conceptId": "ctx-context-command",
+      "secondaryConcepts": [
+        "cost-usage-command"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer runs /context in the middle of a session and wants to act only on what its output can tell her. Which two questions can she answer from /context? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Whether her project CLAUDE.md loaded into this session",
+          "correct": true,
+          "why": "The Memory files list shows which CLAUDE.md, rules and auto memory files loaded."
+        },
+        {
+          "id": "B",
+          "text": "How much the session has cost in dollars",
+          "correct": false,
+          "why": "Cost is reported by /usage, not /context."
+        },
+        {
+          "id": "C",
+          "text": "How many tokens each loaded MCP tool uses, with /context all",
+          "correct": true,
+          "why": "Passing all expands the per-item breakdown, including tokens per loaded MCP tool."
+        },
+        {
+          "id": "D",
+          "text": "How much of her plan's usage limits she has consumed",
+          "correct": false,
+          "why": "Plan usage limits appear in /usage."
+        },
+        {
+          "id": "E",
+          "text": "Which path-scoped rules will load later in the session",
+          "correct": false,
+          "why": "/context shows what is in the window now; a path-scoped rule loads only when a matching file is read."
+        }
+      ],
+      "explanation": "/context answers what is in the window right now. Its Memory files list confirms which CLAUDE.md and rules files loaded, and /context all expands the per-item breakdown to show tokens per MCP tool. Cost and plan limits are the tempting distractors, but they belong to /usage. A path-scoped rule that has not matched yet is not in the window, so /context cannot predict it.",
+      "keywordCues": [
+        "act only on what its output can tell her",
+        "in the middle of a session"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora ejecuta /context a mitad de una sesión y quiere actuar solo sobre lo que su salida puede decirle. ¿Qué dos preguntas puede responder con /context? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Si el CLAUDE.md de su proyecto cargó en esta sesión",
+            "why": "La lista Memory files muestra qué CLAUDE.md, reglas y archivos de auto memoria cargaron."
+          },
+          {
+            "id": "B",
+            "text": "Cuánto ha costado la sesión en dólares",
+            "why": "El costo lo reporta /usage, no /context."
+          },
+          {
+            "id": "C",
+            "text": "Cuántos tokens usa cada tool MCP cargada, con /context all",
+            "why": "Pasar all expande el desglose por elemento, incluidos los tokens de cada tool MCP cargada."
+          },
+          {
+            "id": "D",
+            "text": "Cuánto de los límites de uso de su plan ha consumido",
+            "why": "Los límites de uso del plan aparecen en /usage."
+          },
+          {
+            "id": "E",
+            "text": "Qué reglas con paths cargarán más adelante en la sesión",
+            "why": "/context muestra lo que hay en la ventana ahora; una regla con paths carga solo al leer un archivo que coincide."
+          }
+        ],
+        "explanation": "/context responde qué hay en la ventana ahora mismo. Su lista Memory files confirma qué CLAUDE.md y reglas cargaron, y /context all expande el desglose por elemento para mostrar los tokens de cada tool MCP. El costo y los límites del plan son los distractores tentadores, pero pertenecen a /usage. Una regla con paths que aún no coincidió no está en la ventana, así que /context no puede anticiparla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-context-command--2e7f69cf",
+      "conceptId": "ctx-context-command",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which command expands the per-item breakdown of context usage, for example to see how many tokens each loaded MCP tool uses?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context all",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/context shows context usage as a colored grid by category, and passing all expands the per-item breakdown. The docs point to /context all to see how many tokens each loaded MCP tool uses.",
+      "keywordCues": [
+        "expands the per-item breakdown",
+        "how many tokens each loaded MCP tool uses"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando expande el desglose por elemento del uso de contexto, por ejemplo para ver cuántos tokens usa cada tool MCP cargada?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/context all",
+            "why": ""
+          }
+        ],
+        "explanation": "/context muestra el uso de contexto como una grilla de colores por categoría, y pasar all expande el desglose por elemento. La documentación indica /context all para ver cuántos tokens usa cada tool MCP cargada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "ctx-context-command--r0",
+      "conceptId": "ctx-context-command",
+      "kind": "recall",
+      "prompt": "What does /context show you, and when would you pass all to it?",
+      "promptEs": "¿Qué te muestra /context y cuándo le pasarías all?",
+      "idealAnswer": "/context shows a live colored grid of context usage by category, with optimization suggestions for context-heavy tools, memory bloat and capacity warnings. Its Memory files list confirms which CLAUDE.md, rules and auto memory files loaded. You pass all to expand the per-item breakdown, for example to see tokens per loaded MCP tool.",
+      "rubric": [
+        "Live grid of context usage by category",
+        "Optimization suggestions and capacity warnings",
+        "Memory files list confirms which CLAUDE.md and rules loaded",
+        "/context all expands the per-item breakdown"
+      ]
+    },
+    {
+      "id": "ctx-context-command--r1",
+      "conceptId": "ctx-context-command",
+      "kind": "why-not",
+      "prompt": "Why doesn't /usage tell you whether your project CLAUDE.md is in Claude's context?",
+      "promptEs": "¿Por qué /usage no te dice si el CLAUDE.md de tu proyecto está en el contexto de Claude?",
+      "idealAnswer": "/usage answers what the session cost: session cost, plan usage limits and activity stats. It does not list what occupies the context window. To confirm a CLAUDE.md loaded, run /context and check the Memory files list.",
+      "rubric": [
+        "/usage reports cost, plan limits and activity stats",
+        "It does not show the contents of the context window",
+        "/context and its Memory files list confirm what loaded"
+      ]
+    }
+  ]
+}

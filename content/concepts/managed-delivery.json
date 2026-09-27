@@ -1,0 +1,360 @@
+{
+  "conceptId": "managed-delivery",
+  "card": {
+    "en": {
+      "tldr": "Managed settings reach a machine through server-managed settings in the claude.ai admin console, an MDM or OS-level policy, or a `managed-settings.json` file in a system directory. Pick the channel by how you manage devices and by whether developers run cloud sessions.",
+      "whenToUse": [
+        "Rolling out an organization policy that no developer can override",
+        "Choosing between the claude.ai console, MDM and a system file",
+        "Debugging why a deployed policy isn't applying on one machine",
+        "Splitting one file-based policy across several teams"
+      ],
+      "keyFacts": [
+        "Server-managed settings: Admin Settings > Claude Code > Managed settings in claude.ai, Teams or Enterprise, Owner or Primary Owner; fetched at startup and polled hourly.",
+        "MDM: macOS `com.anthropic.claudecode` profile, or a `Settings` value under `HKLM\\SOFTWARE\\Policies\\ClaudeCode` on Windows.",
+        "File: `managed-settings.json` in `/Library/Application Support/ClaudeCode/` (macOS), `/etc/claude-code/` (Linux and WSL) or `C:\\Program Files\\ClaudeCode\\` (Windows), plus `managed-settings.d/*.json` merged alphabetically after it.",
+        "Default `first-wins`: the first source with a policy key is used, in the order remote > MDM > file > HKCU; the rest are ignored, not merged.",
+        "`/status` shows the chosen source on the `Setting sources` line, e.g. `Enterprise managed settings (file)`.",
+        "Only server-managed settings reach sessions in Anthropic-hosted cloud environments."
+      ],
+      "gotchas": [
+        "Adding server-managed settings on top of a deployed file silently skips the file under `first-wins`; `/status` lists it under `Skipped sources`.",
+        "Server-managed settings are skipped when the session uses a third-party provider variable or a non-default `ANTHROPIC_BASE_URL`.",
+        "Claude Code doesn't read the legacy `C:\\ProgramData\\ClaudeCode\\managed-settings.json` path.",
+        "A managed file that isn't valid JSON makes Claude Code refuse to start."
+      ],
+      "confusedWith": [
+        {
+          "concept": "managed-only-locks",
+          "difference": "Delivery is the channel and which source wins; locks are keys that restrict what lower levels may add."
+        }
+      ],
+      "examCues": [
+        "without MDM",
+        "developers also use cloud sessions",
+        "which managed source is in effect",
+        "deploy to every developer's machine",
+        "several teams own parts of the policy"
+      ]
+    },
+    "es": {
+      "tldr": "Los managed settings llegan a una máquina por server-managed settings en la consola de admin de claude.ai, por una política de MDM o del SO, o por un archivo `managed-settings.json` en un directorio del sistema. Elige el canal según cómo administras los dispositivos y si tus desarrolladores usan sesiones en la nube.",
+      "whenToUse": [
+        "Desplegar una política de organización que ningún desarrollador pueda sobreescribir",
+        "Elegir entre la consola de claude.ai, MDM y un archivo del sistema",
+        "Depurar por qué una política desplegada no aplica en una máquina",
+        "Repartir una política basada en archivos entre varios equipos"
+      ],
+      "keyFacts": [
+        "Server-managed settings: Admin Settings > Claude Code > Managed settings en claude.ai, Teams o Enterprise, rol Owner o Primary Owner; se descarga al iniciar y se consulta cada hora.",
+        "MDM: perfil `com.anthropic.claudecode` en macOS, o un valor `Settings` bajo `HKLM\\SOFTWARE\\Policies\\ClaudeCode` en Windows.",
+        "Archivo: `managed-settings.json` en `/Library/Application Support/ClaudeCode/` (macOS), `/etc/claude-code/` (Linux y WSL) o `C:\\Program Files\\ClaudeCode\\` (Windows), más `managed-settings.d/*.json` fusionados después en orden alfabético.",
+        "Por defecto `first-wins`: se usa la primera fuente con una clave de política, en el orden remote > MDM > archivo > HKCU; las demás se ignoran, no se mezclan.",
+        "`/status` muestra la fuente elegida en la línea `Setting sources`, por ejemplo `Enterprise managed settings (file)`.",
+        "Solo server-managed settings llega a sesiones en entornos en la nube de Anthropic."
+      ],
+      "gotchas": [
+        "Agregar server-managed settings sobre un archivo ya desplegado hace que el archivo se ignore sin aviso bajo `first-wins`; `/status` lo lista en `Skipped sources`.",
+        "Server-managed settings no se descarga si la sesión usa una variable de proveedor de terceros o un `ANTHROPIC_BASE_URL` distinto del predeterminado.",
+        "Claude Code no lee la ruta antigua `C:\\ProgramData\\ClaudeCode\\managed-settings.json`.",
+        "Un archivo managed que no es JSON válido hace que Claude Code se niegue a iniciar."
+      ],
+      "confusedWith": [
+        {
+          "concept": "managed-only-locks",
+          "difference": "La entrega es el canal y qué fuente gana; los locks son claves que restringen lo que pueden agregar los niveles inferiores."
+        }
+      ],
+      "examCues": [
+        "without MDM",
+        "developers also use cloud sessions",
+        "which managed source is in effect",
+        "deploy to every developer's machine",
+        "several teams own parts of the policy"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/managed-settings.md",
+      "https://code.claude.com/docs/en/server-managed-settings.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "managed-delivery--691c8555",
+      "conceptId": "managed-delivery",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "An Enterprise organization manages every laptop with Jamf and already deploys a Claude Code policy as a configuration profile. Many developers now also start cloud sessions at claude.ai/code in Anthropic-hosted environments. Security wants the same deny rules enforced in those cloud sessions, where developers can't override them. What should the admin add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `managed-settings.json` file pushed to every laptop with Jamf",
+          "correct": false,
+          "why": "It's another device-level source; a cloud session doesn't read files on the developer's laptop."
+        },
+        {
+          "id": "B",
+          "text": "The same policy in server-managed settings in the claude.ai admin console",
+          "correct": true,
+          "why": "Server-managed settings are the only managed source that reaches sessions in Anthropic-hosted cloud environments."
+        },
+        {
+          "id": "C",
+          "text": "The deny rules in each repository's committed `.claude/settings.json`",
+          "correct": false,
+          "why": "Cloud sessions read it, but it's a project file developers can edit, not policy they can't override."
+        },
+        {
+          "id": "D",
+          "text": "A `Settings` value under `HKLM\\SOFTWARE\\Policies\\ClaudeCode`",
+          "correct": false,
+          "why": "The registry lives on the Windows device, so it never reaches a cloud session either."
+        }
+      ],
+      "explanation": "The deciding requirement is enforcement inside Anthropic-hosted cloud sessions. Those sessions don't read a device's MDM profile or managed settings file, so the policy has to come from server-managed settings in the claude.ai console. A committed project file does reach the cloud session, which makes it tempting, but it sits below managed settings and developers can change it.",
+      "keywordCues": [
+        "cloud sessions",
+        "Anthropic-hosted environments",
+        "developers can't override them"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "Una organización Enterprise administra todas las laptops con Jamf y ya despliega una política de Claude Code como perfil de configuración. Muchos desarrolladores ahora también inician sesiones en la nube en claude.ai/code, en entornos alojados por Anthropic. Seguridad quiere que las mismas reglas deny se apliquen en esas sesiones en la nube, sin que los desarrolladores puedan sobreescribirlas. ¿Qué debe agregar el admin?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un archivo `managed-settings.json` enviado a cada laptop con Jamf",
+            "why": "Es otra fuente a nivel de dispositivo; una sesión en la nube no lee archivos de la laptop del desarrollador."
+          },
+          {
+            "id": "B",
+            "text": "La misma política en server-managed settings en la consola de admin de claude.ai",
+            "why": "Server-managed settings es la única fuente managed que llega a sesiones en entornos en la nube de Anthropic."
+          },
+          {
+            "id": "C",
+            "text": "Las reglas deny en el `.claude/settings.json` commiteado de cada repositorio",
+            "why": "Las sesiones en la nube lo leen, pero es un archivo de proyecto que los desarrolladores pueden editar, no una política que no puedan sobreescribir."
+          },
+          {
+            "id": "D",
+            "text": "Un valor `Settings` bajo `HKLM\\SOFTWARE\\Policies\\ClaudeCode`",
+            "why": "El registro vive en el dispositivo Windows, así que tampoco llega a una sesión en la nube."
+          }
+        ],
+        "explanation": "El requisito que decide es aplicar la política dentro de sesiones en la nube de Anthropic. Esas sesiones no leen el perfil MDM ni el archivo managed del dispositivo, así que la política tiene que venir de server-managed settings en la consola de claude.ai. Un archivo de proyecto commiteado sí llega a la sesión en la nube, y por eso tienta, pero está por debajo de managed y los desarrolladores pueden cambiarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "managed-delivery--9cbc5315",
+      "conceptId": "managed-delivery",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command, run inside Claude Code, shows on its `Setting sources` line which managed source was selected on this machine?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/status",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/status` lists `Enterprise managed settings` with the selected source in parentheses, such as `(remote)`, `(plist)`, `(HKLM)` or `(file)`, and a `Skipped sources` line for managed sources it found but didn't use.",
+      "keywordCues": [
+        "Setting sources",
+        "which managed source was selected"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando, ejecutado dentro de Claude Code, muestra en su línea `Setting sources` qué fuente managed se eligió en esta máquina?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/status",
+            "why": ""
+          }
+        ],
+        "explanation": "`/status` lista `Enterprise managed settings` con la fuente elegida entre paréntesis, como `(remote)`, `(plist)`, `(HKLM)` o `(file)`, y una línea `Skipped sources` con las fuentes managed que encontró pero no usó."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "managed-delivery--5a96800b",
+      "conceptId": "managed-delivery",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "On a Linux host without MDM, what is the full path of the managed settings file Claude Code reads?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/etc/claude-code/managed-settings.json",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "On Linux and WSL the system directory is `/etc/claude-code/`, so the file is `/etc/claude-code/managed-settings.json`. Optional drop-ins go in `/etc/claude-code/managed-settings.d/`.",
+      "keywordCues": [
+        "Linux host without MDM",
+        "managed settings file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "En un host Linux sin MDM, ¿cuál es la ruta completa del archivo de managed settings que lee Claude Code?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/etc/claude-code/managed-settings.json",
+            "why": ""
+          }
+        ],
+        "explanation": "En Linux y WSL el directorio del sistema es `/etc/claude-code/`, así que el archivo es `/etc/claude-code/managed-settings.json`. Los drop-ins opcionales van en `/etc/claude-code/managed-settings.d/`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "managed-delivery--2f4bc196",
+      "conceptId": "managed-delivery",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Under the default `first-wins` behavior, order the managed sources Claude Code checks, from highest to lowest priority.",
+      "options": [
+        {
+          "id": "A",
+          "text": "`managed-settings.json` and `managed-settings.d/*.json` files",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "HKCU registry value (Windows and WSL)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Server-managed settings from claude.ai (remote)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "MDM or OS-level policy (macOS plist or HKLM)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Claude Code checks remote settings first, then the MDM or OS-level policy, then the managed settings files, and finally the user-writable HKCU registry. Under `first-wins` it uses the first source that delivers a policy key and ignores the rest, apart from a few cross-source keys.",
+      "keywordCues": [
+        "first-wins",
+        "highest to lowest priority"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "Con el comportamiento por defecto `first-wins`, ordena las fuentes managed que revisa Claude Code, de mayor a menor prioridad.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Archivos `managed-settings.json` y `managed-settings.d/*.json`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "Valor de registro HKCU (Windows y WSL)",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Server-managed settings desde claude.ai (remote)",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "Política de MDM o del SO (plist de macOS o HKLM)",
+            "why": ""
+          }
+        ],
+        "explanation": "Claude Code revisa primero la configuración remota, luego la política de MDM o del SO, luego los archivos managed y al final el registro HKCU, que el usuario puede escribir. Con `first-wins` usa la primera fuente que trae una clave de política e ignora el resto, salvo unas pocas claves cross-source."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "C",
+        "D",
+        "A",
+        "B"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "managed-delivery--r0",
+      "conceptId": "managed-delivery",
+      "kind": "recall",
+      "prompt": "Name the three ways to deliver managed settings, and say which source wins by default when several reach one machine.",
+      "promptEs": "Nombra las tres formas de entregar managed settings y di qué fuente gana por defecto cuando varias llegan a una máquina.",
+      "idealAnswer": "The three admin channels are server-managed settings from the claude.ai admin console, an MDM or OS-level policy (macOS profile or HKLM registry), and a `managed-settings.json` file in the system directory; a user-writable HKCU registry value is a lowest-priority fallback. By default Claude Code uses only the first source with a policy key, in the order remote, MDM, file, HKCU, and `/status` shows which one it chose.",
+      "rubric": [
+        "Server-managed settings from the claude.ai console",
+        "MDM or OS policy: macOS profile or HKLM registry",
+        "managed-settings.json in a system directory",
+        "First source with a policy key wins: remote > MDM > file > HKCU (HKCU is only a fallback)"
+      ]
+    },
+    {
+      "id": "managed-delivery--r1",
+      "conceptId": "managed-delivery",
+      "kind": "why-not",
+      "prompt": "IT deploys `managed-settings.json`, then an Owner adds server-managed settings. Why do the file's deny rules stop applying?",
+      "promptEs": "TI despliega `managed-settings.json` y luego un Owner agrega server-managed settings. ¿Por qué dejan de aplicar las reglas deny del archivo?",
+      "idealAnswer": "Managed sources don't merge by default: under `first-wins` Claude Code uses the highest-ranked source with a policy key, and remote settings rank above the file. The file is skipped, which `/status` shows under `Skipped sources`; move the rules into the server-managed policy or set `managedSourcesBehavior` to `\"merge\"`.",
+      "rubric": [
+        "Managed sources don't merge by default (first-wins)",
+        "Remote settings rank above the managed settings file",
+        "Fix: put the rules in the winning source or opt into merge"
+      ]
+    }
+  ]
+}

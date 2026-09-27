@@ -1,0 +1,453 @@
+{
+  "conceptId": "sandbox-bash-basics",
+  "card": {
+    "en": {
+      "tldr": "`/sandbox` turns on OS-level isolation for the shell commands Claude runs: Bash, PowerShell and Monitor commands and all their child processes. Instead of approving each command, you define which paths and domains they can touch, and in auto-allow mode sandboxed commands run without a prompt.",
+      "whenToUse": [
+        "Cutting prompts for builds and tests on your own machine",
+        "Wanting a limit that holds even if a command does more than its name suggests",
+        "Deciding between auto-allow and regular permissions for sandboxed commands"
+      ],
+      "keyFacts": [
+        "Enforcement uses Seatbelt on macOS and bubblewrap on Linux and WSL2; native Windows and WSL1 are not supported. Linux and WSL2 also need `socat`.",
+        "By default sandboxed commands can write only to the working directory, directories added with `--add-dir`, `/add-dir` or `permissions.additionalDirectories`, and a per-user temp directory; they can read almost the whole computer.",
+        "No network domains are pre-allowed: the first request to a new host prompts for approval.",
+        "Auto-allow (`sandbox.autoAllowBashIfSandboxed`, default `true`) runs sandboxed commands without a prompt; deny rules, content-scoped ask rules like `Bash(git push *)` and `rm` of critical paths still apply.",
+        "Choosing a mode in the `/sandbox` panel saves it to `.claude/settings.local.json`; set `sandbox.enabled` to `true` in `~/.claude/settings.json` for all projects.",
+        "Read, Edit and Write use permission rules instead; MCP servers and command hooks run unconstrained on the host."
+      ],
+      "gotchas": [
+        "The default read policy still allows credential files such as `~/.aws/credentials` and `~/.ssh/`.",
+        "A bare `Bash` ask rule is skipped for sandboxed commands in auto-allow; only content-scoped ask rules still prompt.",
+        "`/sandbox` is not a permission mode, and auto-allow is not auto mode.",
+        "A command that can't be sandboxed falls back to the regular permission flow, with a prompt titled \"Bash command (unsandboxed)\"."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Permission rules",
+          "difference": "Rules are checked on the command string before any tool runs; the sandbox limits the running process at the OS level."
+        },
+        {
+          "concept": "Auto mode classifier",
+          "difference": "A classifier reviews each action; auto-allow approves Bash because the sandbox boundary contains it."
+        }
+      ],
+      "examCues": [
+        "enforced by the operating system",
+        "fewer prompts for builds and tests",
+        "even if the command does more than it says",
+        "child processes",
+        "without approving each shell command"
+      ]
+    },
+    "es": {
+      "tldr": "`/sandbox` activa aislamiento a nivel de SO para los comandos de shell que corre Claude: Bash, PowerShell y Monitor, y todos sus procesos hijos. En vez de aprobar cada comando, defines qué rutas y dominios pueden tocar, y en modo auto-allow los comandos aislados corren sin prompt.",
+      "whenToUse": [
+        "Reducir prompts de builds y tests en tu propia máquina",
+        "Querer un límite que se mantenga aunque un comando haga más de lo que su nombre sugiere",
+        "Elegir entre auto-allow y regular permissions para comandos aislados"
+      ],
+      "keyFacts": [
+        "Se impone con Seatbelt en macOS y bubblewrap en Linux y WSL2; Windows nativo y WSL1 no están soportados. Linux y WSL2 también necesitan `socat`.",
+        "Por defecto los comandos aislados solo escriben en el directorio de trabajo, los directorios añadidos con `--add-dir`, `/add-dir` o `permissions.additionalDirectories`, y un temp por usuario; pueden leer casi todo el equipo.",
+        "No hay dominios de red permitidos de entrada: la primera petición a un host nuevo pide aprobación.",
+        "Auto-allow (`sandbox.autoAllowBashIfSandboxed`, por defecto `true`) corre los comandos aislados sin prompt; las reglas deny, las reglas ask con contenido como `Bash(git push *)` y el `rm` de rutas críticas siguen aplicando.",
+        "Elegir un modo en el panel `/sandbox` lo guarda en `.claude/settings.local.json`; pon `sandbox.enabled` en `true` en `~/.claude/settings.json` para todos los proyectos.",
+        "Read, Edit y Write usan reglas de permisos; los servidores MCP y los command hooks corren sin límites en el host."
+      ],
+      "gotchas": [
+        "La política de lectura por defecto sigue permitiendo archivos de credenciales como `~/.aws/credentials` y `~/.ssh/`.",
+        "Una regla ask `Bash` sin contenido se omite para comandos aislados en auto-allow; solo las reglas ask con contenido siguen preguntando.",
+        "`/sandbox` no es un modo de permisos, y auto-allow no es auto mode.",
+        "Un comando que no puede aislarse vuelve al flujo normal de permisos, con un prompt titulado \"Bash command (unsandboxed)\"."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas de permisos",
+          "difference": "Las reglas se evalúan sobre el texto del comando antes de correr; el sandbox limita el proceso en ejecución a nivel de SO."
+        },
+        {
+          "concept": "Clasificador de auto mode",
+          "difference": "Un clasificador revisa cada acción; auto-allow aprueba Bash porque el límite del sandbox lo contiene."
+        }
+      ],
+      "examCues": [
+        "enforced by the operating system",
+        "fewer prompts for builds and tests",
+        "even if the command does more than it says",
+        "child processes",
+        "without approving each shell command"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sandboxing.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sandbox-bash-basics--73d282b6",
+      "conceptId": "sandbox-bash-basics",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer on macOS is tired of approving every `npm run build` and `npm test` Claude runs. They want those shell commands to run without prompts, but with writes limited to the project and network access limited to hosts they approve, enforced by the operating system even if a script does something unexpected. File edits made with the Edit tool should keep prompting. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Switch to auto mode so a classifier approves safe commands",
+          "correct": false,
+          "why": "The classifier judges each action before it runs; it is not an OS boundary on what the running script can reach, and it also approves edits."
+        },
+        {
+          "id": "B",
+          "text": "Run `/sandbox` and choose auto-allow mode",
+          "correct": true,
+          "why": "The OS confines sandboxed commands to the working directory and approved hosts, and auto-allow runs them without prompts while Edit keeps its own permission flow."
+        },
+        {
+          "id": "C",
+          "text": "Start with `--permission-mode acceptEdits`",
+          "correct": false,
+          "why": "It auto-approves file edits, which should keep prompting, and adds no OS-level limit on what commands reach."
+        },
+        {
+          "id": "D",
+          "text": "Add `Bash(npm *)` to `permissions.allow`",
+          "correct": false,
+          "why": "It removes the prompts but nothing limits what the scripts write or which hosts they reach once they run."
+        }
+      ],
+      "explanation": "The deciding requirement is an operating-system boundary that holds even if a script misbehaves, combined with no prompts for those commands. `/sandbox` in auto-allow mode confines Bash commands and their child processes to the working directory and approved hosts and runs them without asking. Auto mode and allow rules only decide whether a command runs, not what it can reach. `acceptEdits` would also stop prompting for edits.",
+      "keywordCues": [
+        "enforced by the operating system",
+        "without prompts",
+        "keep prompting"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador en macOS está cansado de aprobar cada `npm run build` y `npm test` que corre Claude. Quiere que esos comandos de shell corran sin prompts, pero con escrituras limitadas al proyecto y red limitada a hosts que él apruebe, impuesto por el sistema operativo aunque un script haga algo inesperado. Las ediciones con la herramienta Edit deben seguir preguntando. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cambiar a auto mode para que un clasificador apruebe los comandos seguros",
+            "why": "El clasificador juzga cada acción antes de correr; no es un límite del SO sobre lo que alcanza el script, y además aprueba ediciones."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/sandbox` y elegir el modo auto-allow",
+            "why": "El SO confina los comandos aislados al directorio de trabajo y a los hosts aprobados, y auto-allow los corre sin prompts mientras Edit mantiene su propio flujo de permisos."
+          },
+          {
+            "id": "C",
+            "text": "Iniciar con `--permission-mode acceptEdits`",
+            "why": "Autoaprueba las ediciones, que deben seguir preguntando, y no agrega ningún límite de SO sobre lo que alcanzan los comandos."
+          },
+          {
+            "id": "D",
+            "text": "Agregar `Bash(npm *)` a `permissions.allow`",
+            "why": "Quita los prompts, pero nada limita qué escriben los scripts ni a qué hosts llegan una vez que corren."
+          }
+        ],
+        "explanation": "El requisito que decide es un límite del sistema operativo que se mantenga aunque un script se porte mal, junto con cero prompts para esos comandos. `/sandbox` en modo auto-allow confina los comandos Bash y sus hijos al directorio de trabajo y a los hosts aprobados, y los corre sin preguntar. Auto mode y las reglas allow solo deciden si un comando corre, no qué alcanza. `acceptEdits` además dejaría de preguntar por las ediciones."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-bash-basics--57eae581",
+      "conceptId": "sandbox-bash-basics",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team uses the Bash sandbox in auto-allow mode so builds run without prompts. The tech lead wants every `git push` Claude attempts to still require a confirmation prompt, deterministically, while other sandboxed commands keep running without prompts. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A bare `Bash` ask rule in `permissions.ask`",
+          "correct": false,
+          "why": "A bare `Bash` ask rule is skipped for commands that run sandboxed, and it would target every command, not just pushes."
+        },
+        {
+          "id": "B",
+          "text": "A line in `CLAUDE.md` asking Claude to confirm before pushing",
+          "correct": false,
+          "why": "Instructions only steer the model; they are not enforced, so the prompt is not deterministic."
+        },
+        {
+          "id": "C",
+          "text": "`\"allowUnsandboxedCommands\": false` in the `sandbox` block",
+          "correct": false,
+          "why": "It only disables the unsandboxed retry escape hatch; sandboxed pushes would still run without a prompt."
+        },
+        {
+          "id": "D",
+          "text": "A `Bash(git push *)` rule in `permissions.ask`",
+          "correct": true,
+          "why": "Content-scoped ask rules still force a prompt for sandboxed commands in auto-allow mode."
+        }
+      ],
+      "explanation": "In auto-allow mode, explicit deny rules and content-scoped ask rules such as `Bash(git push *)` still apply, so pushes keep prompting while everything else runs freely. A bare `Bash` ask rule is the tempting option, but it is skipped for sandboxed commands. `CLAUDE.md` is not enforcement, and `allowUnsandboxedCommands` controls only retries outside the sandbox.",
+      "keywordCues": [
+        "auto-allow mode",
+        "every `git push`",
+        "deterministically",
+        "other sandboxed commands keep running"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md"
+      ],
+      "es": {
+        "stem": "Un equipo usa el sandbox de Bash en modo auto-allow para que los builds corran sin prompts. El líder técnico quiere que cada `git push` que intente Claude siga pidiendo confirmación, de forma determinista, mientras los demás comandos aislados siguen corriendo sin prompts. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una regla ask `Bash` sin contenido en `permissions.ask`",
+            "why": "Una regla ask `Bash` sin contenido se omite para los comandos que corren aislados, y además apuntaría a todos los comandos, no solo a los push."
+          },
+          {
+            "id": "B",
+            "text": "Una línea en `CLAUDE.md` pidiendo a Claude confirmar antes de hacer push",
+            "why": "Las instrucciones solo orientan al modelo; no se imponen, así que el prompt no es determinista."
+          },
+          {
+            "id": "C",
+            "text": "`\"allowUnsandboxedCommands\": false` en el bloque `sandbox`",
+            "why": "Solo desactiva el reintento fuera del sandbox; los push aislados seguirían corriendo sin prompt."
+          },
+          {
+            "id": "D",
+            "text": "Una regla `Bash(git push *)` en `permissions.ask`",
+            "why": "Las reglas ask con contenido siguen forzando un prompt para comandos aislados en modo auto-allow."
+          }
+        ],
+        "explanation": "En modo auto-allow siguen aplicando las reglas deny explícitas y las reglas ask con contenido como `Bash(git push *)`, así que los push siguen preguntando y lo demás corre libre. La regla ask `Bash` sin contenido es la opción tentadora, pero se omite para comandos aislados. `CLAUDE.md` no impone nada, y `allowUnsandboxedCommands` solo controla los reintentos fuera del sandbox."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-bash-basics--afd0b34b",
+      "conceptId": "sandbox-bash-basics",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A security reviewer audits a session where the built-in Bash sandbox is enabled in auto-allow mode. They need to list what still runs directly on the host, outside the sandbox's filesystem and network limits, so they can isolate it another way. Which two belong on that list? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Child processes spawned by `npm test`",
+          "correct": false,
+          "why": "The sandbox covers commands and all their child processes."
+        },
+        {
+          "id": "B",
+          "text": "A local stdio MCP server the session starts",
+          "correct": true,
+          "why": "MCP servers are separate processes that run unconstrained on the host."
+        },
+        {
+          "id": "C",
+          "text": "A Bash command run by a subagent",
+          "correct": false,
+          "why": "Subagents share the parent's sandbox configuration, so their Bash commands are sandboxed."
+        },
+        {
+          "id": "D",
+          "text": "A command hook configured on `PostToolUse`",
+          "correct": true,
+          "why": "Command hooks are separate processes that run unconstrained on the host."
+        },
+        {
+          "id": "E",
+          "text": "A long-running command started with the Monitor tool",
+          "correct": false,
+          "why": "The sandbox applies to Bash, PowerShell and Monitor commands."
+        }
+      ],
+      "explanation": "The built-in sandbox isolates Bash, PowerShell and Monitor commands and their child processes, including those run by subagents. MCP servers and command hooks are separate processes that run unconstrained on the host, which is why the docs point to the sandbox runtime or a container when those must be inside the boundary. The tempting subagent option fails because subagents use the same sandbox configuration as the parent session.",
+      "keywordCues": [
+        "still runs directly on the host",
+        "outside the sandbox's filesystem and network limits"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md"
+      ],
+      "es": {
+        "stem": "Un revisor de seguridad audita una sesión con el sandbox de Bash integrado activo en modo auto-allow. Necesita listar lo que sigue corriendo directamente en el host, fuera de los límites de archivos y red del sandbox, para aislarlo de otra forma. ¿Cuáles dos van en esa lista? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Procesos hijos lanzados por `npm test`",
+            "why": "El sandbox cubre los comandos y todos sus procesos hijos."
+          },
+          {
+            "id": "B",
+            "text": "Un servidor MCP stdio local que inicia la sesión",
+            "why": "Los servidores MCP son procesos aparte que corren sin límites en el host."
+          },
+          {
+            "id": "C",
+            "text": "Un comando Bash que corre un subagente",
+            "why": "Los subagentes comparten la configuración del sandbox del padre, así que su Bash queda aislado."
+          },
+          {
+            "id": "D",
+            "text": "Un command hook configurado en `PostToolUse`",
+            "why": "Los command hooks son procesos aparte que corren sin límites en el host."
+          },
+          {
+            "id": "E",
+            "text": "Un comando largo iniciado con la herramienta Monitor",
+            "why": "El sandbox aplica a comandos Bash, PowerShell y Monitor."
+          }
+        ],
+        "explanation": "El sandbox integrado aísla comandos Bash, PowerShell y Monitor y sus procesos hijos, incluidos los que corren los subagentes. Los servidores MCP y los command hooks son procesos aparte que corren sin límites en el host; por eso la documentación remite al sandbox runtime o a un contenedor cuando deben quedar dentro del límite. La opción del subagente tienta, pero falla porque los subagentes usan la misma configuración de sandbox que la sesión padre."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-bash-basics--6a97d66a",
+      "conceptId": "sandbox-bash-basics",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command opens the panel where you enable the Bash sandbox and choose between auto-allow and regular permissions?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/sandbox",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/sandbox` opens the sandbox panel with the Mode, Overrides and Config tabs, plus a Dependencies tab on Linux when something is missing. The Mode tab is where you pick auto-allow or regular permissions.",
+      "keywordCues": [
+        "opens the panel",
+        "auto-allow and regular permissions"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando abre el panel donde activas el sandbox de Bash y eliges entre auto-allow y regular permissions?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/sandbox",
+            "why": ""
+          }
+        ],
+        "explanation": "`/sandbox` abre el panel del sandbox con las pestañas Mode, Overrides y Config, más una pestaña Dependencies en Linux cuando falta algo. En la pestaña Mode eliges auto-allow o regular permissions."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-bash-basics--291c7d88",
+      "conceptId": "sandbox-bash-basics",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which `sandbox` settings key do you set to `false` so sandboxed commands go through the regular permission flow instead of running without a prompt?",
+      "options": [
+        {
+          "id": "A",
+          "text": "autoAllowBashIfSandboxed",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "sandbox.autoAllowBashIfSandboxed",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`sandbox.autoAllowBashIfSandboxed` defaults to `true`, which is auto-allow mode. Setting it to `false` keeps the sandbox on but sends sandboxed commands through the regular permission flow, which the `/sandbox` Mode tab calls regular permissions mode.",
+      "keywordCues": [
+        "set to `false`",
+        "regular permission flow"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave del bloque `sandbox` pones en `false` para que los comandos aislados pasen por el flujo normal de permisos en vez de correr sin prompt?",
+        "options": [
+          {
+            "id": "A",
+            "text": "autoAllowBashIfSandboxed",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "sandbox.autoAllowBashIfSandboxed",
+            "why": ""
+          }
+        ],
+        "explanation": "`sandbox.autoAllowBashIfSandboxed` vale `true` por defecto, que es el modo auto-allow. Ponerla en `false` mantiene el sandbox activo pero manda los comandos aislados por el flujo normal de permisos, lo que la pestaña Mode de `/sandbox` llama regular permissions."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "sandbox-bash-basics--r0",
+      "conceptId": "sandbox-bash-basics",
+      "kind": "recall",
+      "prompt": "What does the Bash sandbox restrict by default, which processes does it cover, and what does auto-allow mode change?",
+      "promptEs": "¿Qué restringe por defecto el sandbox de Bash, qué procesos cubre y qué cambia el modo auto-allow?",
+      "idealAnswer": "The OS confines Bash, PowerShell and Monitor commands and their child processes: they can write only to the working directory, added directories and a per-user temp directory, can read almost everything, and a new network domain prompts. Auto-allow runs sandboxed commands without a prompt, but deny rules, content-scoped ask rules and `rm` of critical paths still apply. MCP servers, hooks and the Read/Edit tools are outside it.",
+      "rubric": [
+        "Writes limited to working directory, added dirs and temp; reads mostly open",
+        "Network domains prompt the first time",
+        "Covers Bash, PowerShell, Monitor and child processes, not MCP, hooks or Read/Edit",
+        "Auto-allow skips prompts but deny and content-scoped ask rules still apply"
+      ]
+    },
+    {
+      "id": "sandbox-bash-basics--r1",
+      "conceptId": "sandbox-bash-basics",
+      "kind": "why-not",
+      "prompt": "You want an OS-enforced limit on what shell scripts can write and reach. Why is auto mode not the answer?",
+      "promptEs": "Quieres un límite impuesto por el SO sobre lo que los scripts de shell escriben y alcanzan. ¿Por qué auto mode no es la respuesta?",
+      "idealAnswer": "Auto mode uses a classifier to decide whether each action runs, judging it before execution. It does not constrain the running process, so a command that does more than it appears can still touch anything. The sandbox is enforced by the operating system on the process itself, regardless of what the command string looked like.",
+      "rubric": [
+        "Auto mode decides whether an action runs, before it runs",
+        "It places no limit on the running process",
+        "The sandbox is enforced by the OS on the process regardless of the command text"
+      ]
+    }
+  ]
+}

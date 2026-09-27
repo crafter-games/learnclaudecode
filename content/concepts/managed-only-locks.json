@@ -1,0 +1,394 @@
+{
+  "conceptId": "managed-only-locks",
+  "card": {
+    "en": {
+      "tldr": "A few keys are read only from managed settings; in user or project files they have no effect. Most are locks that tell Claude Code to honor only the managed value of something any level can set, such as permission rules, hooks or MCP allowlists.",
+      "whenToUse": [
+        "Stopping developers from widening access with their own allow rules",
+        "Allowing only the hooks or MCP servers the organization deploys",
+        "Refusing to start a session without a freshly fetched policy",
+        "Recognizing why a user-level hook or rule is ignored"
+      ],
+      "keyFacts": [
+        "`allowManagedPermissionRulesOnly`: ignores `allow`, `ask` and `deny` rules from user, project, local and `--settings` files and `--allowedTools`, and hides the always-allow choices.",
+        "`allowManagedHooksOnly`: only managed hooks, Agent SDK hooks and hooks from plugins managed settings force-enable run.",
+        "`allowManagedMcpServersOnly`: only the managed `allowedMcpServers` list applies; `deniedMcpServers` still merges from every scope.",
+        "`sandbox.network.allowManagedDomainsOnly`: only managed `allowedDomains` and `WebFetch(domain:...)` allow rules count; other domains are blocked without a prompt.",
+        "`forceRemoteSettingsRefresh`: blocks startup until server-managed settings are freshly fetched and exits if the fetch fails.",
+        "`permissions.disableBypassPermissionsMode` and `disableAutoMode` take `\"disable\"` and work from any file, but are usually set in managed settings."
+      ],
+      "gotchas": [
+        "Putting a managed-only key such as `allowManagedPermissionRulesOnly` in `.claude/settings.json` does nothing.",
+        "With `forceRemoteSettingsRefresh`, an unreachable `api.anthropic.com` means nobody can start Claude Code; `claude auth` subcommands are exempt.",
+        "Server-managed hooks, shell-command settings such as `apiKeyHelper` and some `env` variables need the user's approval in a security dialog; rejecting it exits Claude Code.",
+        "Some locks fail closed: an invalid `allowManagedHooksOnly` or `allowManagedMcpServersOnly` is treated as `true`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "managed-delivery",
+          "difference": "Locks restrict what lower levels may add; delivery is how the policy reaches the machine and which source wins."
+        }
+      ],
+      "examCues": [
+        "only the rules the organization defines",
+        "ignore hooks developers add",
+        "fail closed if the policy can't be fetched",
+        "users can't broaden the allowlist",
+        "prevent --dangerously-skip-permissions"
+      ]
+    },
+    "es": {
+      "tldr": "Algunas claves solo se leen desde managed settings; en archivos de user o proyecto no tienen efecto. La mayoría son locks que le dicen a Claude Code que respete solo el valor managed de algo que cualquier nivel puede definir, como reglas de permisos, hooks o allowlists de MCP.",
+      "whenToUse": [
+        "Impedir que los desarrolladores amplíen el acceso con sus propias reglas allow",
+        "Permitir solo los hooks o servidores MCP que despliega la organización",
+        "Negarse a iniciar una sesión sin una política recién descargada",
+        "Reconocer por qué se ignora un hook o una regla a nivel de user"
+      ],
+      "keyFacts": [
+        "`allowManagedPermissionRulesOnly`: ignora las reglas `allow`, `ask` y `deny` de los archivos user, proyecto, local y `--settings` y de `--allowedTools`, y oculta las opciones de permitir siempre.",
+        "`allowManagedHooksOnly`: solo corren los hooks managed, los hooks del Agent SDK y los de plugins que managed settings habilita a la fuerza.",
+        "`allowManagedMcpServersOnly`: solo aplica la lista managed `allowedMcpServers`; `deniedMcpServers` sigue fusionándose desde todos los scopes.",
+        "`sandbox.network.allowManagedDomainsOnly`: solo cuentan los `allowedDomains` y reglas allow `WebFetch(domain:...)` managed; los demás dominios se bloquean sin preguntar.",
+        "`forceRemoteSettingsRefresh`: bloquea el arranque hasta descargar de nuevo server-managed settings y sale si la descarga falla.",
+        "`permissions.disableBypassPermissionsMode` y `disableAutoMode` toman `\"disable\"` y funcionan desde cualquier archivo, pero suelen ir en managed settings."
+      ],
+      "gotchas": [
+        "Poner una clave managed-only como `allowManagedPermissionRulesOnly` en `.claude/settings.json` no hace nada.",
+        "Con `forceRemoteSettingsRefresh`, si `api.anthropic.com` no responde nadie puede iniciar Claude Code; los subcomandos `claude auth` están exentos.",
+        "Los hooks de server-managed, los settings que ejecutan comandos como `apiKeyHelper` y algunas variables `env` requieren que el usuario los apruebe en un diálogo de seguridad; si los rechaza, Claude Code sale.",
+        "Algunos locks fallan cerrados: un `allowManagedHooksOnly` o `allowManagedMcpServersOnly` inválido se trata como `true`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "managed-delivery",
+          "difference": "Los locks restringen lo que pueden agregar los niveles inferiores; la entrega es cómo llega la política a la máquina y qué fuente gana."
+        }
+      ],
+      "examCues": [
+        "only the rules the organization defines",
+        "ignore hooks developers add",
+        "fail closed if the policy can't be fetched",
+        "users can't broaden the allowlist",
+        "prevent --dangerously-skip-permissions"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/managed-settings.md",
+      "https://code.claude.com/docs/en/server-managed-settings.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "managed-only-locks--91731f06",
+      "conceptId": "managed-only-locks",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A security team already deploys deny rules through `managed-settings.json`. Developers keep answering \"Yes, and don't ask again\", which saves allow rules to their `.claude/settings.local.json`, and some add allow rules to project files. The team wants only the permission rules it defines to count on every machine. What should it add to the managed settings file?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"allowManagedPermissionRulesOnly\": true`",
+          "correct": true,
+          "why": "It makes managed settings the only source of permission rules, ignores user, project and local rules, and hides the always-allow choices."
+        },
+        {
+          "id": "B",
+          "text": "`\"permissions\": { \"disableBypassPermissionsMode\": \"disable\" }`",
+          "correct": false,
+          "why": "It only blocks bypassPermissions mode; allow rules from developers' files still apply."
+        },
+        {
+          "id": "C",
+          "text": "`\"allowManagedHooksOnly\": true`",
+          "correct": false,
+          "why": "It restricts which hooks run, not which permission rules count."
+        },
+        {
+          "id": "D",
+          "text": "More `permissions.deny` rules covering every risky tool",
+          "correct": false,
+          "why": "Deny rules block what they list, but developers' allow rules still pre-approve everything else."
+        }
+      ],
+      "explanation": "The requirement is that only the organization's permission rules count. `allowManagedPermissionRulesOnly` does exactly that: Claude Code ignores `allow`, `ask` and `deny` rules from user, project, local and `--settings` files and `--allowedTools`, and stops offering to save new rules. `disableBypassPermissionsMode` is tempting because it's also a common managed restriction, but it only removes one permission mode.",
+      "keywordCues": [
+        "only the permission rules it defines",
+        "Yes, and don't ask again",
+        "every machine"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "Un equipo de seguridad ya despliega reglas deny con `managed-settings.json`. Los desarrolladores siguen respondiendo \"Yes, and don't ask again\", que guarda reglas allow en su `.claude/settings.local.json`, y algunos agregan reglas allow a archivos del proyecto. El equipo quiere que en cada máquina solo cuenten las reglas de permisos que él define. ¿Qué debe agregar al archivo de managed settings?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"allowManagedPermissionRulesOnly\": true`",
+            "why": "Convierte a managed settings en la única fuente de reglas de permisos, ignora las reglas de user, proyecto y local, y oculta las opciones de permitir siempre."
+          },
+          {
+            "id": "B",
+            "text": "`\"permissions\": { \"disableBypassPermissionsMode\": \"disable\" }`",
+            "why": "Solo bloquea el modo bypassPermissions; las reglas allow de los archivos de los desarrolladores siguen aplicando."
+          },
+          {
+            "id": "C",
+            "text": "`\"allowManagedHooksOnly\": true`",
+            "why": "Restringe qué hooks corren, no qué reglas de permisos cuentan."
+          },
+          {
+            "id": "D",
+            "text": "Más reglas `permissions.deny` que cubran cada herramienta riesgosa",
+            "why": "Las reglas deny bloquean lo que listan, pero las reglas allow de los desarrolladores siguen aprobando todo lo demás."
+          }
+        ],
+        "explanation": "El requisito es que solo cuenten las reglas de permisos de la organización. `allowManagedPermissionRulesOnly` hace exactamente eso: Claude Code ignora las reglas `allow`, `ask` y `deny` de los archivos user, proyecto, local y `--settings` y de `--allowedTools`, y deja de ofrecer guardar reglas nuevas. `disableBypassPermissionsMode` tienta porque también es una restricción managed común, pero solo quita un modo de permisos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "managed-only-locks--c1dcfa37",
+      "conceptId": "managed-only-locks",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which managed-only key makes Claude Code block startup until server-managed settings are freshly fetched, and exit if that fetch fails?",
+      "options": [
+        {
+          "id": "A",
+          "text": "forceRemoteSettingsRefresh",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`forceRemoteSettingsRefresh: true` makes startup fail closed: a session that fetches server-managed settings blocks until they are freshly fetched and exits if the fetch fails, instead of continuing on cached or absent settings. Claude Code honors a `true` from any admin-controlled managed source, and `claude auth` subcommands stay exempt so users can re-authenticate.",
+      "keywordCues": [
+        "block startup",
+        "freshly fetched",
+        "exit if that fetch fails"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave managed-only hace que Claude Code bloquee el arranque hasta descargar de nuevo server-managed settings, y salga si esa descarga falla?",
+        "options": [
+          {
+            "id": "A",
+            "text": "forceRemoteSettingsRefresh",
+            "why": ""
+          }
+        ],
+        "explanation": "`forceRemoteSettingsRefresh: true` hace que el arranque falle cerrado: una sesión que descarga server-managed settings se bloquea hasta descargarlos de nuevo y sale si la descarga falla, en lugar de seguir con settings en caché o ausentes. Claude Code respeta un `true` de cualquier fuente managed controlada por un admin, y los subcomandos `claude auth` siguen exentos para que los usuarios puedan volver a autenticarse."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "managed-only-locks--3881a9ec",
+      "conceptId": "managed-only-locks",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this `managed-settings.json` so it turns off bypass mode, makes Claude Code ignore permission rules from user, project and local files, and refuses to start when the server-managed settings fetch fails.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "true",
+          "correct": false,
+          "why": "The key takes the string \"disable\", not a boolean."
+        },
+        {
+          "id": "1b",
+          "text": "\"disable\"",
+          "correct": true,
+          "why": "\"disable\" is the value that prevents anyone from entering bypassPermissions mode."
+        },
+        {
+          "id": "1c",
+          "text": "\"deny\"",
+          "correct": false,
+          "why": "\"deny\" is a permission rule list, not a value for this key."
+        },
+        {
+          "id": "2a",
+          "text": "allowManagedHooksOnly",
+          "correct": false,
+          "why": "It restricts hooks, not permission rules."
+        },
+        {
+          "id": "2b",
+          "text": "allowManagedMcpServersOnly",
+          "correct": false,
+          "why": "It restricts the MCP server allowlist, not permission rules."
+        },
+        {
+          "id": "2c",
+          "text": "allowManagedPermissionRulesOnly",
+          "correct": true,
+          "why": "It makes managed settings the only source of permission rules."
+        },
+        {
+          "id": "3a",
+          "text": "forceRemoteSettingsRefresh",
+          "correct": true,
+          "why": "It blocks startup until the fetch succeeds and exits if it fails."
+        },
+        {
+          "id": "3b",
+          "text": "managedSourcesBehavior",
+          "correct": false,
+          "why": "It chooses first-wins or merge across managed sources and takes a string, not true."
+        },
+        {
+          "id": "3c",
+          "text": "parentSettingsBehavior",
+          "correct": false,
+          "why": "It controls whether host-supplied parent settings merge, not startup on a failed fetch."
+        }
+      ],
+      "explanation": "`permissions.disableBypassPermissionsMode` takes the string `\"disable\"`. `allowManagedPermissionRulesOnly` is the lock that ignores rules from every non-managed file, and `forceRemoteSettingsRefresh` makes startup fail closed when the server-managed fetch fails. The other key names are real managed-only keys that lock hooks or MCP servers, or control how managed sources combine.",
+      "keywordCues": [
+        "turns off bypass mode",
+        "ignore permission rules from user, project and local files",
+        "refuses to start when the server-managed settings fetch fails"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/managed-settings.md",
+        "https://code.claude.com/docs/en/server-managed-settings.md"
+      ],
+      "es": {
+        "stem": "Completa este `managed-settings.json` para que apague el modo bypass, haga que Claude Code ignore las reglas de permisos de los archivos user, proyecto y local, y se niegue a iniciar cuando falle la descarga de server-managed settings.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "true",
+            "why": "La clave recibe el string \"disable\", no un booleano."
+          },
+          {
+            "id": "1b",
+            "text": "\"disable\"",
+            "why": "\"disable\" es el valor que impide que alguien entre en el modo bypassPermissions."
+          },
+          {
+            "id": "1c",
+            "text": "\"deny\"",
+            "why": "\"deny\" es una lista de reglas de permisos, no un valor para esta clave."
+          },
+          {
+            "id": "2a",
+            "text": "allowManagedHooksOnly",
+            "why": "Restringe hooks, no reglas de permisos."
+          },
+          {
+            "id": "2b",
+            "text": "allowManagedMcpServersOnly",
+            "why": "Restringe la allowlist de servidores MCP, no las reglas de permisos."
+          },
+          {
+            "id": "2c",
+            "text": "allowManagedPermissionRulesOnly",
+            "why": "Convierte a managed settings en la única fuente de reglas de permisos."
+          },
+          {
+            "id": "3a",
+            "text": "forceRemoteSettingsRefresh",
+            "why": "Bloquea el arranque hasta que la descarga funcione y sale si falla."
+          },
+          {
+            "id": "3b",
+            "text": "managedSourcesBehavior",
+            "why": "Elige first-wins o merge entre fuentes managed y recibe un string, no true."
+          },
+          {
+            "id": "3c",
+            "text": "parentSettingsBehavior",
+            "why": "Controla si se fusionan los parent settings del host, no el arranque con una descarga fallida."
+          }
+        ],
+        "explanation": "`permissions.disableBypassPermissionsMode` recibe el string `\"disable\"`. `allowManagedPermissionRulesOnly` es el lock que ignora las reglas de todo archivo no managed, y `forceRemoteSettingsRefresh` hace que el arranque falle cerrado cuando falla la descarga de server-managed. Las otras claves son claves managed-only reales que bloquean hooks o servidores MCP, o controlan cómo se combinan las fuentes managed."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"deny\": [\"Read(./.env)\"],\n    \"disableBypassPermissionsMode\": {{1}}\n  },\n  \"{{2}}\": true,\n  \"{{3}}\": true\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "managed-only-locks--r0",
+      "conceptId": "managed-only-locks",
+      "kind": "recall",
+      "prompt": "Name the managed-only locks for permission rules, hooks and MCP servers, plus the key that makes startup fail closed, and what each does.",
+      "promptEs": "Nombra los locks managed-only para reglas de permisos, hooks y servidores MCP, más la clave que hace que el arranque falle cerrado, y qué hace cada una.",
+      "idealAnswer": "`allowManagedPermissionRulesOnly` makes managed settings the only source of permission rules, `allowManagedHooksOnly` lets only managed hooks run, and `allowManagedMcpServersOnly` applies only the managed `allowedMcpServers` list. `forceRemoteSettingsRefresh` blocks startup until server-managed settings are freshly fetched and exits if the fetch fails; all are read only from managed settings.",
+      "rubric": [
+        "allowManagedPermissionRulesOnly: only managed permission rules count",
+        "allowManagedHooksOnly: only managed hooks run",
+        "allowManagedMcpServersOnly: only the managed MCP allowlist applies",
+        "forceRemoteSettingsRefresh: exit if the fresh fetch fails"
+      ]
+    },
+    {
+      "id": "managed-only-locks--r1",
+      "conceptId": "managed-only-locks",
+      "kind": "why-not",
+      "prompt": "A tech lead puts `\"allowManagedHooksOnly\": true` in the repo's committed `.claude/settings.json` to block personal hooks. Why doesn't it work?",
+      "promptEs": "Un tech lead pone `\"allowManagedHooksOnly\": true` en el `.claude/settings.json` commiteado del repo para bloquear hooks personales. ¿Por qué no funciona?",
+      "idealAnswer": "`allowManagedHooksOnly` is a managed-only key: Claude Code reads it only from managed settings, so in a project file it has no effect. The organization has to deliver it through server-managed settings, an MDM policy or `managed-settings.json`.",
+      "rubric": [
+        "It is a managed-only key",
+        "In user or project files it has no effect",
+        "Deliver it through a managed source"
+      ]
+    }
+  ]
+}

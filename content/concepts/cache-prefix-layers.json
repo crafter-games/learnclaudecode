@@ -1,0 +1,398 @@
+{
+  "conceptId": "cache-prefix-layers",
+  "card": {
+    "en": {
+      "tldr": "Every turn re-sends the full context, and the API reuses the longest prefix that exactly matches content it recently processed. Claude Code orders each request system prompt, then project context, then conversation, so what rarely changes comes first. A change early in the request recomputes everything after it; a change at the end costs almost nothing.",
+      "whenToUse": [
+        "Explaining why one turn was suddenly slow and expensive",
+        "Predicting whether a mid-session change will rebuild the whole cache",
+        "Planning parallel sessions or worktrees that you expect to share cache"
+      ],
+      "keyFacts": [
+        "The match is exact: a change anywhere in the prefix recomputes everything after it. There is no per-file or per-segment caching.",
+        "Layer order: system prompt (core instructions, tool definitions) → project context (CLAUDE.md, auto memory, unscoped rules) → conversation.",
+        "A new message leaves the system prompt and project context cached; a system prompt change invalidates everything.",
+        "Each model has its own cache, and on most models each effort level does too.",
+        "The cache is effectively scoped to one machine and directory, so worktrees of the same repo miss each other's cache.",
+        "Plan mode and skill loading append their instructions as conversation messages, so the cached prefix stays intact."
+      ],
+      "gotchas": [
+        "Identical content on a different model still misses: each model has its own cache.",
+        "Parallel sessions in the same directory share cache; sequential ones only when the startup git status snapshot matches.",
+        "Editing a file Claude already read doesn't change that earlier read; Claude Code appends a notice that the file changed."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Context window",
+          "difference": "The context is re-sent in full every turn; caching only decides how much of it is reprocessed."
+        }
+      ],
+      "examCues": [
+        "only the latest exchange is new",
+        "a change anywhere in the prefix",
+        "two worktrees of the same repository",
+        "same content, different model"
+      ]
+    },
+    "es": {
+      "tldr": "Cada turno reenvía el contexto completo, y la API reutiliza el prefijo más largo que coincide exactamente con algo que procesó hace poco. Claude Code ordena cada solicitud: system prompt, luego contexto del proyecto, luego conversación, para que lo que casi no cambia vaya primero. Un cambio al inicio recalcula todo lo posterior; un cambio al final casi no cuesta.",
+      "whenToUse": [
+        "Explicar por qué un turno fue de pronto lento y caro",
+        "Predecir si un cambio a mitad de sesión reconstruirá todo el caché",
+        "Planificar sesiones paralelas o worktrees que esperas que compartan caché"
+      ],
+      "keyFacts": [
+        "La coincidencia es exacta: un cambio en cualquier punto del prefijo recalcula todo lo posterior. No hay caché por archivo ni por segmento.",
+        "Orden de capas: system prompt (instrucciones base, definiciones de herramientas) → contexto del proyecto (CLAUDE.md, memoria automática, reglas sin alcance de rutas) → conversación.",
+        "Un mensaje nuevo deja en caché el system prompt y el contexto del proyecto; un cambio en el system prompt lo invalida todo.",
+        "Cada modelo tiene su propio caché, y en la mayoría de modelos cada nivel de esfuerzo también.",
+        "El caché queda limitado en la práctica a una máquina y un directorio, así que los worktrees del mismo repo no comparten caché.",
+        "Plan mode y la carga de skills agregan sus instrucciones como mensajes de la conversación, así que el prefijo cacheado se mantiene."
+      ],
+      "gotchas": [
+        "El mismo contenido en otro modelo igual falla: cada modelo tiene su propio caché.",
+        "Las sesiones paralelas en el mismo directorio comparten caché; las secuenciales solo si coincide el snapshot de git status tomado al iniciar.",
+        "Editar un archivo que Claude ya leyó no cambia esa lectura anterior; Claude Code agrega un aviso de que el archivo cambió."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Ventana de contexto",
+          "difference": "El contexto se reenvía completo cada turno; el caché solo decide cuánto se reprocesa."
+        }
+      ],
+      "examCues": [
+        "only the latest exchange is new",
+        "a change anywhere in the prefix",
+        "two worktrees of the same repository",
+        "same content, different model"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/prompt-caching.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cache-prefix-layers--7d61a250",
+      "conceptId": "cache-prefix-layers",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer runs two Claude Code sessions on the same repository: one in the main checkout and one in a git worktree. Both use the same model and the same CLAUDE.md. They expect the second session's first request to read the cache the first session built. What actually happens?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It reads the whole cache, because the model and CLAUDE.md are identical.",
+          "correct": false,
+          "why": "Same model and CLAUDE.md are not enough; the working directory is part of each conversation, so the prefixes differ."
+        },
+        {
+          "id": "B",
+          "text": "It reads only the project context layer, because CLAUDE.md is shared per repository.",
+          "correct": false,
+          "why": "There is no per-layer caching; the match is on an exact prefix, and the system prompt already differs."
+        },
+        {
+          "id": "C",
+          "text": "It misses, because each worktree has its own working directory, so the prefixes differ.",
+          "correct": true,
+          "why": "Each conversation carries its working directory, so worktrees build different prefixes and miss each other's cache."
+        },
+        {
+          "id": "D",
+          "text": "It reads the system prompt layer only, since the tool definitions match.",
+          "correct": false,
+          "why": "Caching isn't per segment, and the directory-specific details change the prefix from the start."
+        }
+      ],
+      "explanation": "The deciding fact is that the cache is effectively scoped to one machine and directory. Each conversation carries the working directory, platform, shell and OS version, and the system prompt names the auto memory paths, so two worktrees build different prefixes. Options that assume part of the request is still reused fail because there is no per-layer or per-file caching: only an exact prefix match counts.",
+      "keywordCues": [
+        "main checkout and one in a git worktree",
+        "read the cache the first session built"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador corre dos sesiones de Claude Code sobre el mismo repositorio: una en el checkout principal y otra en un git worktree. Ambas usan el mismo modelo y el mismo CLAUDE.md. Espera que la primera solicitud de la segunda sesión lea el caché que construyó la primera. ¿Qué pasa realmente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Lee todo el caché, porque el modelo y CLAUDE.md son idénticos.",
+            "why": "Mismo modelo y CLAUDE.md no bastan; el directorio de trabajo forma parte de cada conversación, así que los prefijos difieren."
+          },
+          {
+            "id": "B",
+            "text": "Lee solo la capa de contexto del proyecto, porque CLAUDE.md se comparte por repositorio.",
+            "why": "No hay caché por capa; la coincidencia es por prefijo exacto y el system prompt ya es distinto."
+          },
+          {
+            "id": "C",
+            "text": "Falla, porque cada worktree tiene su propio directorio de trabajo y los prefijos difieren.",
+            "why": "Cada conversación lleva su directorio de trabajo, así que los worktrees arman prefijos distintos y no comparten caché."
+          },
+          {
+            "id": "D",
+            "text": "Lee solo la capa del system prompt, porque las definiciones de herramientas coinciden.",
+            "why": "El caché no es por segmento, y los datos propios del directorio cambian el prefijo desde el inicio."
+          }
+        ],
+        "explanation": "Lo que decide es que el caché queda limitado en la práctica a una máquina y un directorio. Cada conversación lleva el directorio de trabajo, la plataforma, el shell y la versión del sistema operativo, y el system prompt nombra las rutas de la memoria automática, así que dos worktrees arman prefijos distintos. Las opciones que suponen que parte de la solicitud se reutiliza fallan porque no hay caché por capa ni por archivo: solo cuenta una coincidencia exacta del prefijo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-prefix-layers--4b421a0e",
+      "conceptId": "cache-prefix-layers",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Midway through a long session, a developer is weighing three events: sending a follow-up message, editing a source file Claude read ten turns ago, and a change to the set of loaded tool definitions. They want to know which one forces the next request to reprocess everything, including the project context and the whole conversation. Which is it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Sending the follow-up message",
+          "correct": false,
+          "why": "A new message is appended at the end; the system prompt and project context stay cached."
+        },
+        {
+          "id": "B",
+          "text": "Editing the source file Claude read earlier",
+          "correct": false,
+          "why": "The earlier read in history doesn't change; Claude Code appends a notice that the file changed."
+        },
+        {
+          "id": "C",
+          "text": "None of them, because Claude Code caches each file separately",
+          "correct": false,
+          "why": "There is no per-file caching; the cache matches an exact prefix."
+        },
+        {
+          "id": "D",
+          "text": "The change to the loaded tool definitions",
+          "correct": true,
+          "why": "Tool definitions live in the system prompt, the first layer, so everything after it sits behind a different prefix."
+        }
+      ],
+      "explanation": "The requirement is a full recompute, which only happens when something near the start of the request changes. Tool definitions sit in the system prompt layer, so changing them invalidates everything after it. A follow-up message and a file edit both only append to the end of the conversation. The per-file caching option describes a mechanism that doesn't exist.",
+      "keywordCues": [
+        "reprocess everything",
+        "change to the set of loaded tool definitions"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "A mitad de una sesión larga, un desarrollador evalúa tres eventos: enviar un mensaje de seguimiento, editar un archivo fuente que Claude leyó hace diez turnos, y un cambio en el conjunto de definiciones de herramientas cargadas. Quiere saber cuál obliga a la siguiente solicitud a reprocesar todo, incluido el contexto del proyecto y toda la conversación. ¿Cuál es?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Enviar el mensaje de seguimiento",
+            "why": "Un mensaje nuevo se agrega al final; el system prompt y el contexto del proyecto siguen en caché."
+          },
+          {
+            "id": "B",
+            "text": "Editar el archivo fuente que Claude leyó antes",
+            "why": "La lectura anterior en el historial no cambia; Claude Code agrega un aviso de que el archivo cambió."
+          },
+          {
+            "id": "C",
+            "text": "Ninguno, porque Claude Code cachea cada archivo por separado",
+            "why": "No hay caché por archivo; el caché busca una coincidencia exacta del prefijo."
+          },
+          {
+            "id": "D",
+            "text": "El cambio en las definiciones de herramientas cargadas",
+            "why": "Las definiciones de herramientas viven en el system prompt, la primera capa, así que todo lo posterior queda detrás de un prefijo distinto."
+          }
+        ],
+        "explanation": "El requisito es un recálculo completo, que solo ocurre cuando cambia algo cerca del inicio de la solicitud. Las definiciones de herramientas están en la capa del system prompt, así que cambiarlas invalida todo lo posterior. El mensaje de seguimiento y la edición de un archivo solo agregan al final de la conversación. La opción del caché por archivo describe un mecanismo que no existe."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-prefix-layers--3e1f8d16",
+      "conceptId": "cache-prefix-layers",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer deep into a long session wants to know which upcoming actions will let the next request still read the system prompt and project context layers from cache. Tool search is active and the session model stays the same unless an option says otherwise. Which two actions keep those layers cached? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Sending a follow-up message",
+          "correct": true,
+          "why": "New content is appended at the end, so the earlier layers still match."
+        },
+        {
+          "id": "B",
+          "text": "Switching to a different model with /model",
+          "correct": false,
+          "why": "Each model has its own cache, so the next request reads the whole history uncached."
+        },
+        {
+          "id": "C",
+          "text": "Invoking a skill whose frontmatter doesn't set a model",
+          "correct": true,
+          "why": "Skills inject their instructions as messages at the point of invocation; nothing earlier changes."
+        },
+        {
+          "id": "D",
+          "text": "Continuing the same work from a session in another worktree",
+          "correct": false,
+          "why": "A different working directory builds a different prefix, so it misses this session's cache."
+        },
+        {
+          "id": "E",
+          "text": "A change to the set of loaded tool definitions",
+          "correct": false,
+          "why": "Tool definitions are in the system prompt layer, so the change invalidates everything after it."
+        }
+      ],
+      "explanation": "The layers stay cached only if nothing before them changes and the request goes to the same model's cache. Follow-up messages and skill invocations both append to the conversation, so the system prompt and project context still match exactly. A model switch uses a different cache, another worktree builds a different prefix, and a tool definition change alters the first layer itself.",
+      "keywordCues": [
+        "read the system prompt and project context layers from cache",
+        "session model stays the same"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador, bien avanzado en una sesión larga, quiere saber qué acciones próximas dejarán que la siguiente solicitud siga leyendo del caché las capas de system prompt y contexto del proyecto. Tool search está activo y el modelo de la sesión no cambia salvo que la opción lo diga. ¿Qué dos acciones mantienen esas capas en caché? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Enviar un mensaje de seguimiento",
+            "why": "El contenido nuevo se agrega al final, así que las capas anteriores siguen coincidiendo."
+          },
+          {
+            "id": "B",
+            "text": "Cambiar a otro modelo con /model",
+            "why": "Cada modelo tiene su propio caché, así que la siguiente solicitud lee todo el historial sin caché."
+          },
+          {
+            "id": "C",
+            "text": "Invocar un skill cuyo frontmatter no define un modelo",
+            "why": "Los skills inyectan sus instrucciones como mensajes en el punto de invocación; nada anterior cambia."
+          },
+          {
+            "id": "D",
+            "text": "Continuar el mismo trabajo desde una sesión en otro worktree",
+            "why": "Otro directorio de trabajo arma otro prefijo, así que no usa el caché de esta sesión."
+          },
+          {
+            "id": "E",
+            "text": "Un cambio en el conjunto de definiciones de herramientas cargadas",
+            "why": "Las definiciones de herramientas están en la capa del system prompt, así que el cambio invalida todo lo posterior."
+          }
+        ],
+        "explanation": "Las capas siguen en caché solo si nada anterior a ellas cambia y la solicitud va al caché del mismo modelo. Los mensajes de seguimiento y las invocaciones de skills se agregan a la conversación, así que el system prompt y el contexto del proyecto siguen coincidiendo exactamente. Cambiar de modelo usa otro caché, otro worktree arma otro prefijo, y un cambio en las definiciones de herramientas altera la primera capa."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-prefix-layers--2806d9ab",
+      "conceptId": "cache-prefix-layers",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Order the layers of a Claude Code request from first (the start of the prefix) to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Conversation (your messages, Claude's responses, tool results)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "System prompt (core instructions, tool definitions)",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "Project context (CLAUDE.md, auto memory, unscoped rules)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Claude Code orders each request so content that rarely changes comes first: the system prompt, then project context, then the conversation. That way a new turn changes only the end, and the first two layers stay cached. A system prompt change, by contrast, invalidates everything behind it.",
+      "keywordCues": [
+        "from first",
+        "start of the prefix"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Ordena las capas de una solicitud de Claude Code desde la primera (el inicio del prefijo) hasta la última.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Conversación (tus mensajes, respuestas de Claude, resultados de herramientas)",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "System prompt (instrucciones base, definiciones de herramientas)",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Contexto del proyecto (CLAUDE.md, memoria automática, reglas sin alcance de rutas)",
+            "why": ""
+          }
+        ],
+        "explanation": "Claude Code ordena cada solicitud para que lo que casi no cambia vaya primero: el system prompt, luego el contexto del proyecto y al final la conversación. Así un turno nuevo solo cambia el final y las dos primeras capas siguen en caché. En cambio, un cambio en el system prompt invalida todo lo que viene detrás."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "C",
+        "A"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cache-prefix-layers--r0",
+      "conceptId": "cache-prefix-layers",
+      "kind": "recall",
+      "prompt": "Explain how Claude Code's prompt cache decides what it can reuse, and how each request's layers are ordered.",
+      "promptEs": "Explica cómo decide el caché de prompts de Claude Code qué puede reutilizar y en qué orden van las capas de cada solicitud.",
+      "idealAnswer": "The API reuses the longest prefix of the request that exactly matches content it recently processed, so a change anywhere recomputes everything after it; there is no per-file caching. Requests go system prompt, then project context (CLAUDE.md, auto memory), then conversation, so a new message keeps the first two cached while a system prompt change invalidates everything. Each model has its own cache, and the cache is effectively scoped to one machine and directory.",
+      "rubric": [
+        "Exact prefix match; a change recomputes everything after it",
+        "Layer order: system prompt, project context, conversation",
+        "New message keeps earlier layers; system prompt change invalidates all",
+        "Per-model cache or per-directory scope"
+      ]
+    }
+  ]
+}

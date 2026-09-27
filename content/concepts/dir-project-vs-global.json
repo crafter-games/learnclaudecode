@@ -1,0 +1,395 @@
+{
+  "conceptId": "dir-project-vs-global",
+  "card": {
+    "en": {
+      "tldr": "The project `.claude/` directory is committed so the team shares it; `~/.claude/` holds personal configuration that applies across all your projects. Decide by who the file should reach: everyone on the repo, or only you everywhere.",
+      "whenToUse": [
+        "Sharing rules, skills, subagents or hooks with everyone who clones the repo",
+        "Keeping a skill, subagent or rule for yourself in every project",
+        "Overriding a team setting only for you in one project",
+        "Adding team-shared or personal MCP servers"
+      ],
+      "keyFacts": [
+        "Both scopes: `CLAUDE.md`, `rules/*.md`, `settings.json`, `skills/<name>/SKILL.md`, `commands/*.md`, `agents/*.md`, `output-styles/*.md`, `workflows/*.js`, `agent-memory/`.",
+        "Project only: `.claude/settings.local.json` (personal overrides), `.mcp.json` and `.worktreeinclude` at the repo root.",
+        "Global only: `~/.claude.json` (app state, OAuth, trust decisions, personal MCP servers), `projects/<project>/memory/` (auto memory), `keybindings.json`, `themes/*.json`.",
+        "`claude mcp add --scope user` writes to `~/.claude.json`, not `.mcp.json`.",
+        "`CLAUDE_CONFIG_DIR` moves every `~/.claude` path to another directory; on Windows `~/.claude` is `%USERPROFILE%\\.claude`."
+      ],
+      "gotchas": [
+        "`.mcp.json` lives at the project root, not inside `.claude/`.",
+        "`~/.claude.json` is a file next to `~/.claude/`, not inside it.",
+        "`settings.local.json` is gitignored only when Claude Code saves a setting to it; add it to the project `.gitignore` to share the ignore rule.",
+        "Auto memory is per project but stored globally, under `~/.claude/projects/<project>/memory/`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Settings scopes",
+          "difference": "This concept is where each file type lives; settings scopes decide which settings value wins."
+        },
+        {
+          "concept": "CLAUDE.local.md",
+          "difference": "Private project instructions at the project root; you create it and add it to `.gitignore` yourself."
+        }
+      ],
+      "examCues": [
+        "shared with the whole team",
+        "in every project on my machine",
+        "never committed",
+        "only for me in this repo",
+        "custom keyboard shortcuts"
+      ]
+    },
+    "es": {
+      "tldr": "La carpeta `.claude/` del proyecto se commitea para que el equipo la comparta; `~/.claude/` guarda configuración personal que aplica en todos tus proyectos. Decide según a quién debe llegar el archivo: a todos en el repo, o solo a ti en todas partes.",
+      "whenToUse": [
+        "Compartir rules, skills, subagentes o hooks con todos los que clonan el repo",
+        "Tener una skill, subagente o rule solo para ti en todos los proyectos",
+        "Pisar un setting del equipo solo para ti en un proyecto",
+        "Agregar servidores MCP compartidos con el equipo o personales"
+      ],
+      "keyFacts": [
+        "Ambos scopes: `CLAUDE.md`, `rules/*.md`, `settings.json`, `skills/<name>/SKILL.md`, `commands/*.md`, `agents/*.md`, `output-styles/*.md`, `workflows/*.js`, `agent-memory/`.",
+        "Solo proyecto: `.claude/settings.local.json` (overrides personales), `.mcp.json` y `.worktreeinclude` en la raíz del repo.",
+        "Solo global: `~/.claude.json` (estado de la app, OAuth, decisiones de trust, servidores MCP personales), `projects/<project>/memory/` (auto memory), `keybindings.json`, `themes/*.json`.",
+        "`claude mcp add --scope user` escribe en `~/.claude.json`, no en `.mcp.json`.",
+        "`CLAUDE_CONFIG_DIR` mueve todas las rutas de `~/.claude` a otro directorio; en Windows `~/.claude` es `%USERPROFILE%\\.claude`."
+      ],
+      "gotchas": [
+        "`.mcp.json` vive en la raíz del proyecto, no dentro de `.claude/`.",
+        "`~/.claude.json` es un archivo junto a `~/.claude/`, no dentro de la carpeta.",
+        "`settings.local.json` queda fuera de git solo cuando Claude Code guarda un setting en él; agrégalo al `.gitignore` del proyecto para compartir la regla.",
+        "La auto memory es por proyecto pero se guarda globalmente, en `~/.claude/projects/<project>/memory/`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Scopes de settings",
+          "difference": "Este concepto es dónde vive cada tipo de archivo; los scopes deciden qué valor de settings gana."
+        },
+        {
+          "concept": "CLAUDE.local.md",
+          "difference": "Instrucciones privadas del proyecto en la raíz; lo creas tú y lo agregas tú a `.gitignore`."
+        }
+      ],
+      "examCues": [
+        "shared with the whole team",
+        "in every project on my machine",
+        "never committed",
+        "only for me in this repo",
+        "custom keyboard shortcuts"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/claude-directory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "dir-project-vs-global--66a767f6",
+      "conceptId": "dir-project-vs-global",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A team wants every developer who clones their repository to get the same Postgres MCP server automatically. The server reads its password from an environment variable. Where should they define the server so it applies to everyone who clones the repo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "In `~/.claude.json` with `claude mcp add --scope user`",
+          "correct": false,
+          "why": "User-scope servers live in each person's own `~/.claude.json`, so teammates don't receive them from the repo."
+        },
+        {
+          "id": "B",
+          "text": "In `.mcp.json` at the project root, committed",
+          "correct": true,
+          "why": "`.mcp.json` holds the project-scoped MCP servers the whole team uses and is committed with the repo."
+        },
+        {
+          "id": "C",
+          "text": "In `.claude/settings.local.json`",
+          "correct": false,
+          "why": "It's your personal override file for this project and stays out of git, so no teammate gets it."
+        },
+        {
+          "id": "D",
+          "text": "In `~/.claude/settings.json`",
+          "correct": false,
+          "why": "It's your personal settings file for every project; it isn't part of any repository."
+        }
+      ],
+      "explanation": "The requirement is 'everyone who clones the repo'. Team-shared MCP servers go in `.mcp.json` at the project root, which is committed. `~/.claude.json` is tempting because it also holds MCP servers, but those are yours only, across projects or per project, and never reach teammates.",
+      "keywordCues": [
+        "every developer who clones",
+        "applies to everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que cada desarrollador que clone su repositorio reciba automáticamente el mismo servidor MCP de Postgres. El servidor lee su contraseña de una variable de entorno. ¿Dónde deben definir el servidor para que aplique a todos los que clonan el repo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "En `~/.claude.json` con `claude mcp add --scope user`",
+            "why": "Los servidores de scope user viven en el `~/.claude.json` de cada persona, así que el equipo no los recibe desde el repo."
+          },
+          {
+            "id": "B",
+            "text": "En `.mcp.json` en la raíz del proyecto, commiteado",
+            "why": "`.mcp.json` guarda los servidores MCP de proyecto que usa todo el equipo y se commitea con el repo."
+          },
+          {
+            "id": "C",
+            "text": "En `.claude/settings.local.json`",
+            "why": "Es tu archivo de overrides personales para este proyecto y queda fuera de git, así que ningún compañero lo recibe."
+          },
+          {
+            "id": "D",
+            "text": "En `~/.claude/settings.json`",
+            "why": "Es tu archivo personal de settings para todos los proyectos; no forma parte de ningún repositorio."
+          }
+        ],
+        "explanation": "El requisito es 'todos los que clonan el repo'. Los servidores MCP compartidos van en `.mcp.json`, en la raíz del proyecto y commiteado. `~/.claude.json` tienta porque también guarda servidores MCP, pero esos son solo tuyos, en todos los proyectos o en uno, y nunca llegan al equipo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-project-vs-global--21fb9d35",
+      "conceptId": "dir-project-vs-global",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Lucas wrote a code-review subagent tuned to his own habits. He wants to delegate to it in every repository he works on, including client repos he can't commit to, and none of his teammates should see it. Where should he save the definition, with a single file?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`.claude/agents/reviewer.md` in each repository",
+          "correct": false,
+          "why": "Project subagents are committed with the repo, so teammates see them, and he can't commit to client repos."
+        },
+        {
+          "id": "B",
+          "text": "`~/.claude/skills/reviewer/SKILL.md`",
+          "correct": false,
+          "why": "It's personal and global, but it defines a skill, not a subagent with its own context and tools."
+        },
+        {
+          "id": "C",
+          "text": "`~/.claude/agents/reviewer.md`",
+          "correct": true,
+          "why": "Personal subagents in `~/.claude/agents/` are available in every project and never committed to any repository."
+        },
+        {
+          "id": "D",
+          "text": "`~/.claude/agent-memory/reviewer/`",
+          "correct": false,
+          "why": "That directory holds persistent memory for subagents with `memory: user`, not the subagent definition."
+        }
+      ],
+      "explanation": "Two requirements decide it: every project, and invisible to teammates. `~/.claude/agents/` satisfies both, because files under `~/.claude/` are personal and apply across all projects. The personal skill path is tempting since it is also global, but a skill is not a subagent definition.",
+      "keywordCues": [
+        "every repository he works on",
+        "none of his teammates should see it",
+        "subagent"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Lucas escribió un subagente de code review ajustado a sus propias costumbres. Quiere delegarle en cada repositorio donde trabaja, incluidos repos de clientes donde no puede commitear, y ninguno de sus compañeros debe verlo. ¿Dónde debe guardar la definición, con un solo archivo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`.claude/agents/reviewer.md` en cada repositorio",
+            "why": "Los subagentes de proyecto se commitean con el repo, así que el equipo los ve, y no puede commitear en repos de clientes."
+          },
+          {
+            "id": "B",
+            "text": "`~/.claude/skills/reviewer/SKILL.md`",
+            "why": "Es personal y global, pero define una skill, no un subagente con su propio contexto y herramientas."
+          },
+          {
+            "id": "C",
+            "text": "`~/.claude/agents/reviewer.md`",
+            "why": "Los subagentes personales en `~/.claude/agents/` están disponibles en todos los proyectos y nunca se commitean a ningún repositorio."
+          },
+          {
+            "id": "D",
+            "text": "`~/.claude/agent-memory/reviewer/`",
+            "why": "Esa carpeta guarda la memoria persistente de subagentes con `memory: user`, no la definición del subagente."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: todos los proyectos, e invisible para el equipo. `~/.claude/agents/` cumple ambos, porque los archivos bajo `~/.claude/` son personales y aplican en todos los proyectos. La ruta de skill personal tienta porque también es global, pero una skill no es la definición de un subagente."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-project-vs-global--522ee3b3",
+      "conceptId": "dir-project-vs-global",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Your team wants to move as much Claude Code configuration as possible into the repository's `.claude/` directory so new hires get it on clone. Which two of these have no project-level counterpart and can only live in your home directory? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`keybindings.json` with custom keyboard shortcuts",
+          "correct": true,
+          "why": "Custom keybindings are a global-only file under `~/.claude/`."
+        },
+        {
+          "id": "B",
+          "text": "`rules/*.md` topic-scoped instructions",
+          "correct": false,
+          "why": "Rules exist in both scopes; the project `.claude/rules/` is committed and shared."
+        },
+        {
+          "id": "C",
+          "text": "`themes/*.json` custom color themes",
+          "correct": true,
+          "why": "Custom color themes are a global-only file under `~/.claude/themes/`."
+        },
+        {
+          "id": "D",
+          "text": "`workflows/*.js` dynamic workflow scripts",
+          "correct": false,
+          "why": "Workflows exist in both scopes; project workflows can be committed."
+        },
+        {
+          "id": "E",
+          "text": "`settings.local.json` personal overrides",
+          "correct": false,
+          "why": "It is the opposite case: it exists only at project level, under `.claude/`."
+        }
+      ],
+      "explanation": "The question asks which files are global only. `keybindings.json` and `themes/*.json` exist only under `~/.claude/`, so they can't be shared through the repo. Rules and workflows exist in both scopes, and `settings.local.json` is project only, which makes it the tempting inverse distractor.",
+      "keywordCues": [
+        "no project-level counterpart",
+        "only live in your home directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Tu equipo quiere mover la mayor cantidad posible de configuración de Claude Code a la carpeta `.claude/` del repositorio para que los nuevos la reciban al clonar. ¿Cuáles dos de estos no tienen equivalente de proyecto y solo pueden vivir en tu directorio home? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`keybindings.json` con atajos de teclado personalizados",
+            "why": "Los keybindings personalizados son un archivo solo global dentro de `~/.claude/`."
+          },
+          {
+            "id": "B",
+            "text": "`rules/*.md` con instrucciones por tema",
+            "why": "Las rules existen en ambos scopes; `.claude/rules/` del proyecto se commitea y se comparte."
+          },
+          {
+            "id": "C",
+            "text": "`themes/*.json` con temas de color personalizados",
+            "why": "Los temas de color personalizados son un archivo solo global en `~/.claude/themes/`."
+          },
+          {
+            "id": "D",
+            "text": "`workflows/*.js` con scripts de workflows dinámicos",
+            "why": "Los workflows existen en ambos scopes; los del proyecto se pueden commitear."
+          },
+          {
+            "id": "E",
+            "text": "`settings.local.json` con overrides personales",
+            "why": "Es el caso contrario: existe solo a nivel de proyecto, dentro de `.claude/`."
+          }
+        ],
+        "explanation": "La pregunta pide los archivos solo globales. `keybindings.json` y `themes/*.json` existen solo bajo `~/.claude/`, así que no se pueden compartir por el repo. Rules y workflows existen en ambos scopes, y `settings.local.json` es solo de proyecto, lo que lo vuelve el distractor inverso tentador."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dir-project-vs-global--40c546cc",
+      "conceptId": "dir-project-vs-global",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You want Claude Code to keep all its personal configuration and data in `/srv/claude-a` instead of `~/.claude`. Which environment variable do you set?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CONFIG_DIR",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CONFIG_DIR=/srv/claude-a",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "When `CLAUDE_CONFIG_DIR` is set, every `~/.claude` path lives under that directory instead, including settings, transcripts and auto memory.",
+      "keywordCues": [
+        "instead of ~/.claude",
+        "environment variable"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Quieres que Claude Code guarde toda su configuración personal y sus datos en `/srv/claude-a` en lugar de `~/.claude`. ¿Qué variable de entorno defines?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CONFIG_DIR",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "CLAUDE_CONFIG_DIR=/srv/claude-a",
+            "why": ""
+          }
+        ],
+        "explanation": "Cuando defines `CLAUDE_CONFIG_DIR`, todas las rutas de `~/.claude` pasan a vivir bajo ese directorio, incluidos settings, transcripts y auto memory."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "dir-project-vs-global--r0",
+      "conceptId": "dir-project-vs-global",
+      "kind": "recall",
+      "prompt": "How do you decide between the project .claude/ and ~/.claude/? Name two files that exist only in each place.",
+      "promptEs": "¿Cómo decides entre el .claude/ del proyecto y ~/.claude/? Nombra dos archivos que existen solo en cada lugar.",
+      "idealAnswer": "The project `.claude/` is committed and shared with everyone who clones the repo, while `~/.claude/` is personal and applies across all your projects. Project only: `.claude/settings.local.json` and `.mcp.json` at the repo root. Global only: `keybindings.json`, `themes/*.json`, auto memory, and `~/.claude.json`.",
+      "rubric": [
+        "Project .claude/ is committed and shared with the team",
+        "~/.claude/ is personal and applies to every project",
+        "Project only: settings.local.json or .mcp.json (or .worktreeinclude)",
+        "Global only: keybindings.json, themes, auto memory or ~/.claude.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,577 @@
+{
+  "conceptId": "mem-claude-md-locations",
+  "card": {
+    "en": {
+      "tldr": "CLAUDE.md files hold instructions you write so Claude has them in every session. There are four scopes, loaded broadest first: managed policy, user, project and local. Choose the file by who should get the instruction.",
+      "whenToUse": [
+        "Build commands and conventions the whole team needs: commit `./CLAUDE.md` or `./.claude/CLAUDE.md`",
+        "Personal preferences for all your projects: `~/.claude/CLAUDE.md`",
+        "Personal notes for one project, like sandbox URLs: `./CLAUDE.local.md`, added to `.gitignore`",
+        "Organization-wide standards IT deploys: the managed policy CLAUDE.md"
+      ],
+      "keyFacts": [
+        "Load order, broadest to most specific: managed policy, user (`~/.claude/CLAUDE.md`), project (`./CLAUDE.md` or `./.claude/CLAUDE.md`), local (`./CLAUDE.local.md`).",
+        "Managed policy paths: `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS), `/etc/claude-code/CLAUDE.md` (Linux and WSL), `C:\\Program Files\\ClaudeCode\\CLAUDE.md` (Windows); it can't be excluded.",
+        "Files are concatenated, not overridden: ancestor directories load at launch from the filesystem root down, and `CLAUDE.local.md` is appended after `CLAUDE.md` in each directory.",
+        "`CLAUDE.md` files in subdirectories below the working directory load on demand, when Claude reads files there.",
+        "`claudeMdExcludes` skips ancestor files by path or glob; managed policy files can't be excluded.",
+        "Run `/context` and check **Memory files** to confirm which files loaded."
+      ],
+      "gotchas": [
+        "CLAUDE.md is delivered as a user message after the system prompt: guidance, not enforcement. To block an action use `permissions.deny` or a PreToolUse hook.",
+        "Instructions closer to the launch directory are read last; conflicting rules make Claude pick one arbitrarily.",
+        "A gitignored `CLAUDE.local.md` exists only in the worktree where you created it.",
+        "`CLAUDE.md` files from `--add-dir` directories don't load unless `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` is set."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Auto memory",
+          "difference": "Claude writes it from your corrections into `~/.claude/projects/<project>/memory/`; you write CLAUDE.md."
+        },
+        {
+          "concept": ".claude/rules/",
+          "difference": "Topic files that can be gated by `paths` globs so they load only for matching files."
+        },
+        {
+          "concept": "permissions.deny",
+          "difference": "Enforced by the client every time; CLAUDE.md only shapes what Claude decides."
+        }
+      ],
+      "examCues": [
+        "shared with everyone who clones the repo",
+        "only for me in this project",
+        "in every project on my machine",
+        "developers must not be able to exclude it",
+        "the closest file wins?"
+      ]
+    },
+    "es": {
+      "tldr": "Los archivos CLAUDE.md guardan instrucciones que tú escribes para que Claude las tenga en cada sesión. Hay cuatro scopes, cargados del más amplio al más específico: managed policy, user, proyecto y local. Eliges el archivo según quién debe recibir la instrucción.",
+      "whenToUse": [
+        "Comandos de build y convenciones que necesita todo el equipo: commitea `./CLAUDE.md` o `./.claude/CLAUDE.md`",
+        "Preferencias personales para todos tus proyectos: `~/.claude/CLAUDE.md`",
+        "Notas personales para un proyecto, como URLs de sandbox: `./CLAUDE.local.md`, agregado a `.gitignore`",
+        "Estándares de toda la organización que despliega IT: el CLAUDE.md de managed policy"
+      ],
+      "keyFacts": [
+        "Orden de carga, del más amplio al más específico: managed policy, user (`~/.claude/CLAUDE.md`), proyecto (`./CLAUDE.md` o `./.claude/CLAUDE.md`), local (`./CLAUDE.local.md`).",
+        "Rutas de managed policy: `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS), `/etc/claude-code/CLAUDE.md` (Linux y WSL), `C:\\Program Files\\ClaudeCode\\CLAUDE.md` (Windows); no se puede excluir.",
+        "Los archivos se concatenan, no se sobreescriben: los directorios ancestros cargan al lanzar desde la raíz del sistema hacia abajo, y `CLAUDE.local.md` va después de `CLAUDE.md` en cada directorio.",
+        "Los `CLAUDE.md` de subdirectorios bajo el directorio de trabajo cargan bajo demanda, cuando Claude lee archivos ahí.",
+        "`claudeMdExcludes` omite archivos ancestros por ruta o glob; los de managed policy no se pueden excluir.",
+        "Corre `/context` y revisa **Memory files** para confirmar qué archivos cargaron."
+      ],
+      "gotchas": [
+        "CLAUDE.md llega como mensaje de usuario después del system prompt: orienta, no obliga. Para bloquear una acción usa `permissions.deny` o un hook PreToolUse.",
+        "Las instrucciones más cercanas al directorio de lanzamiento se leen al final; si dos reglas se contradicen, Claude puede elegir una al azar.",
+        "Un `CLAUDE.local.md` en .gitignore solo existe en el worktree donde lo creaste.",
+        "Los `CLAUDE.md` de directorios agregados con `--add-dir` no cargan salvo que definas `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Auto memory",
+          "difference": "La escribe Claude a partir de tus correcciones en `~/.claude/projects/<project>/memory/`; CLAUDE.md lo escribes tú."
+        },
+        {
+          "concept": ".claude/rules/",
+          "difference": "Archivos por tema que pueden filtrarse con globs `paths` para cargar solo con archivos que coinciden."
+        },
+        {
+          "concept": "permissions.deny",
+          "difference": "El cliente lo aplica siempre; CLAUDE.md solo influye en lo que Claude decide."
+        }
+      ],
+      "examCues": [
+        "shared with everyone who clones the repo",
+        "only for me in this project",
+        "in every project on my machine",
+        "developers must not be able to exclude it",
+        "the closest file wins?"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mem-claude-md-locations--0a466900",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Lucía's team keeps re-explaining the build command, the test command and the naming conventions to Claude. She wants these instructions to reach everyone who clones the repository, with no setup on each teammate's machine. Where should she write them?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`~/.claude/CLAUDE.md` on her machine",
+          "correct": false,
+          "why": "User instructions apply only to her, in all her projects; teammates never get them."
+        },
+        {
+          "id": "B",
+          "text": "`./CLAUDE.local.md`",
+          "correct": false,
+          "why": "Local instructions are personal and belong in `.gitignore`, so they never reach the team."
+        },
+        {
+          "id": "C",
+          "text": "A committed `./CLAUDE.md` at the repository root",
+          "correct": true,
+          "why": "The project CLAUDE.md is shared through source control and loads for anyone who works in the repo."
+        },
+        {
+          "id": "D",
+          "text": "Ask Claude to \"remember\" them in auto memory",
+          "correct": false,
+          "why": "Auto memory is machine-local and Claude decides what to save; it isn't shared with teammates."
+        }
+      ],
+      "explanation": "The requirement is 'everyone who clones the repo'. Only the project scope, `./CLAUDE.md` or `./.claude/CLAUDE.md`, travels with the repository through version control. Auto memory is tempting because it needs no manual file, but it lives in your home directory on one machine and isn't shared.",
+      "keywordCues": [
+        "everyone who clones the repository",
+        "no setup on each teammate's machine"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "El equipo de Lucía le re-explica a Claude una y otra vez el comando de build, el de tests y las convenciones de nombres. Quiere que estas instrucciones lleguen a todos los que clonan el repositorio, sin configurar nada en la máquina de cada compañero. ¿Dónde debe escribirlas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`~/.claude/CLAUDE.md` en su máquina",
+            "why": "Las instrucciones de user aplican solo a ella, en todos sus proyectos; el equipo nunca las recibe."
+          },
+          {
+            "id": "B",
+            "text": "`./CLAUDE.local.md`",
+            "why": "Las instrucciones locales son personales y van en `.gitignore`, así que nunca llegan al equipo."
+          },
+          {
+            "id": "C",
+            "text": "Un `./CLAUDE.md` commiteado en la raíz del repositorio",
+            "why": "El CLAUDE.md de proyecto se comparte por control de versiones y carga para cualquiera que trabaje en el repo."
+          },
+          {
+            "id": "D",
+            "text": "Pedirle a Claude que las \"recuerde\" en auto memory",
+            "why": "Auto memory es local a la máquina y Claude decide qué guardar; no se comparte con el equipo."
+          }
+        ],
+        "explanation": "El requisito es 'todos los que clonan el repo'. Solo el scope de proyecto, `./CLAUDE.md` o `./.claude/CLAUDE.md`, viaja con el repositorio por control de versiones. Auto memory tienta porque no requiere escribir un archivo, pero vive en tu home en una sola máquina y no se comparte."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-claude-md-locations--022a1b88",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [
+        "mem-agents-md"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Tomás launches Claude Code in `repo/apps/web` of a monorepo. The repo contains `repo/CLAUDE.md`, `repo/apps/web/CLAUDE.md`, `repo/apps/web/src/legacy/CLAUDE.md`, `repo/packages/api/CLAUDE.md` and `repo/apps/web/AGENTS.md`. Default settings. Which project files are in context at launch, before Claude reads any file? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`repo/CLAUDE.md`",
+          "correct": true,
+          "why": "It sits in an ancestor of the working directory, so it loads at launch."
+        },
+        {
+          "id": "B",
+          "text": "`repo/apps/web/CLAUDE.md`",
+          "correct": true,
+          "why": "It's in the working directory itself, so it loads at launch, after the root file."
+        },
+        {
+          "id": "C",
+          "text": "`repo/apps/web/src/legacy/CLAUDE.md`",
+          "correct": false,
+          "why": "Subdirectory files load on demand, when Claude reads files in that subdirectory."
+        },
+        {
+          "id": "D",
+          "text": "`repo/packages/api/CLAUDE.md`",
+          "correct": false,
+          "why": "It's neither the working directory nor an ancestor of it."
+        },
+        {
+          "id": "E",
+          "text": "`repo/apps/web/AGENTS.md`",
+          "correct": false,
+          "why": "By default AGENTS.md is read only when no CLAUDE.md exists in the working directory or above it."
+        }
+      ],
+      "explanation": "At launch Claude Code loads CLAUDE.md files from the working directory and every directory above it, concatenated from the root down. Files in subdirectories below the working directory wait until Claude reads files there, so the legacy file is tempting but not loaded yet. The AGENTS.md is skipped because CLAUDE.md files exist on the path.",
+      "keywordCues": [
+        "launches Claude Code in `repo/apps/web`",
+        "at launch, before Claude reads any file",
+        "Default settings"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Tomás lanza Claude Code en `repo/apps/web` de un monorepo. El repo contiene `repo/CLAUDE.md`, `repo/apps/web/CLAUDE.md`, `repo/apps/web/src/legacy/CLAUDE.md`, `repo/packages/api/CLAUDE.md` y `repo/apps/web/AGENTS.md`. Settings por defecto. ¿Qué archivos del proyecto están en contexto al lanzar, antes de que Claude lea algún archivo? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`repo/CLAUDE.md`",
+            "why": "Está en un ancestro del directorio de trabajo, así que carga al lanzar."
+          },
+          {
+            "id": "B",
+            "text": "`repo/apps/web/CLAUDE.md`",
+            "why": "Está en el propio directorio de trabajo, así que carga al lanzar, después del de la raíz."
+          },
+          {
+            "id": "C",
+            "text": "`repo/apps/web/src/legacy/CLAUDE.md`",
+            "why": "Los archivos de subdirectorios cargan bajo demanda, cuando Claude lee archivos en ese subdirectorio."
+          },
+          {
+            "id": "D",
+            "text": "`repo/packages/api/CLAUDE.md`",
+            "why": "No es el directorio de trabajo ni un ancestro de él."
+          },
+          {
+            "id": "E",
+            "text": "`repo/apps/web/AGENTS.md`",
+            "why": "Por defecto AGENTS.md se lee solo cuando no hay CLAUDE.md en el directorio de trabajo o encima."
+          }
+        ],
+        "explanation": "Al lanzar, Claude Code carga los CLAUDE.md del directorio de trabajo y de todos los directorios superiores, concatenados desde la raíz hacia abajo. Los de subdirectorios bajo el directorio de trabajo esperan a que Claude lea archivos ahí, así que el de legacy tienta pero aún no carga. AGENTS.md se omite porque hay CLAUDE.md en la ruta."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-claude-md-locations--84155687",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "The project CLAUDE.md says \"Never edit files under `db/migrations/`\", yet Claude occasionally edits them during large refactors. The tech lead needs those edits blocked deterministically, every time, regardless of what Claude decides. What should she do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rewrite the rule more specifically and move it to the top of CLAUDE.md",
+          "correct": false,
+          "why": "Specific wording improves adherence, but CLAUDE.md is still context, not enforcement."
+        },
+        {
+          "id": "B",
+          "text": "Add a `permissions.deny` rule for edits under `db/migrations/`",
+          "correct": true,
+          "why": "Permission rules are enforced by the client regardless of what Claude decides."
+        },
+        {
+          "id": "C",
+          "text": "Move the rule to the managed policy CLAUDE.md",
+          "correct": false,
+          "why": "A managed CLAUDE.md can't be excluded, but it is still behavioral guidance, not a hard block."
+        },
+        {
+          "id": "D",
+          "text": "Repeat the rule in each developer's `CLAUDE.local.md`",
+          "correct": false,
+          "why": "More copies of the same guidance don't turn it into enforcement."
+        }
+      ],
+      "explanation": "The deciding word is 'deterministically'. CLAUDE.md content is delivered as a user message, so Claude tries to follow it with no guarantee of strict compliance. A `permissions.deny` rule, or a PreToolUse hook, is applied by the client every time. The managed CLAUDE.md is tempting because nobody can exclude it, but it still only shapes Claude's behavior.",
+      "keywordCues": [
+        "blocked deterministically, every time",
+        "regardless of what Claude decides"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "El CLAUDE.md del proyecto dice \"Never edit files under `db/migrations/`\", pero Claude a veces los edita en refactors grandes. La tech lead necesita bloquear esas ediciones de forma determinista, siempre, decida lo que decida Claude. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reescribir la regla más específica y moverla al inicio de CLAUDE.md",
+            "why": "Una redacción específica mejora la adherencia, pero CLAUDE.md sigue siendo contexto, no enforcement."
+          },
+          {
+            "id": "B",
+            "text": "Agregar una regla `permissions.deny` para ediciones bajo `db/migrations/`",
+            "why": "Las reglas de permisos las aplica el cliente, decida lo que decida Claude."
+          },
+          {
+            "id": "C",
+            "text": "Mover la regla al CLAUDE.md de managed policy",
+            "why": "Un CLAUDE.md managed no se puede excluir, pero sigue siendo guía de comportamiento, no un bloqueo."
+          },
+          {
+            "id": "D",
+            "text": "Repetir la regla en el `CLAUDE.local.md` de cada desarrollador",
+            "why": "Más copias de la misma guía no la convierten en enforcement."
+          }
+        ],
+        "explanation": "La palabra que decide es 'determinista'. El contenido de CLAUDE.md llega como mensaje de usuario, así que Claude intenta seguirlo sin garantía de cumplimiento estricto. Una regla `permissions.deny`, o un hook PreToolUse, la aplica el cliente cada vez. El CLAUDE.md managed tienta porque nadie puede excluirlo, pero igual solo influye en el comportamiento de Claude."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-claude-md-locations--c2b01ce8",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A security team wants data-handling reminders in every Claude Code session on all company laptops, in every repository. Individual developers must not be able to exclude these instructions. They already distribute files with MDM. What should they deploy?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A CLAUDE.md at the managed policy location on each laptop",
+          "correct": true,
+          "why": "The managed policy CLAUDE.md applies to every session on the machine and can't be excluded by individual settings."
+        },
+        {
+          "id": "B",
+          "text": "A `~/.claude/CLAUDE.md` in each developer's home directory",
+          "correct": false,
+          "why": "It covers every repository, but it's the user's own file, which they can edit or delete."
+        },
+        {
+          "id": "C",
+          "text": "A committed `CLAUDE.md` in every company repository",
+          "correct": false,
+          "why": "It only covers repositories that contain it, and developers can skip it with `claudeMdExcludes`."
+        },
+        {
+          "id": "D",
+          "text": "A `claudeMd` key in each repository's `.claude/settings.json`",
+          "correct": false,
+          "why": "`claudeMd` is honored only in managed and policy settings; in project settings it has no effect."
+        }
+      ],
+      "explanation": "Two requirements decide: every session in every repository, and no way for developers to opt out. The managed policy CLAUDE.md, deployed at the OS-specific path, meets both, since managed policy files can't be excluded. The `claudeMd` key is tempting because it carries CLAUDE.md content in settings, but it only works in managed settings.",
+      "keywordCues": [
+        "every Claude Code session on all company laptops",
+        "must not be able to exclude",
+        "distribute files with MDM"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un equipo de seguridad quiere recordatorios de manejo de datos en cada sesión de Claude Code en todas las laptops de la empresa, en todos los repositorios. Los desarrolladores no deben poder excluir estas instrucciones. Ya distribuyen archivos con MDM. ¿Qué deben desplegar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un CLAUDE.md en la ubicación de managed policy de cada laptop",
+            "why": "El CLAUDE.md de managed policy aplica a cada sesión de la máquina y los settings individuales no pueden excluirlo."
+          },
+          {
+            "id": "B",
+            "text": "Un `~/.claude/CLAUDE.md` en el home de cada desarrollador",
+            "why": "Cubre todos los repositorios, pero es un archivo del propio usuario, que puede editarlo o borrarlo."
+          },
+          {
+            "id": "C",
+            "text": "Un `CLAUDE.md` commiteado en cada repositorio de la empresa",
+            "why": "Solo cubre los repositorios que lo contienen, y los desarrolladores pueden saltarlo con `claudeMdExcludes`."
+          },
+          {
+            "id": "D",
+            "text": "Una clave `claudeMd` en el `.claude/settings.json` de cada repositorio",
+            "why": "`claudeMd` solo se respeta en managed y policy settings; en settings de proyecto no tiene efecto."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: cada sesión en todos los repositorios, y que los desarrolladores no puedan salirse. El CLAUDE.md de managed policy, desplegado en la ruta de cada sistema operativo, cumple ambos, porque los archivos de managed policy no se pueden excluir. La clave `claudeMd` tienta porque lleva contenido de CLAUDE.md en settings, pero solo funciona en managed settings."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-claude-md-locations--a704038a",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Order these CLAUDE.md scopes as they appear in Claude's context, from first loaded (broadest) to last loaded (most specific).",
+      "options": [
+        {
+          "id": "A",
+          "text": "`./CLAUDE.local.md`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "Managed policy CLAUDE.md",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "`./CLAUDE.md`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`~/.claude/CLAUDE.md`",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The docs list the scopes in load order from broadest to most specific: managed policy, user, project, local. Within a directory, `CLAUDE.local.md` is appended after `CLAUDE.md`, so your personal notes are the last thing Claude reads at that level. Nothing overrides anything: all files are concatenated.",
+      "keywordCues": [
+        "from first loaded (broadest) to last loaded (most specific)"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Ordena estos scopes de CLAUDE.md según aparecen en el contexto de Claude, del primero en cargar (el más amplio) al último (el más específico).",
+        "options": [
+          {
+            "id": "A",
+            "text": "`./CLAUDE.local.md`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "CLAUDE.md de managed policy",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "`./CLAUDE.md`",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`~/.claude/CLAUDE.md`",
+            "why": ""
+          }
+        ],
+        "explanation": "La documentación lista los scopes en orden de carga del más amplio al más específico: managed policy, user, proyecto, local. Dentro de un directorio, `CLAUDE.local.md` se agrega después de `CLAUDE.md`, así que tus notas personales son lo último que Claude lee en ese nivel. Nada sobreescribe nada: todos los archivos se concatenan."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "D",
+        "C",
+        "A"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-claude-md-locations--283de48f",
+      "conceptId": "mem-claude-md-locations",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which file at the project root holds your personal, project-specific instructions that you add to `.gitignore`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE.local.md",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "./CLAUDE.local.md",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`CLAUDE.local.md` is the local scope: it loads alongside `CLAUDE.md`, is appended after it in the same directory, and should be gitignored so it stays yours.",
+      "keywordCues": [
+        "personal, project-specific instructions",
+        "add to `.gitignore`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué archivo en la raíz del proyecto guarda tus instrucciones personales y específicas del proyecto, que agregas a `.gitignore`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE.local.md",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "./CLAUDE.local.md",
+            "why": ""
+          }
+        ],
+        "explanation": "`CLAUDE.local.md` es el scope local: carga junto a `CLAUDE.md`, se agrega después de él en el mismo directorio y debe ir en .gitignore para que siga siendo solo tuyo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mem-claude-md-locations--r0",
+      "conceptId": "mem-claude-md-locations",
+      "kind": "recall",
+      "prompt": "Name the four CLAUDE.md scopes in load order, where each lives, and how files from different directories combine.",
+      "promptEs": "Nombra los cuatro scopes de CLAUDE.md en orden de carga, dónde vive cada uno y cómo se combinan los archivos de distintos directorios.",
+      "idealAnswer": "Managed policy (an OS-specific system path, can't be excluded), then user `~/.claude/CLAUDE.md`, then project `./CLAUDE.md` or `./.claude/CLAUDE.md`, then local `./CLAUDE.local.md`. Files are concatenated, not overridden: ancestor directories load at launch root-down, and subdirectory files load when Claude reads files there.",
+      "rubric": [
+        "Order: managed, user, project, local",
+        "Correct location for user, project and local files",
+        "Concatenated, not overriding",
+        "Ancestors at launch; subdirectories on demand"
+      ]
+    },
+    {
+      "id": "mem-claude-md-locations--r1",
+      "conceptId": "mem-claude-md-locations",
+      "kind": "why-not",
+      "prompt": "Your team needs every developer's Claude to know the build command. Why not just tell Claude \"remember that we build with make build\"?",
+      "promptEs": "Tu equipo necesita que el Claude de cada desarrollador sepa el comando de build. ¿Por qué no basta con decirle a Claude \"remember that we build with make build\"?",
+      "idealAnswer": "Asking Claude to remember saves it to auto memory, which is machine-local under your home directory and not shared with teammates. A team-wide fact belongs in the committed project `CLAUDE.md`, which reaches everyone who clones the repo.",
+      "rubric": [
+        "\"Remember\" goes to auto memory",
+        "Auto memory is machine-local, not shared",
+        "Use the committed project CLAUDE.md"
+      ]
+    }
+  ]
+}

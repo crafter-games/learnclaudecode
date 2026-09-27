@@ -1,0 +1,306 @@
+{
+  "unitId": "u-claude-dir",
+  "audited": true,
+  "overview": {
+    "title": "El directorio .claude",
+    "hook": "Saber qué archivo va en el repo, cuál en tu home y qué se borra solo.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "project",
+          "label": ".claude/ proyecto",
+          "kind": "zone",
+          "x": 35,
+          "y": 18
+        },
+        {
+          "id": "home",
+          "label": "~/.claude/",
+          "kind": "zone",
+          "x": 35,
+          "y": 82
+        },
+        {
+          "id": "appstate",
+          "label": "~/.claude.json",
+          "kind": "data",
+          "x": 62,
+          "y": 50
+        },
+        {
+          "id": "transcripts",
+          "label": "Transcripts .jsonl",
+          "kind": "data",
+          "x": 65,
+          "y": 85
+        },
+        {
+          "id": "sweep",
+          "label": "cleanupPeriodDays",
+          "kind": "service",
+          "x": 92,
+          "y": 70
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "project",
+          "label": "commit al equipo"
+        },
+        {
+          "from": "you",
+          "to": "home",
+          "label": "solo tú"
+        },
+        {
+          "from": "you",
+          "to": "appstate",
+          "label": "estado y MCP"
+        },
+        {
+          "from": "home",
+          "to": "transcripts",
+          "label": "cada sesión"
+        },
+        {
+          "from": "transcripts",
+          "to": "sweep",
+          "label": "borra viejos"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Claude Code lee configuración de dos lugares, y si pones un archivo en el equivocado tu equipo no lo recibe o tu preferencia personal termina en el repositorio.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "La carpeta .claude del proyecto se commitea y la comparte todo el equipo. La carpeta ~/.claude de tu home es tuya y aplica en todos tus proyectos. Ambas aceptan CLAUDE.md, rules, settings.json, skills, agents y workflows.",
+        "show": [
+          "you",
+          "project",
+          "home"
+        ],
+        "focus": "project"
+      },
+      {
+        "narration": "Algunos archivos existen solo en un lado. Del proyecto son settings.local.json, que queda fuera de git, y .mcp.json en la raíz del repo. Solo globales son keybindings.json, los temas y la auto memory.",
+        "show": [
+          "you",
+          "project",
+          "home"
+        ],
+        "focus": "home"
+      },
+      {
+        "narration": "Aparte está ~/.claude.json, fuera de la carpeta. Guarda el estado de la app, tu sesión OAuth, las decisiones de trust y tus servidores MCP personales. No lo borres.",
+        "show": [
+          "you",
+          "project",
+          "home",
+          "appstate"
+        ],
+        "focus": "appstate"
+      },
+      {
+        "narration": "Mientras trabajas, ~/.claude también guarda datos en texto plano: transcripts de cada sesión, snapshots de checkpoints y planes. Todo lo que pasa por una herramienta, incluso un secreto leído de un .env, queda en disco.",
+        "show": [
+          "you",
+          "project",
+          "home",
+          "appstate",
+          "transcripts"
+        ],
+        "focus": "transcripts"
+      },
+      {
+        "narration": "Un barrido borra esos datos cuando superan cleanupPeriodDays, treinta días por defecto, pero nunca la auto memory ni history.jsonl. Para borrar ya todo lo de un proyecto, usa claude project purge.",
+        "show": [
+          "you",
+          "project",
+          "home",
+          "appstate",
+          "transcripts",
+          "sweep"
+        ],
+        "focus": "sweep"
+      }
+    ],
+    "keyPoints": [
+      ".claude/ del proyecto se commitea; ~/.claude/ es personal",
+      "settings.local.json y .mcp.json existen solo en el proyecto",
+      "keybindings.json, temas y auto memory son solo globales",
+      "cleanupPeriodDays borra transcripts viejos, no la auto memory",
+      "claude project purge borra ya el estado de un proyecto"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "Scopes de settings",
+        "difference": "Aquí se ubica cada tipo de archivo; los scopes deciden qué valor de settings gana."
+      },
+      {
+        "unitOrService": "Checkpointing",
+        "difference": "file-history/ guarda los snapshots que usa rewind; el barrido los borra por antigüedad."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-claude-dir--l1",
+      "conceptId": "dir-project-vs-global",
+      "format": "lightning",
+      "prompt": "Share an MCP server with everyone who clones the repo → which file?",
+      "promptEs": "Compartir un servidor MCP con todos los que clonan el repo → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude.json"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.local.json"
+        },
+        {
+          "id": "C",
+          "text": "~/.claude/settings.json"
+        },
+        {
+          "id": "D",
+          "text": ".mcp.json at the repo root"
+        }
+      ],
+      "answer": "D",
+      "why": "Los servidores MCP del equipo van en .mcp.json, en la raíz del proyecto y commiteado. ~/.claude.json guarda tus servidores personales, que nadie más recibe."
+    },
+    {
+      "id": "u-claude-dir--l2",
+      "conceptId": "dir-project-vs-global",
+      "format": "thisorthat",
+      "prompt": "A personal subagent available in every project, never committed → ?",
+      "promptEs": "Un subagente personal disponible en todos los proyectos, nunca commiteado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/agents/reviewer.md"
+        },
+        {
+          "id": "B",
+          "text": ".claude/agents/reviewer.md"
+        }
+      ],
+      "answer": "A",
+      "why": "~/.claude/agents/ aplica en todos tus proyectos y no pertenece a ningún repo. .claude/agents/ del proyecto se commitea y solo existe en ese repo."
+    },
+    {
+      "id": "u-claude-dir--l3",
+      "conceptId": "dir-project-vs-global",
+      "format": "lightning",
+      "prompt": "Custom keyboard shortcuts → where do they live?",
+      "promptEs": "Atajos de teclado personalizados → ¿dónde viven?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude.json"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude/keybindings.json"
+        },
+        {
+          "id": "C",
+          "text": ".claude/settings.json"
+        },
+        {
+          "id": "D",
+          "text": "~/.claude/settings.json"
+        }
+      ],
+      "answer": "B",
+      "why": "keybindings.json es un archivo solo global dentro de ~/.claude/. No es una clave de settings.json ni parte del estado de ~/.claude.json."
+    },
+    {
+      "id": "u-claude-dir--l4",
+      "conceptId": "dir-application-data",
+      "format": "lightning",
+      "prompt": "Keep local transcripts at most 7 days, but keep saving them → ?",
+      "promptEs": "Guardar transcripts locales como máximo 7 días, pero seguir guardándolos → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_SKIP_PROMPT_HISTORY"
+        },
+        {
+          "id": "B",
+          "text": "claude project purge --all"
+        },
+        {
+          "id": "C",
+          "text": "\"cleanupPeriodDays\": 7"
+        },
+        {
+          "id": "D",
+          "text": "--no-session-persistence"
+        }
+      ],
+      "answer": "C",
+      "why": "cleanupPeriodDays fija la antigüedad que borra el barrido. La variable de entorno y el flag dejan de escribir transcripts; purge borra una vez, no de forma continua."
+    },
+    {
+      "id": "u-claude-dir--l5",
+      "conceptId": "dir-application-data",
+      "format": "thisorthat",
+      "prompt": "Never write transcripts, including interactive sessions → ?",
+      "promptEs": "No escribir nunca transcripts, incluidas las sesiones interactivas → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--no-session-persistence"
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CODE_SKIP_PROMPT_HISTORY"
+        }
+      ],
+      "answer": "B",
+      "why": "La variable de entorno evita escribir transcripts e historial en cualquier modo. --no-session-persistence solo funciona junto con -p, en modo no interactivo."
+    },
+    {
+      "id": "u-claude-dir--l6",
+      "conceptId": "dir-application-data",
+      "format": "lightning",
+      "prompt": "Which survives the cleanupPeriodDays sweep?",
+      "promptEs": "¿Qué sobrevive al barrido de cleanupPeriodDays?",
+      "options": [
+        {
+          "id": "A",
+          "text": "projects/<project>/<session>.jsonl"
+        },
+        {
+          "id": "B",
+          "text": "file-history/<session>/"
+        },
+        {
+          "id": "C",
+          "text": "plans/"
+        },
+        {
+          "id": "D",
+          "text": "projects/<project>/memory/"
+        }
+      ],
+      "answer": "D",
+      "why": "El barrido no borra los archivos de auto memory; solo quita esa carpeta si estuvo vacía todo el período. Transcripts, snapshots y planes sí se borran por antigüedad."
+    }
+  ]
+}

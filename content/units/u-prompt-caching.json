@@ -1,0 +1,411 @@
+{
+  "unitId": "u-prompt-caching",
+  "audited": true,
+  "overview": {
+    "title": "Prompt caching",
+    "hook": "Evitar turnos lentos y caros por romper el caché sin darte cuenta.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "sys",
+          "label": "System prompt",
+          "kind": "data",
+          "x": 30,
+          "y": 20
+        },
+        {
+          "id": "proj",
+          "label": "Contexto proyecto",
+          "kind": "data",
+          "x": 52,
+          "y": 20
+        },
+        {
+          "id": "conv",
+          "label": "Conversación",
+          "kind": "data",
+          "x": 74,
+          "y": 20
+        },
+        {
+          "id": "cache",
+          "label": "Caché de prefijo",
+          "kind": "service",
+          "x": 52,
+          "y": 75
+        },
+        {
+          "id": "ttl",
+          "label": "TTL 5m / 1h",
+          "kind": "note",
+          "x": 88,
+          "y": 75
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "conv",
+          "label": "nuevo mensaje"
+        },
+        {
+          "from": "sys",
+          "to": "proj",
+          "label": "primero lo estable"
+        },
+        {
+          "from": "proj",
+          "to": "conv",
+          "label": "luego"
+        },
+        {
+          "from": "conv",
+          "to": "cache",
+          "label": "coincidencia exacta"
+        },
+        {
+          "from": "cache",
+          "to": "ttl",
+          "label": "expira sin uso"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "En cada turno, Claude Code reenvía todo el contexto a la API. Sin caché se reprocesaría tu historial completo cada vez; con caché se reutiliza lo ya procesado y solo se procesa lo nuevo.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Cada solicitud va ordenada: primero el system prompt, con instrucciones y definiciones de herramientas; luego el contexto del proyecto, con CLAUDE.md y la memoria automática; y al final la conversación.",
+        "show": [
+          "you",
+          "sys",
+          "proj",
+          "conv"
+        ],
+        "focus": "sys"
+      },
+      {
+        "narration": "La API compara el inicio de la solicitud, el prefijo, con lo que procesó hace poco. La coincidencia es exacta: un cambio en cualquier punto recalcula todo lo que viene después.",
+        "show": [
+          "you",
+          "sys",
+          "proj",
+          "conv",
+          "cache"
+        ],
+        "focus": "cache"
+      },
+      {
+        "narration": "Cambiar de modelo, cambiar el esfuerzo en la mayoría de modelos o compactar invalida el caché. Editar archivos, cambiar el modo de permisos o usar /rewind lo conserva.",
+        "show": [
+          "you",
+          "sys",
+          "proj",
+          "conv",
+          "cache"
+        ],
+        "focus": "conv"
+      },
+      {
+        "narration": "El caché también expira tras un periodo sin actividad, de cinco minutos o una hora. Cada acierto reinicia el reloj, y puedes elegir la duración con promptCacheTtl.",
+        "show": [
+          "you",
+          "sys",
+          "proj",
+          "conv",
+          "cache",
+          "ttl"
+        ],
+        "focus": "ttl"
+      },
+      {
+        "narration": "No confundas invalidar con expirar. Si el turno lento llegó justo después de cambiar algo del prefijo, lo invalidaste; si no cambiaste nada pero estuviste inactivo más que el TTL, expiró.",
+        "show": [
+          "you",
+          "sys",
+          "proj",
+          "conv",
+          "cache",
+          "ttl"
+        ],
+        "focus": "ttl"
+      }
+    ],
+    "keyPoints": [
+      "El caché reutiliza el prefijo exacto más largo",
+      "Orden: system prompt, contexto del proyecto, conversación",
+      "Elige modelo y esfuerzo al inicio de la sesión",
+      "Editar CLAUDE.md no rompe el caché, pero no aplica",
+      "El TTL es 5 minutos o 1 hora"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/compact",
+        "difference": "Reemplaza el historial y crea un prefijo nuevo; /rewind vuelve a un prefijo ya cacheado."
+      },
+      {
+        "unitOrService": "/recap",
+        "difference": "Agrega un resumen como salida del comando; no reemplaza el historial ni rompe el caché."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-prompt-caching--l1",
+      "conceptId": "cache-prefix-layers",
+      "format": "lightning",
+      "prompt": "Request layer that holds the tool definitions → ?",
+      "promptEs": "Capa de la solicitud que contiene las definiciones de herramientas → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Conversation"
+        },
+        {
+          "id": "B",
+          "text": "Project context"
+        },
+        {
+          "id": "C",
+          "text": "System prompt"
+        },
+        {
+          "id": "D",
+          "text": "Auto memory"
+        }
+      ],
+      "answer": "C",
+      "why": "Las definiciones de herramientas van en el system prompt junto con las instrucciones base. CLAUDE.md y la memoria automática forman el contexto del proyecto, que va después."
+    },
+    {
+      "id": "u-prompt-caching--l2",
+      "conceptId": "cache-prefix-layers",
+      "format": "lightning",
+      "prompt": "You send a normal follow-up message; which layers stay cached → ?",
+      "promptEs": "Envías un mensaje normal de seguimiento; ¿qué capas siguen en caché → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Only the system prompt"
+        },
+        {
+          "id": "B",
+          "text": "System prompt and project context"
+        },
+        {
+          "id": "C",
+          "text": "None; everything is recomputed"
+        },
+        {
+          "id": "D",
+          "text": "Only the conversation"
+        }
+      ],
+      "answer": "B",
+      "why": "Un cambio en la capa de conversación deja en caché el system prompt y el contexto del proyecto. Lo nuevo se agrega al final, así que el prefijo anterior sigue coincidiendo."
+    },
+    {
+      "id": "u-prompt-caching--l3",
+      "conceptId": "cache-prefix-layers",
+      "format": "thisorthat",
+      "prompt": "Two sessions in different worktrees of the same repo → ?",
+      "promptEs": "Dos sesiones en worktrees distintos del mismo repo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Separate caches"
+        },
+        {
+          "id": "B",
+          "text": "One shared cache"
+        }
+      ],
+      "answer": "A",
+      "why": "El caché queda limitado en la práctica a una máquina y un directorio. Cada worktree tiene su propio directorio de trabajo, así que arman prefijos distintos."
+    },
+    {
+      "id": "u-prompt-caching--l4",
+      "conceptId": "cache-invalidators",
+      "format": "lightning",
+      "prompt": "Mid-session change that keeps the prompt cache → ?",
+      "promptEs": "Cambio a mitad de sesión que conserva el caché → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Switching models with /model"
+        },
+        {
+          "id": "B",
+          "text": "Running /compact"
+        },
+        {
+          "id": "C",
+          "text": "Changing the permission mode"
+        },
+        {
+          "id": "D",
+          "text": "Turning on fast mode"
+        }
+      ],
+      "answer": "C",
+      "why": "Cambiar el modo de permisos no toca el system prompt ni las herramientas. Cambiar de modelo o activar fast mode hace que la siguiente solicitud relea todo el historial sin caché, y /compact reemplaza el historial, lo que invalida la capa de conversación."
+    },
+    {
+      "id": "u-prompt-caching--l5",
+      "conceptId": "cache-invalidators",
+      "format": "lightning",
+      "prompt": "Abandon a dead-end path, reusing an already-cached prefix → ?",
+      "promptEs": "Abandonar un camino sin salida reutilizando un prefijo ya cacheado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact"
+        },
+        {
+          "id": "B",
+          "text": "/clear"
+        },
+        {
+          "id": "C",
+          "text": "/recap"
+        },
+        {
+          "id": "D",
+          "text": "/rewind"
+        }
+      ],
+      "answer": "D",
+      "why": "/rewind trunca la conversación a un turno anterior, cuyo prefijo ya está en caché. /compact reemplaza el historial y construye un prefijo nuevo; /recap no descarta nada."
+    },
+    {
+      "id": "u-prompt-caching--l6",
+      "conceptId": "cache-invalidators",
+      "format": "thisorthat",
+      "prompt": "Show a session summary without breaking the cache → ?",
+      "promptEs": "Mostrar un resumen de la sesión sin romper el caché → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/recap"
+        },
+        {
+          "id": "B",
+          "text": "/compact"
+        }
+      ],
+      "answer": "A",
+      "why": "/recap agrega el resumen como salida del comando y deja intacto el prefijo. /compact reemplaza el historial con un resumen, lo que invalida la capa de conversación."
+    },
+    {
+      "id": "u-prompt-caching--l7",
+      "conceptId": "cache-invalidators",
+      "format": "lightning",
+      "prompt": "You edited project CLAUDE.md mid-session; it takes effect after → ?",
+      "promptEs": "Editaste el CLAUDE.md del proyecto a mitad de sesión; aplica después de → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Your next message"
+        },
+        {
+          "id": "B",
+          "text": "/clear, /compact or a restart"
+        },
+        {
+          "id": "C",
+          "text": "The next /rewind"
+        },
+        {
+          "id": "D",
+          "text": "Claude's next file read"
+        }
+      ],
+      "answer": "B",
+      "why": "CLAUDE.md se lee una vez al iniciar la sesión y queda en memoria. Editarlo no rompe el caché, pero tampoco aplica hasta /clear, /compact o reiniciar."
+    },
+    {
+      "id": "u-prompt-caching--l8",
+      "conceptId": "cache-ttl",
+      "format": "lightning",
+      "prompt": "One-hour cache for the main conversation with an API key → ?",
+      "promptEs": "Caché de una hora para la conversación principal con API key → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "subagentPromptCacheTtl set to 1h"
+        },
+        {
+          "id": "B",
+          "text": "FORCE_PROMPT_CACHING_5M=1"
+        },
+        {
+          "id": "C",
+          "text": "DISABLE_PROMPT_CACHING=1"
+        },
+        {
+          "id": "D",
+          "text": "promptCacheTtl set to 1h"
+        }
+      ],
+      "answer": "D",
+      "why": "promptCacheTtl controla la conversación principal. subagentPromptCacheTtl cubre el otro grupo (subagentes, workflows, compactación), y FORCE_PROMPT_CACHING_5M fuerza cinco minutos."
+    },
+    {
+      "id": "u-prompt-caching--l9",
+      "conceptId": "cache-ttl",
+      "format": "thisorthat",
+      "prompt": "Slow first turn after a long idle break, nothing changed → ?",
+      "promptEs": "Primer turno lento tras una pausa larga, sin cambiar nada → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Cache invalidated by a change"
+        },
+        {
+          "id": "B",
+          "text": "Cache expired past its TTL"
+        }
+      ],
+      "answer": "B",
+      "why": "Si no cambiaste nada del prefijo, no hubo invalidación. Estuviste inactivo más que el TTL, así que el caché expiró y el primer turno recalculó todo."
+    },
+    {
+      "id": "u-prompt-caching--l10",
+      "conceptId": "cache-ttl",
+      "format": "lightning",
+      "prompt": "Default TTL for subagent requests, even on a subscription → ?",
+      "promptEs": "TTL por defecto de las solicitudes de subagentes, incluso con suscripción → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "One hour"
+        },
+        {
+          "id": "B",
+          "text": "Until /clear"
+        },
+        {
+          "id": "C",
+          "text": "Five minutes"
+        },
+        {
+          "id": "D",
+          "text": "Until the session ends"
+        }
+      ],
+      "answer": "C",
+      "why": "Los subagentes caen fuera del grupo de la conversación principal, así que reciben cinco minutos aunque tengas suscripción. La hora por defecto aplica solo a la conversación principal."
+    }
+  ]
+}

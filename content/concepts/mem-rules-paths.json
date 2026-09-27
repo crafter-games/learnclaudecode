@@ -1,0 +1,677 @@
+{
+  "conceptId": "mem-rules-paths",
+  "card": {
+    "en": {
+      "tldr": "Rules are one-topic markdown files in `.claude/rules/` that you write. Without `paths` frontmatter they load at launch like `.claude/CLAUDE.md`; with `paths` globs they load only when Claude reads a matching file. Use them for conventions tied to parts of the codebase, and skills for procedures loaded on demand.",
+      "whenToUse": [
+        "Split a growing CLAUDE.md into topic files",
+        "Load conventions only when Claude works on matching files, such as `src/api/**/*.ts`",
+        "Keep conventions for scattered paths in one central place",
+        "Apply personal rules to every project with `~/.claude/rules/`"
+      ],
+      "keyFacts": [
+        "All `.md` files in `.claude/rules/` are discovered recursively, including subdirectories like `frontend/`.",
+        "No `paths`: loads at launch with the same priority as `.claude/CLAUDE.md`.",
+        "`paths` accepts a YAML list or a comma-separated string of globs, with brace expansion like `src/**/*.{ts,tsx}`.",
+        "Path-scoped rules trigger when Claude reads a matching file, not on every tool use.",
+        "`paths` is the only field Claude Code reads from a rule; other fields are ignored without an error.",
+        "`~/.claude/rules/` loads before project rules; neither set overrides the other."
+      ],
+      "gotchas": [
+        "If the frontmatter YAML doesn't parse, the rule loads as if it had no `paths`; `claude --debug` shows the parse error.",
+        "A conflicting user rule and project rule are not resolved for you: Claude may follow either.",
+        "A symlinked rule whose target is outside the working directory needs external-import approval, and then only rules without `paths` load.",
+        "Rules are context, not enforcement: to block an action, use a hook or a permission rule."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Per-directory CLAUDE.md",
+          "difference": "Lives next to the code it covers; a rule lives centrally in `.claude/rules/` and can cover scattered paths."
+        },
+        {
+          "concept": "Skills",
+          "difference": "Load when invoked or judged relevant; use them for multi-step procedures, not always-on conventions."
+        },
+        {
+          "concept": "Auto memory",
+          "difference": "Claude writes it from your corrections; you write rules."
+        }
+      ],
+      "examCues": [
+        "only when working with files matching",
+        "conventions for src/api",
+        "split a large CLAUDE.md into topics",
+        "personal rules for every project",
+        "keep all conventions in one place"
+      ]
+    },
+    "es": {
+      "tldr": "Las reglas son archivos markdown de un solo tema en `.claude/rules/` que escribes tú. Sin frontmatter `paths` se cargan al inicio como `.claude/CLAUDE.md`; con globs en `paths` se cargan solo cuando Claude lee un archivo que coincide. Úsalas para convenciones ligadas a partes del código, y skills para procedimientos bajo demanda.",
+      "whenToUse": [
+        "Dividir un CLAUDE.md que crece en archivos por tema",
+        "Cargar convenciones solo cuando Claude trabaja en archivos que coinciden, como `src/api/**/*.ts`",
+        "Mantener en un solo lugar convenciones de rutas dispersas",
+        "Aplicar reglas personales a todos tus proyectos con `~/.claude/rules/`"
+      ],
+      "keyFacts": [
+        "Todos los `.md` de `.claude/rules/` se descubren recursivamente, incluidas subcarpetas como `frontend/`.",
+        "Sin `paths`: se carga al inicio con la misma prioridad que `.claude/CLAUDE.md`.",
+        "`paths` acepta una lista YAML o un string de globs separados por comas, con expansión de llaves como `src/**/*.{ts,tsx}`.",
+        "Las reglas con `paths` se activan cuando Claude lee un archivo que coincide, no en cada uso de herramienta.",
+        "`paths` es el único campo que Claude Code lee de una regla; los demás se ignoran sin error.",
+        "`~/.claude/rules/` se carga antes que las reglas del proyecto; ninguno de los dos anula al otro."
+      ],
+      "gotchas": [
+        "Si el YAML del frontmatter no se puede parsear, la regla se carga como si no tuviera `paths`; `claude --debug` muestra el error.",
+        "Un conflicto entre una regla de usuario y una del proyecto no se resuelve solo: Claude puede seguir cualquiera.",
+        "Una regla enlazada por symlink a un destino fuera del directorio de trabajo requiere aprobar imports externos, y aun así solo cargan las que no tienen `paths`.",
+        "Las reglas son contexto, no una restricción: para bloquear una acción usa un hook o una regla de permisos."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md por directorio",
+          "difference": "Vive junto al código que cubre; una regla vive centralizada en `.claude/rules/` y puede cubrir rutas dispersas."
+        },
+        {
+          "concept": "Skills",
+          "difference": "Cargan al invocarlos o si Claude los ve relevantes; úsalos para procedimientos de varios pasos, no para convenciones fijas."
+        },
+        {
+          "concept": "Auto memory",
+          "difference": "La escribe Claude a partir de tus correcciones; las reglas las escribes tú."
+        }
+      ],
+      "examCues": [
+        "only when working with files matching",
+        "conventions for src/api",
+        "split a large CLAUDE.md into topics",
+        "personal rules for every project",
+        "keep all conventions in one place"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/memory.md",
+      "https://code.claude.com/docs/en/large-codebases.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mem-rules-paths--67a193df",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a monorepo, API handlers live under `services/*/api/` across many services. The platform team wants the API conventions kept in one central file, shared through git, and loaded only when Claude works on those handler files. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add a CLAUDE.md inside each `services/*/api/` directory",
+          "correct": false,
+          "why": "It scatters the conventions across many files instead of one central file."
+        },
+        {
+          "id": "B",
+          "text": "Put the conventions in the root CLAUDE.md",
+          "correct": false,
+          "why": "The root CLAUDE.md loads in every session, even when no API file is involved."
+        },
+        {
+          "id": "C",
+          "text": "Create `.claude/rules/api.md` with `paths: \"services/*/api/**\"`",
+          "correct": true,
+          "why": "One committed file that loads only when Claude reads a matching file."
+        },
+        {
+          "id": "D",
+          "text": "Create `~/.claude/rules/api.md` with the same `paths`",
+          "correct": false,
+          "why": "User-level rules live in each person's home and aren't shared through git."
+        }
+      ],
+      "explanation": "The requirements are one central file, shared through git, and loaded only for matching files. A path-scoped rule in the project's `.claude/rules/` meets all three, which is exactly the documented case for scattered paths. Per-directory CLAUDE.md files split the conventions across directories, the root CLAUDE.md loads every session, and `~/.claude/rules/` is personal.",
+      "keywordCues": [
+        "one central file",
+        "shared through git",
+        "loaded only when Claude works on those handler files"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "En un monorepo, los handlers de API viven en `services/*/api/` dentro de muchos servicios. El equipo de plataforma quiere las convenciones de API en un solo archivo central, compartido por git, y cargado solo cuando Claude trabaja en esos handlers. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar un CLAUDE.md dentro de cada directorio `services/*/api/`",
+            "why": "Reparte las convenciones en muchos archivos en vez de uno central."
+          },
+          {
+            "id": "B",
+            "text": "Poner las convenciones en el CLAUDE.md raíz",
+            "why": "El CLAUDE.md raíz se carga en cada sesión, aunque no haya ningún archivo de API en juego."
+          },
+          {
+            "id": "C",
+            "text": "Crear `.claude/rules/api.md` con `paths: \"services/*/api/**\"`",
+            "why": "Un archivo versionado que se carga solo cuando Claude lee un archivo que coincide."
+          },
+          {
+            "id": "D",
+            "text": "Crear `~/.claude/rules/api.md` con los mismos `paths`",
+            "why": "Las reglas de usuario viven en el home de cada persona y no se comparten por git."
+          }
+        ],
+        "explanation": "Los requisitos son un archivo central, compartido por git y cargado solo para archivos que coinciden. Una regla con `paths` en `.claude/rules/` del proyecto cumple los tres, y es justo el caso documentado para rutas dispersas. Los CLAUDE.md por directorio reparten las convenciones, el CLAUDE.md raíz se carga en cada sesión y `~/.claude/rules/` es personal."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--752ffdd3",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer adds `.claude/rules/sql.md` with `paths: \"**/*.sql\"`. In a new session, before Claude opens any file, they ask about the SQL conventions and Claude doesn't know them. After Claude reads `migrations/001.sql`, it follows them. What explains this behavior?",
+      "options": [
+        {
+          "id": "A",
+          "text": "New rules only load after you open them with `/memory`",
+          "correct": false,
+          "why": "`/memory` opens files for editing; it doesn't control when rules load."
+        },
+        {
+          "id": "B",
+          "text": "The rule needs a `description` field to load at startup",
+          "correct": false,
+          "why": "`paths` is the only field Claude Code reads from a rule; others are ignored."
+        },
+        {
+          "id": "C",
+          "text": "Rules load only after the first `/compact`",
+          "correct": false,
+          "why": "Rules without `paths` load at launch; compaction isn't a trigger."
+        },
+        {
+          "id": "D",
+          "text": "Path-scoped rules load when Claude reads a matching file",
+          "correct": true,
+          "why": "With `paths`, the rule enters context only once Claude reads a file matching the glob."
+        }
+      ],
+      "explanation": "A rule with `paths` frontmatter is conditional: it loads when Claude reads a file matching one of its globs, not at launch and not on every tool use. Before any `.sql` file was read, the rule simply wasn't in context. `/memory` and `/compact` don't gate rule loading, and a rule has no `description` field that Claude Code reads.",
+      "keywordCues": [
+        "before Claude opens any file",
+        "After Claude reads `migrations/001.sql`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador agrega `.claude/rules/sql.md` con `paths: \"**/*.sql\"`. En una sesión nueva, antes de que Claude abra algún archivo, pregunta por las convenciones de SQL y Claude no las conoce. Después de que Claude lee `migrations/001.sql`, las sigue. ¿Qué explica este comportamiento?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Las reglas nuevas solo cargan después de abrirlas con `/memory`",
+            "why": "`/memory` abre archivos para editarlos; no controla cuándo cargan las reglas."
+          },
+          {
+            "id": "B",
+            "text": "La regla necesita un campo `description` para cargar al inicio",
+            "why": "`paths` es el único campo que Claude Code lee de una regla; los demás se ignoran."
+          },
+          {
+            "id": "C",
+            "text": "Las reglas solo cargan después del primer `/compact`",
+            "why": "Las reglas sin `paths` cargan al inicio; compactar no es un disparador."
+          },
+          {
+            "id": "D",
+            "text": "Las reglas con `paths` cargan cuando Claude lee un archivo que coincide",
+            "why": "Con `paths`, la regla entra al contexto solo cuando Claude lee un archivo que coincide con el glob."
+          }
+        ],
+        "explanation": "Una regla con frontmatter `paths` es condicional: se carga cuando Claude lee un archivo que coincide con alguno de sus globs, no al inicio ni en cada uso de herramienta. Antes de leer un `.sql`, la regla simplemente no estaba en el contexto. `/memory` y `/compact` no controlan la carga de reglas, y Claude Code no lee ningún campo `description` en una regla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--db074a25",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Your `~/.claude/rules/style.md` says to indent with tabs. Your team's `.claude/rules/style.md` says to use 2-space indentation. In the team repo, Claude sometimes uses tabs. You want Claude to follow the team convention consistently there. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Remove or align the conflicting user rule",
+          "correct": true,
+          "why": "Neither set overrides the other, so the fix is to remove the conflict."
+        },
+        {
+          "id": "B",
+          "text": "Nothing: project rules override user rules",
+          "correct": false,
+          "why": "Project rules load later, but they don't override user rules; Claude may follow either."
+        },
+        {
+          "id": "C",
+          "text": "Add `priority: high` to the project rule's frontmatter",
+          "correct": false,
+          "why": "`paths` is the only field Claude Code reads; other fields are ignored."
+        },
+        {
+          "id": "D",
+          "text": "Move the user rule to `~/.claude/CLAUDE.md`",
+          "correct": false,
+          "why": "Instruction files are combined in context, not overridden; the conflict stays."
+        }
+      ],
+      "explanation": "User-level rules load before project rules, but neither set overrides the other: when they conflict, Claude may follow either one. The docs' guidance is to keep the two consistent, so removing or aligning the personal rule is what makes behavior reliable. Frontmatter fields other than `paths` are ignored, and moving the text into another instruction file keeps the same conflict.",
+      "keywordCues": [
+        "sometimes uses tabs",
+        "follow the team convention consistently"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Tu `~/.claude/rules/style.md` dice que indentes con tabs. El `.claude/rules/style.md` de tu equipo dice que uses indentación de 2 espacios. En el repo del equipo, Claude a veces usa tabs. Quieres que Claude siga la convención del equipo de forma consistente ahí. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Quitar o alinear la regla de usuario en conflicto",
+            "why": "Ninguno de los dos conjuntos anula al otro, así que la solución es eliminar el conflicto."
+          },
+          {
+            "id": "B",
+            "text": "Nada: las reglas del proyecto anulan las de usuario",
+            "why": "Las del proyecto cargan después, pero no anulan las de usuario; Claude puede seguir cualquiera."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `priority: high` al frontmatter de la regla del proyecto",
+            "why": "`paths` es el único campo que Claude Code lee; los demás se ignoran."
+          },
+          {
+            "id": "D",
+            "text": "Mover la regla de usuario a `~/.claude/CLAUDE.md`",
+            "why": "Los archivos de instrucciones se combinan en el contexto, no se anulan; el conflicto sigue."
+          }
+        ],
+        "explanation": "Las reglas de usuario se cargan antes que las del proyecto, pero ninguno de los dos conjuntos anula al otro: si chocan, Claude puede seguir cualquiera. La guía de la documentación es mantenerlas consistentes, así que quitar o alinear la regla personal es lo que da un comportamiento confiable. Los campos de frontmatter distintos de `paths` se ignoran, y mover el texto a otro archivo de instrucciones conserva el mismo conflicto."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--d3919660",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A team wants `.claude/rules/frontend.md` to load only when Claude reads `.ts` or `.tsx` files at any depth under `src/`. Which two frontmatter lines achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`globs: [\"src/**/*.{ts,tsx}\"]`",
+          "correct": false,
+          "why": "`globs` is ignored, so the rule loads unconditionally at launch."
+        },
+        {
+          "id": "B",
+          "text": "`paths: [\"src/**/*.{ts,tsx}\"]`",
+          "correct": true,
+          "why": "A YAML list with brace expansion covering both extensions under `src/`."
+        },
+        {
+          "id": "C",
+          "text": "`paths: [\"*.{ts,tsx}\"]`",
+          "correct": false,
+          "why": "Without a directory, `*.ts` matches only files in the project root."
+        },
+        {
+          "id": "D",
+          "text": "`description: TypeScript files under src/`",
+          "correct": false,
+          "why": "`description` is ignored, so the rule loads unconditionally at launch."
+        },
+        {
+          "id": "E",
+          "text": "`paths: \"src/**/*.ts,src/**/*.tsx\"`",
+          "correct": true,
+          "why": "`paths` also accepts a comma-separated string of globs."
+        }
+      ],
+      "explanation": "`paths` is the only frontmatter field Claude Code reads from a rule, and it accepts either a YAML list or a comma-separated string, with brace expansion such as `{ts,tsx}`. Both B and E cover `.ts` and `.tsx` at any depth under `src/`. Fields like `globs` or `description` are ignored, which leaves the rule loading unconditionally, and a pattern without a directory like `*.ts` matches only root-level files.",
+      "keywordCues": [
+        "load only when Claude reads",
+        "at any depth under `src/`",
+        "frontmatter"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que `.claude/rules/frontend.md` se cargue solo cuando Claude lee archivos `.ts` o `.tsx` a cualquier profundidad dentro de `src/`. ¿Qué dos líneas de frontmatter lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`globs: [\"src/**/*.{ts,tsx}\"]`",
+            "why": "`globs` se ignora, así que la regla se carga siempre al inicio."
+          },
+          {
+            "id": "B",
+            "text": "`paths: [\"src/**/*.{ts,tsx}\"]`",
+            "why": "Una lista YAML con expansión de llaves que cubre ambas extensiones dentro de `src/`."
+          },
+          {
+            "id": "C",
+            "text": "`paths: [\"*.{ts,tsx}\"]`",
+            "why": "Sin directorio, `*.ts` solo coincide con archivos en la raíz del proyecto."
+          },
+          {
+            "id": "D",
+            "text": "`description: TypeScript files under src/`",
+            "why": "`description` se ignora, así que la regla se carga siempre al inicio."
+          },
+          {
+            "id": "E",
+            "text": "`paths: \"src/**/*.ts,src/**/*.tsx\"`",
+            "why": "`paths` también acepta un string de globs separados por comas."
+          }
+        ],
+        "explanation": "`paths` es el único campo de frontmatter que Claude Code lee de una regla, y acepta una lista YAML o un string separado por comas, con expansión de llaves como `{ts,tsx}`. B y E cubren `.ts` y `.tsx` a cualquier profundidad dentro de `src/`. Campos como `globs` o `description` se ignoran, y la regla queda cargándose siempre; un patrón sin directorio como `*.ts` solo coincide con archivos de la raíz."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--7712fc23",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which frontmatter field scopes a `.claude/rules/` file so it loads only for matching files?",
+      "options": [
+        {
+          "id": "A",
+          "text": "paths",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "paths:",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`paths` takes glob patterns, as a YAML list or a comma-separated string, and makes the rule load only when Claude reads a matching file. It is the only field Claude Code reads from a rule.",
+      "keywordCues": [
+        "frontmatter field",
+        "loads only for matching files"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "¿Qué campo de frontmatter limita un archivo de `.claude/rules/` para que cargue solo con archivos que coinciden?",
+        "options": [
+          {
+            "id": "A",
+            "text": "paths",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "paths:",
+            "why": ""
+          }
+        ],
+        "explanation": "`paths` recibe patrones glob, como lista YAML o string separado por comas, y hace que la regla cargue solo cuando Claude lee un archivo que coincide. Es el único campo que Claude Code lee de una regla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--6a02292c",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which directory in your home holds personal rules that apply to every project on your machine?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/rules/",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "~/.claude/rules",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`~/.claude/rules/` holds user-level rules that apply to every project on your machine. They load before project rules, and neither set overrides the other.",
+      "keywordCues": [
+        "personal rules",
+        "every project on your machine"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "¿Qué directorio de tu home guarda reglas personales que aplican a todos los proyectos de tu máquina?",
+        "options": [
+          {
+            "id": "A",
+            "text": "~/.claude/rules/",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "~/.claude/rules",
+            "why": ""
+          }
+        ],
+        "explanation": "`~/.claude/rules/` guarda reglas de usuario que aplican a todos los proyectos de tu máquina. Se cargan antes que las reglas del proyecto, y ninguno de los dos conjuntos anula al otro."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-rules-paths--18fc4eab",
+      "conceptId": "mem-rules-paths",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make `.claude/rules/migrations.md` load only when Claude reads SQL files at any depth under `db/migrations/`.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "globs",
+          "correct": false,
+          "why": "Ignored; the rule would load at launch in every session."
+        },
+        {
+          "id": "1b",
+          "text": "paths",
+          "correct": true,
+          "why": "The only field Claude Code reads from a rule."
+        },
+        {
+          "id": "1c",
+          "text": "files",
+          "correct": false,
+          "why": "Ignored; the rule would load at launch in every session."
+        },
+        {
+          "id": "2a",
+          "text": "**/*.sql",
+          "correct": false,
+          "why": "Matches SQL files anywhere, not only under `db/migrations/`."
+        },
+        {
+          "id": "2b",
+          "text": "db/migrations/*.sql",
+          "correct": false,
+          "why": "Matches only files directly in `db/migrations/`, not nested ones."
+        },
+        {
+          "id": "2c",
+          "text": "db/migrations/**/*.sql",
+          "correct": true,
+          "why": "`**` matches any depth under `db/migrations/`."
+        }
+      ],
+      "explanation": "Only the `paths` field scopes a rule; any other field is ignored and the rule loads unconditionally. The glob must be limited to `db/migrations/` and reach any depth, which `db/migrations/**/*.sql` does. `**/*.sql` is too broad and `db/migrations/*.sql` misses subdirectories.",
+      "keywordCues": [
+        "load only when Claude reads",
+        "at any depth under `db/migrations/`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Haz que `.claude/rules/migrations.md` se cargue solo cuando Claude lee archivos SQL a cualquier profundidad dentro de `db/migrations/`.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "globs",
+            "why": "Se ignora; la regla se cargaría al inicio en cada sesión."
+          },
+          {
+            "id": "1b",
+            "text": "paths",
+            "why": "Es el único campo que Claude Code lee de una regla."
+          },
+          {
+            "id": "1c",
+            "text": "files",
+            "why": "Se ignora; la regla se cargaría al inicio en cada sesión."
+          },
+          {
+            "id": "2a",
+            "text": "**/*.sql",
+            "why": "Coincide con SQL en cualquier lugar, no solo dentro de `db/migrations/`."
+          },
+          {
+            "id": "2b",
+            "text": "db/migrations/*.sql",
+            "why": "Solo coincide con archivos directamente en `db/migrations/`, no con los anidados."
+          },
+          {
+            "id": "2c",
+            "text": "db/migrations/**/*.sql",
+            "why": "`**` coincide a cualquier profundidad dentro de `db/migrations/`."
+          }
+        ],
+        "explanation": "Solo el campo `paths` limita una regla; cualquier otro campo se ignora y la regla carga siempre. El glob debe limitarse a `db/migrations/` y llegar a cualquier profundidad, y eso hace `db/migrations/**/*.sql`. `**/*.sql` es demasiado amplio y `db/migrations/*.sql` no alcanza subcarpetas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "---\n{{1}}:\n  - \"{{2}}\"\n---\n\n# Migration rules\n- Never edit a migration that has already shipped",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mem-rules-paths--r0",
+      "conceptId": "mem-rules-paths",
+      "kind": "recall",
+      "prompt": "Explain when a file in .claude/rules/ loads with and without paths frontmatter, and how user-level rules relate to project rules.",
+      "promptEs": "Explica cuándo se carga un archivo de .claude/rules/ con y sin frontmatter paths, y cómo se relacionan las reglas de usuario con las del proyecto.",
+      "idealAnswer": "Without paths, a rule loads at launch with the same priority as .claude/CLAUDE.md. With paths globs, it loads only when Claude reads a file that matches, not on every tool use. Rules in ~/.claude/rules/ apply to every project and load before project rules, but neither set overrides the other.",
+      "rubric": [
+        "No paths: loads at launch like .claude/CLAUDE.md",
+        "With paths: loads when Claude reads a matching file",
+        "~/.claude/rules/ loads before project rules",
+        "Neither user nor project rules override the other"
+      ]
+    },
+    {
+      "id": "mem-rules-paths--r1",
+      "conceptId": "mem-rules-paths",
+      "kind": "why-not",
+      "prompt": "Why is a path-scoped rule not the right home for a multi-step release procedure you run only occasionally?",
+      "promptEs": "¿Por qué una regla con paths no es el lugar adecuado para un procedimiento de release de varios pasos que corres solo de vez en cuando?",
+      "idealAnswer": "A path-scoped rule loads whenever Claude reads a matching file, regardless of whether you are doing a release, so it spends context at the wrong moments and doesn't load when you actually ask for the procedure. Multi-step procedures belong in a skill, which loads when you invoke it or when Claude judges it relevant.",
+      "rubric": [
+        "Rules load on matching file reads, not on demand for a task",
+        "Procedures belong in a skill",
+        "Skills load when invoked or judged relevant"
+      ]
+    }
+  ]
+}

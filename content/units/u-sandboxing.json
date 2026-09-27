@@ -1,0 +1,382 @@
+{
+  "unitId": "u-sandboxing",
+  "audited": true,
+  "overview": {
+    "title": "Sandboxing",
+    "hook": "Dejar que Claude corra comandos sin aprobar cada uno, con límites que impone el sistema operativo.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "bash",
+          "label": "Bash con sandbox",
+          "kind": "service",
+          "x": 32,
+          "y": 50
+        },
+        {
+          "id": "os",
+          "label": "Límite del SO",
+          "kind": "zone",
+          "x": 56,
+          "y": 50
+        },
+        {
+          "id": "files",
+          "label": "Proyecto y temp",
+          "kind": "data",
+          "x": 82,
+          "y": 22
+        },
+        {
+          "id": "proxy",
+          "label": "Proxy de red",
+          "kind": "service",
+          "x": 82,
+          "y": 78
+        },
+        {
+          "id": "outside",
+          "label": "MCP, hooks, Edit",
+          "kind": "note",
+          "x": 32,
+          "y": 14
+        }
+      ],
+      "edges": [
+        {
+          "from": "claude",
+          "to": "bash",
+          "label": "comando"
+        },
+        {
+          "from": "bash",
+          "to": "os",
+          "label": "Seatbelt / bubblewrap"
+        },
+        {
+          "from": "os",
+          "to": "files",
+          "label": "escribe solo aquí"
+        },
+        {
+          "from": "os",
+          "to": "proxy",
+          "label": "dominios permitidos"
+        },
+        {
+          "from": "claude",
+          "to": "outside",
+          "label": "fuera del sandbox"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Aprobar cada build y cada test cansa, pero aprobar todo a ciegas es arriesgado. El sandbox cambia la pregunta: en vez de aprobar comandos, defines qué archivos y dominios pueden tocar.",
+        "show": [
+          "claude",
+          "bash"
+        ],
+        "focus": "bash"
+      },
+      {
+        "narration": "Con /sandbox activas el aislamiento. El sistema operativo lo impone con Seatbelt en macOS y bubblewrap en Linux y WSL2, sobre cada comando Bash, PowerShell o Monitor y sus procesos hijos. Windows nativo no está soportado.",
+        "show": [
+          "claude",
+          "bash",
+          "os"
+        ],
+        "focus": "os"
+      },
+      {
+        "narration": "Por defecto un comando puede escribir solo en el directorio de trabajo, los directorios añadidos y un temp por usuario, pero puede leer casi todo el equipo. Tus credenciales siguen legibles salvo que las bloquees.",
+        "show": [
+          "claude",
+          "bash",
+          "os",
+          "files"
+        ],
+        "focus": "files"
+      },
+      {
+        "narration": "La red pasa por un proxy fuera del sandbox. No hay dominios permitidos de entrada: la primera vez que un comando necesita un host nuevo, Claude Code te pregunta, salvo que lo pongas en allowedDomains.",
+        "show": [
+          "claude",
+          "bash",
+          "os",
+          "files",
+          "proxy"
+        ],
+        "focus": "proxy"
+      },
+      {
+        "narration": "Hay dos modos. Auto-allow corre sin preguntar los comandos que caben en el sandbox, aunque las reglas deny y las reglas ask con contenido siguen aplicando. Regular permissions mantiene los prompts aunque el comando esté aislado.",
+        "show": [
+          "claude",
+          "bash",
+          "os",
+          "files",
+          "proxy"
+        ],
+        "focus": "bash"
+      },
+      {
+        "narration": "Ojo con el alcance: Read y Edit usan reglas de permisos, y los servidores MCP y los hooks corren sin límites en tu máquina. Para encerrar todo el proceso usa el sandbox runtime, un dev container o una máquina virtual.",
+        "show": [
+          "claude",
+          "bash",
+          "os",
+          "files",
+          "proxy",
+          "outside"
+        ],
+        "focus": "outside"
+      }
+    ],
+    "keyPoints": [
+      "El SO impone el límite, no el texto del comando",
+      "Escribe en proyecto y temp; lee casi todo",
+      "Auto-allow quita prompts; deny y ask con contenido siguen",
+      "MCP, hooks y Read/Edit quedan fuera del sandbox",
+      "Rutas del sandbox: /tmp es absoluta; ./ es el proyecto solo en settings de proyecto (en usuario, ~/.claude)"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "auto mode",
+        "difference": "Auto mode decide si una acción corre con un clasificador; el sandbox limita qué alcanza una vez que corre."
+      },
+      {
+        "unitOrService": "permission rules",
+        "difference": "Las reglas se evalúan antes de cualquier herramienta; el sandbox restringe el proceso de shell en ejecución."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-sandboxing--l1",
+      "conceptId": "sandbox-bash-basics",
+      "format": "lightning",
+      "prompt": "OS-level file and network limits on every Bash command Claude runs → ?",
+      "promptEs": "Límites de archivos y red a nivel de SO en cada comando Bash que corre Claude → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Auto mode"
+        },
+        {
+          "id": "B",
+          "text": "`acceptEdits` mode"
+        },
+        {
+          "id": "C",
+          "text": "`/sandbox`"
+        },
+        {
+          "id": "D",
+          "text": "`Bash(...)` deny rules"
+        }
+      ],
+      "answer": "C",
+      "why": "`/sandbox` activa el aislamiento que el SO impone al proceso en ejecución. Auto mode y las reglas deciden antes de correr según el comando, no limitan lo que el proceso alcanza."
+    },
+    {
+      "id": "u-sandboxing--l2",
+      "conceptId": "sandbox-bash-basics",
+      "format": "thisorthat",
+      "prompt": "Sandbox on; sandboxed commands must still show the regular permission prompt → ?",
+      "promptEs": "Sandbox activo; los comandos aislados deben seguir mostrando el prompt normal → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Auto-allow mode"
+        },
+        {
+          "id": "B",
+          "text": "Regular permissions mode"
+        }
+      ],
+      "answer": "B",
+      "why": "Regular permissions mantiene el flujo normal de permisos aunque el comando esté aislado. Auto-allow los aprueba sin preguntar porque el límite del sandbox los contiene."
+    },
+    {
+      "id": "u-sandboxing--l3",
+      "conceptId": "sandbox-bash-basics",
+      "format": "lightning",
+      "prompt": "With Bash sandboxing on, which one still runs unconstrained on the host?",
+      "promptEs": "Con el sandbox de Bash activo, ¿cuál sigue corriendo sin límites en el host?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A PowerShell command"
+        },
+        {
+          "id": "B",
+          "text": "A command hook script"
+        },
+        {
+          "id": "C",
+          "text": "A subagent's Bash command"
+        },
+        {
+          "id": "D",
+          "text": "Child processes of `npm test`"
+        }
+      ],
+      "answer": "B",
+      "why": "Los command hooks y los servidores MCP son procesos aparte que corren sin límites en el host. PowerShell, los hijos de un comando y el Bash de un subagente sí quedan aislados."
+    },
+    {
+      "id": "u-sandboxing--l4",
+      "conceptId": "sandbox-config-keys",
+      "format": "lightning",
+      "prompt": "Let `terraform` write to `~/.terraform.d` while it stays sandboxed → ?",
+      "promptEs": "Dejar que `terraform` escriba en `~/.terraform.d` sin salir del sandbox → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`excludedCommands`"
+        },
+        {
+          "id": "B",
+          "text": "`filesystem.allowRead`"
+        },
+        {
+          "id": "C",
+          "text": "`filesystem.disabled`"
+        },
+        {
+          "id": "D",
+          "text": "`filesystem.allowWrite`"
+        }
+      ],
+      "answer": "D",
+      "why": "`allowWrite` concede escritura a una ruta concreta y el comando sigue aislado. `excludedCommands` lo sacaría del sandbox por completo, justo lo que la documentación desaconseja."
+    },
+    {
+      "id": "u-sandboxing--l5",
+      "conceptId": "sandbox-config-keys",
+      "format": "lightning",
+      "prompt": "Stop Claude from retrying a blocked command with `dangerouslyDisableSandbox` → ?",
+      "promptEs": "Impedir que Claude reintente un comando bloqueado con `dangerouslyDisableSandbox` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`allowUnsandboxedCommands: false`"
+        },
+        {
+          "id": "B",
+          "text": "`failIfUnavailable: true`"
+        },
+        {
+          "id": "C",
+          "text": "`autoAllowBashIfSandboxed: false`"
+        },
+        {
+          "id": "D",
+          "text": "`network.strictAllowlist: true`"
+        }
+      ],
+      "answer": "A",
+      "why": "Con `allowUnsandboxedCommands: false` Claude Code ignora ese parámetro (Strict sandbox mode). `failIfUnavailable` solo actúa cuando el sandbox no puede arrancar al inicio."
+    },
+    {
+      "id": "u-sandboxing--l6",
+      "conceptId": "sandbox-config-keys",
+      "format": "thisorthat",
+      "prompt": "In a sandbox `allowWrite` array, which entry means the absolute path `/tmp/build`?",
+      "promptEs": "En un arreglo `allowWrite` del sandbox, ¿qué entrada significa la ruta absoluta `/tmp/build`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`/tmp/build`"
+        },
+        {
+          "id": "B",
+          "text": "`./tmp/build`"
+        }
+      ],
+      "answer": "A",
+      "why": "Las rutas del sandbox usan convenciones normales: `/` es absoluta. `./` es relativa a la raíz del proyecto (o a `~/.claude` en settings de usuario), no a la raíz del sistema."
+    },
+    {
+      "id": "u-sandboxing--l7",
+      "conceptId": "sandbox-environments-choice",
+      "format": "lightning",
+      "prompt": "Put file tools, MCP servers and hooks inside the boundary, without Docker → ?",
+      "promptEs": "Meter herramientas de archivos, servidores MCP y hooks dentro del límite, sin Docker → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Sandboxed Bash tool"
+        },
+        {
+          "id": "B",
+          "text": "Dev container"
+        },
+        {
+          "id": "C",
+          "text": "Sandbox runtime"
+        },
+        {
+          "id": "D",
+          "text": "Custom container"
+        }
+      ],
+      "answer": "C",
+      "why": "El sandbox runtime envuelve todo el proceso de Claude Code sin Docker. El Bash con sandbox solo cubre comandos de shell, y los contenedores requieren Docker."
+    },
+    {
+      "id": "u-sandboxing--l8",
+      "conceptId": "sandbox-environments-choice",
+      "format": "lightning",
+      "prompt": "Evaluate an untrusted repository with the strongest local separation → ?",
+      "promptEs": "Evaluar un repositorio no confiable con la separación local más fuerte → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Dev container"
+        },
+        {
+          "id": "B",
+          "text": "Dedicated virtual machine"
+        },
+        {
+          "id": "C",
+          "text": "Sandbox runtime"
+        },
+        {
+          "id": "D",
+          "text": "Sandboxed Bash tool"
+        }
+      ],
+      "answer": "B",
+      "why": "Una VM dedicada da la separación más fuerte, con su propio kernel, y es la opción para código no confiable. El dev container se recomienda solo con repositorios confiables."
+    },
+    {
+      "id": "u-sandboxing--l9",
+      "conceptId": "sandbox-environments-choice",
+      "format": "thisorthat",
+      "prompt": "Unattended run with `--dangerously-skip-permissions` on your laptop → ?",
+      "promptEs": "Ejecución desatendida con `--dangerously-skip-permissions` en tu laptop → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bash sandbox alone is enough"
+        },
+        {
+          "id": "B",
+          "text": "Container, VM or sandbox runtime"
+        }
+      ],
+      "answer": "B",
+      "why": "Sin prompts, el límite es la única protección y debe cubrir herramientas de archivos, MCP y hooks. El Bash con sandbox solo aísla comandos de shell, así que no basta."
+    }
+  ]
+}

@@ -114,8 +114,7 @@
           "user",
           "project",
           "local",
-          "managed",
-          "cli"
+          "managed"
         ],
         "focus": "managed"
       },

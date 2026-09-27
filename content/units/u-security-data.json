@@ -1,0 +1,336 @@
+{
+  "unitId": "u-security-data",
+  "audited": true,
+  "overview": {
+    "title": "Seguridad y datos",
+    "hook": "Saber qué límites se hacen cumplir de verdad y qué pasa con tus datos.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "claudemd",
+          "label": "CLAUDE.md / prompt",
+          "kind": "data",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 28,
+          "y": 50
+        },
+        {
+          "id": "rules",
+          "label": "Reglas y hooks",
+          "kind": "service",
+          "x": 50,
+          "y": 50
+        },
+        {
+          "id": "sandbox",
+          "label": "Sandbox del SO",
+          "kind": "zone",
+          "x": 74,
+          "y": 50
+        },
+        {
+          "id": "transcripts",
+          "label": "Transcripts local",
+          "kind": "data",
+          "x": 28,
+          "y": 88
+        },
+        {
+          "id": "anthropic",
+          "label": "Anthropic",
+          "kind": "zone",
+          "x": 50,
+          "y": 12
+        }
+      ],
+      "edges": [
+        {
+          "from": "claudemd",
+          "to": "claude",
+          "label": "guía, no impone"
+        },
+        {
+          "from": "claude",
+          "to": "rules",
+          "label": "tool call"
+        },
+        {
+          "from": "rules",
+          "to": "sandbox",
+          "label": "Bash aprobado"
+        },
+        {
+          "from": "claude",
+          "to": "anthropic",
+          "label": "prompts y respuestas"
+        },
+        {
+          "from": "claude",
+          "to": "transcripts",
+          "label": "guarda la sesión"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Escribes en CLAUDE.md que nunca toque producción, y aun así lo intenta. Ese texto guía al modelo, pero no lo obliga a nada. Y además quieres saber qué pasa con tu código fuera de tu máquina.",
+        "show": [
+          "claudemd",
+          "claude"
+        ],
+        "focus": "claudemd"
+      },
+      {
+        "narration": "Quien hace cumplir los límites es Claude Code, no el modelo. Las reglas de permisos, el modo y los hooks PreToolUse revisan cada tool call antes de que corra. Revisas y editas las reglas con /permissions.",
+        "show": [
+          "claudemd",
+          "claude",
+          "rules"
+        ],
+        "focus": "rules"
+      },
+      {
+        "narration": "Para Bash, el sandbox suma un límite del sistema operativo sobre archivos y red. Sigue aplicando aunque una inyección de prompt engañe al modelo. Con contenido no confiable, revisa los comandos y prefiere una máquina virtual.",
+        "show": [
+          "claudemd",
+          "claude",
+          "rules",
+          "sandbox"
+        ],
+        "focus": "sandbox"
+      },
+      {
+        "narration": "La primera vez que abres una carpeta, el diálogo de confianza te muestra las reglas allow que el repo activaría. Con -p ese diálogo no aparece, así que decide antes qué configuración del proyecto vas a cargar.",
+        "show": [
+          "claudemd",
+          "claude",
+          "rules",
+          "sandbox"
+        ],
+        "focus": "rules"
+      },
+      {
+        "narration": "Tus prompts viajan cifrados a Anthropic. Las cuentas comerciales no se usan para entrenar; las de consumo, solo si tú lo permites. En tu máquina, las sesiones quedan en texto plano en ~/.claude/projects, y cleanupPeriodDays decide cuánto duran.",
+        "show": [
+          "claudemd",
+          "claude",
+          "rules",
+          "sandbox",
+          "anthropic",
+          "transcripts"
+        ],
+        "focus": "transcripts"
+      },
+      {
+        "narration": "DISABLE_TELEMETRY apaga las métricas y CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC todo el tráfico opcional. Zero Data Retention es otra cosa: Anthropic la activa por organización Enterprise calificada y desactiva funciones que guardan datos, como /feedback o Remote Control.",
+        "show": [
+          "claudemd",
+          "claude",
+          "rules",
+          "sandbox",
+          "anthropic",
+          "transcripts"
+        ],
+        "focus": "anthropic"
+      }
+    ],
+    "keyPoints": [
+      "CLAUDE.md guía al modelo; no impone ningún límite",
+      "Límites duros: reglas, modo, hook PreToolUse o sandbox",
+      "Con -p no hay verificación de confianza",
+      "Cuentas comerciales: sin entrenamiento por defecto",
+      "ZDR la activa Anthropic por organización Enterprise"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "auto mode classifier",
+        "difference": "El clasificador juzga acciones solo en auto mode; las reglas deny bloquean en todos los modos, incluido bypassPermissions."
+      },
+      {
+        "unitOrService": "variables de telemetría",
+        "difference": "Apagan tráfico opcional del cliente; ZDR cambia qué guarda Anthropic de tus prompts y respuestas."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-security-data--l1",
+      "conceptId": "security-enforcement-layers",
+      "format": "lightning",
+      "prompt": "A limit Claude Code enforces, not just suggests → ?",
+      "promptEs": "Un límite que Claude Code hace cumplir, no solo sugiere → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A note in CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "A permissions.deny rule"
+        },
+        {
+          "id": "C",
+          "text": "A file in .claude/rules/"
+        },
+        {
+          "id": "D",
+          "text": "--append-system-prompt text"
+        }
+      ],
+      "answer": "B",
+      "why": "Las reglas de permisos las aplica Claude Code antes de cada tool call. CLAUDE.md, .claude/rules/ y el system prompt solo guían lo que el modelo intenta."
+    },
+    {
+      "id": "u-security-data--l2",
+      "conceptId": "security-enforcement-layers",
+      "format": "thisorthat",
+      "prompt": "Block Bash network access even via sh -c or a full path → ?",
+      "promptEs": "Bloquear red en Bash incluso vía sh -c o ruta completa → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Sandbox network isolation"
+        },
+        {
+          "id": "B",
+          "text": "Bash(curl *) deny rule"
+        }
+      ],
+      "answer": "A",
+      "why": "Una regla deny compara el comando tal como está escrito y no ve curl dentro de sh -c. El sandbox limita la red a nivel de sistema operativo."
+    },
+    {
+      "id": "u-security-data--l3",
+      "conceptId": "security-enforcement-layers",
+      "format": "lightning",
+      "prompt": "Safeguard that does not run with claude -p → ?",
+      "promptEs": "Protección que no se aplica con claude -p → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Deny rules"
+        },
+        {
+          "id": "B",
+          "text": "WebFetch separate context window"
+        },
+        {
+          "id": "C",
+          "text": "Trust verification dialog"
+        },
+        {
+          "id": "D",
+          "text": "PreToolUse hooks"
+        }
+      ],
+      "answer": "C",
+      "why": "La verificación de confianza se desactiva en modo no interactivo con -p. Las reglas deny, los hooks y el contexto aparte de WebFetch siguen activos."
+    },
+    {
+      "id": "u-security-data--l4",
+      "conceptId": "security-data-usage",
+      "format": "lightning",
+      "prompt": "One variable to turn off all non-essential traffic → ?",
+      "promptEs": "Una variable para apagar todo el tráfico no esencial → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DISABLE_TELEMETRY"
+        },
+        {
+          "id": "B",
+          "text": "DISABLE_ERROR_REPORTING"
+        },
+        {
+          "id": "C",
+          "text": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"
+        },
+        {
+          "id": "D",
+          "text": "DISABLE_FEEDBACK_COMMAND"
+        }
+      ],
+      "answer": "C",
+      "why": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC apaga de una vez todo el tráfico opcional. Las otras cubren solo una parte: DISABLE_TELEMETRY las métricas (y las encuestas), DISABLE_ERROR_REPORTING los reportes de error y DISABLE_FEEDBACK_COMMAND /feedback."
+    },
+    {
+      "id": "u-security-data--l5",
+      "conceptId": "security-data-usage",
+      "format": "thisorthat",
+      "prompt": "Local session transcripts stored in plaintext for resumption → ?",
+      "promptEs": "Transcripts locales en texto plano para reanudar sesiones → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/projects/"
+        },
+        {
+          "id": "B",
+          "text": "~/.claude/feedback-bundles/"
+        }
+      ],
+      "answer": "A",
+      "why": "Las sesiones se guardan en ~/.claude/projects/ para poder reanudarlas. feedback-bundles es donde /feedback deja un archivo local con proveedores de terceros."
+    },
+    {
+      "id": "u-security-data--l6",
+      "conceptId": "security-zdr",
+      "format": "lightning",
+      "prompt": "Who turns on Zero Data Retention for an organization → ?",
+      "promptEs": "Quién activa Zero Data Retention para una organización → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An org admin in admin settings"
+        },
+        {
+          "id": "B",
+          "text": "Anthropic, after confirming eligibility"
+        },
+        {
+          "id": "C",
+          "text": "Each developer via an env variable"
+        },
+        {
+          "id": "D",
+          "text": "A managed settings key"
+        }
+      ],
+      "answer": "B",
+      "why": "ZDR no se activa desde admin settings ni desde settings: la habilita Anthropic por organización tras confirmar que la cuenta Enterprise califica."
+    },
+    {
+      "id": "u-security-data--l7",
+      "conceptId": "security-zdr",
+      "format": "lightning",
+      "prompt": "Still works in a ZDR organization → ?",
+      "promptEs": "Sigue funcionando en una organización con ZDR → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Remote Control"
+        },
+        {
+          "id": "B",
+          "text": "Cloud sessions"
+        },
+        {
+          "id": "C",
+          "text": "/feedback reports"
+        },
+        {
+          "id": "D",
+          "text": "Claude Code in your terminal"
+        }
+      ],
+      "answer": "D",
+      "why": "La inferencia desde la terminal está cubierta por ZDR. Remote Control, las sesiones en la nube y /feedback guardan datos, así que se desactivan."
+    }
+  ]
+}

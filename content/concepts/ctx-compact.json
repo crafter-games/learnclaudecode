@@ -1,0 +1,476 @@
+{
+  "conceptId": "ctx-compact",
+  "card": {
+    "en": {
+      "tldr": "`/compact [instructions]` replaces the conversation with a structured summary so the same task can continue with free space. Claude Code also compacts automatically as you approach the limit; you can focus the summary, compact only part of the conversation, or change when the automatic pass runs.",
+      "whenToUse": [
+        "The same task continues but the context window is filling up",
+        "Before a long new phase, to keep what you choose instead of what the automatic pass guesses",
+        "When only an early or late stretch of the conversation needs condensing (via `/rewind`)"
+      ],
+      "keyFacts": [
+        "Focus the summary: `/compact focus on the auth bug fix`",
+        "A `# Compact instructions` section in project-root CLAUDE.md steers compaction",
+        "`/autocompact <tokens>` (e.g. `/autocompact 500k`) sets how full the window gets before auto-compaction; `/autocompact auto` returns to the tuned window; the value is saved to user settings",
+        "`/rewind` (or Esc Esc) → Summarize from here condenses from that message on; Summarize up to here condenses earlier messages and keeps recent ones in full",
+        "`PreCompact` and `PostCompact` hooks fire with matcher `manual` or `auto`"
+      ],
+      "gotchas": [
+        "Compacting reads the whole conversation, so it is itself a large request; `/clear` costs nothing",
+        "In a fresh session `/compact` prints `Not enough messages to compact.`",
+        "The argument to `/compact` is focus instructions, not a name"
+      ],
+      "confusedWith": [
+        {
+          "concept": "ctx-clear",
+          "difference": "`/clear` drops everything for unrelated work; `/compact` keeps a summary so the same task continues."
+        }
+      ],
+      "examCues": [
+        "context window is almost full",
+        "continue the same task",
+        "preserve the key decisions",
+        "compact earlier",
+        "summarize only part of the conversation"
+      ]
+    },
+    "es": {
+      "tldr": "`/compact [instructions]` reemplaza la conversación con un resumen estructurado para que la misma tarea siga con espacio libre. Claude Code también compacta solo al acercarse al límite; puedes enfocar el resumen, compactar solo una parte o cambiar cuándo corre la pasada automática.",
+      "whenToUse": [
+        "La misma tarea sigue pero la ventana de contexto se está llenando",
+        "Antes de una fase larga, para conservar lo que tú eliges y no lo que adivina la pasada automática",
+        "Cuando solo un tramo antiguo o reciente necesita condensarse (con `/rewind`)"
+      ],
+      "keyFacts": [
+        "Enfoca el resumen: `/compact focus on the auth bug fix`",
+        "Una sección `# Compact instructions` en el CLAUDE.md de la raíz del proyecto guía la compactación",
+        "`/autocompact <tokens>` (p. ej. `/autocompact 500k`) fija qué tan llena se pone la ventana antes de autocompactar; `/autocompact auto` vuelve a la ventana ajustada; el valor se guarda en la configuración de usuario",
+        "`/rewind` (o Esc Esc) → Summarize from here condensa desde ese mensaje; Summarize up to here condensa lo anterior y deja completos los recientes",
+        "Los hooks `PreCompact` y `PostCompact` se disparan con matcher `manual` o `auto`"
+      ],
+      "gotchas": [
+        "Compactar lee toda la conversación, así que es en sí una petición grande; `/clear` no cuesta nada",
+        "En una sesión nueva `/compact` muestra `Not enough messages to compact.`",
+        "El argumento de `/compact` son instrucciones de enfoque, no un nombre"
+      ],
+      "confusedWith": [
+        {
+          "concept": "ctx-clear",
+          "difference": "`/clear` descarta todo para trabajo no relacionado; `/compact` conserva un resumen para seguir la misma tarea."
+        }
+      ],
+      "examCues": [
+        "context window is almost full",
+        "continue the same task",
+        "preserve the key decisions",
+        "compact earlier",
+        "summarize only part of the conversation"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/context-window.md",
+      "https://code.claude.com/docs/en/best-practices.md",
+      "https://code.claude.com/docs/en/costs.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "ctx-compact--04999410",
+      "conceptId": "ctx-compact",
+      "secondaryConcepts": [
+        "ctx-clear"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Two hours into migrating a payments module, a developer's context window is nearly full. The same migration continues with a long final phase. They want the summary to keep the schema decisions they made, rather than whatever the automatic pass guesses is important. What should they do now?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Wait for auto-compaction to trigger on its own",
+          "correct": false,
+          "why": "The automatic pass decides what matters itself; the developer loses control of the focus."
+        },
+        {
+          "id": "B",
+          "text": "Run `/clear` and re-explain the migration",
+          "correct": false,
+          "why": "It drops all context, including decisions the continuing task still needs."
+        },
+        {
+          "id": "C",
+          "text": "Run `/autocompact 500k`",
+          "correct": false,
+          "why": "It only changes when auto-compaction runs, not what the summary keeps."
+        },
+        {
+          "id": "D",
+          "text": "Run `/compact focus on the payments schema decisions`",
+          "correct": true,
+          "why": "Focus instructions make the summary keep what you choose before the long phase starts."
+        }
+      ],
+      "explanation": "The task continues, so a summary must be carried forward, and the developer wants to choose its focus. `/compact` with instructions does exactly that, and the docs recommend it before starting a long new task. Waiting for auto-compaction is tempting but lets the automatic pass guess what matters. `/autocompact` changes the threshold, not the content, and `/clear` keeps nothing.",
+      "keywordCues": [
+        "same migration continues",
+        "keep the schema decisions",
+        "rather than whatever the automatic pass guesses"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Tras dos horas migrando un módulo de pagos, la ventana de contexto de un desarrollador está casi llena. La misma migración sigue con una fase final larga. Quiere que el resumen conserve las decisiones de esquema que tomó, en vez de lo que la pasada automática adivine como importante. ¿Qué debe hacer ahora?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Esperar a que la autocompactación se dispare sola",
+            "why": "La pasada automática decide por sí misma qué importa; el desarrollador pierde el control del enfoque."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/clear` y volver a explicar la migración",
+            "why": "Descarta todo el contexto, incluidas decisiones que la tarea todavía necesita."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar `/autocompact 500k`",
+            "why": "Solo cambia cuándo corre la autocompactación, no qué conserva el resumen."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar `/compact focus on the payments schema decisions`",
+            "why": "Las instrucciones de enfoque hacen que el resumen conserve lo que eliges antes de la fase larga."
+          }
+        ],
+        "explanation": "La tarea sigue, así que hay que arrastrar un resumen, y el desarrollador quiere elegir su enfoque. `/compact` con instrucciones hace justo eso, y la documentación lo recomienda antes de una tarea larga. Esperar la autocompactación tienta, pero deja que la pasada automática adivine. `/autocompact` cambia el umbral, no el contenido, y `/clear` no conserva nada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-compact--877c4d12",
+      "conceptId": "ctx-compact",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A tech lead notices that summaries often drop the list of modified files and the test commands. They want every compaction, manual or automatic, to preserve these, for everyone who clones the repository, without anyone typing extra instructions. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add a `# Compact instructions` section to the project-root CLAUDE.md",
+          "correct": true,
+          "why": "Compaction instructions in the committed project CLAUDE.md steer every compaction for everyone on the repo."
+        },
+        {
+          "id": "B",
+          "text": "Ask everyone to run `/compact` with focus instructions",
+          "correct": false,
+          "why": "It relies on people typing it each time and does not cover automatic compaction."
+        },
+        {
+          "id": "C",
+          "text": "Run `/autocompact` with a lower value",
+          "correct": false,
+          "why": "It only changes when auto-compaction runs, and it saves to each user's own settings."
+        },
+        {
+          "id": "D",
+          "text": "Add a `PreCompact` hook that exits with code 2",
+          "correct": false,
+          "why": "Exit code 2 blocks compaction instead of shaping the summary."
+        }
+      ],
+      "explanation": "The requirement is shaping every summary, for the whole team, without extra typing. The docs say a Compact Instructions section in CLAUDE.md controls what compaction preserves; putting it in the committed project-root CLAUDE.md shares it with everyone who clones the repo. Per-run `/compact` instructions are tempting but manual and miss automatic compaction. A `PreCompact` hook exiting 2 blocks compaction, and `/autocompact` only moves the threshold.",
+      "keywordCues": [
+        "every compaction, manual or automatic",
+        "everyone who clones the repository",
+        "without anyone typing extra instructions"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Un líder técnico nota que los resúmenes suelen perder la lista de archivos modificados y los comandos de test. Quiere que toda compactación, manual o automática, los conserve, para todos los que clonen el repositorio y sin que nadie escriba instrucciones extra. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Añadir una sección `# Compact instructions` al CLAUDE.md de la raíz del proyecto",
+            "why": "Las instrucciones de compactación en el CLAUDE.md del proyecto, versionado, guían cada compactación para todo el repo."
+          },
+          {
+            "id": "B",
+            "text": "Pedir a todos que ejecuten `/compact` con instrucciones de enfoque",
+            "why": "Depende de que la gente lo escriba cada vez y no cubre la compactación automática."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar `/autocompact` con un valor menor",
+            "why": "Solo cambia cuándo corre la autocompactación, y se guarda en la configuración de cada usuario."
+          },
+          {
+            "id": "D",
+            "text": "Añadir un hook `PreCompact` que salga con código 2",
+            "why": "El código 2 bloquea la compactación en vez de dar forma al resumen."
+          }
+        ],
+        "explanation": "El requisito es dar forma a cada resumen, para todo el equipo, sin escribir nada extra. La documentación indica que una sección Compact Instructions en CLAUDE.md controla qué conserva la compactación; ponerla en el CLAUDE.md de la raíz del proyecto, versionado, la comparte con todos los que clonan el repo. Las instrucciones por ejecución de `/compact` tientan, pero son manuales y no cubren la automática. Un hook `PreCompact` que sale con 2 bloquea la compactación y `/autocompact` solo mueve el umbral."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-compact--08ed643f",
+      "conceptId": "ctx-compact",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A session began with a long, noisy exploration of logs. The recent messages contain the implementation just written, which the developer needs in full detail. They want to condense only the early exploration and keep recent messages intact. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/compact focus on the implementation`",
+          "correct": false,
+          "why": "It summarizes the whole conversation, so the recent implementation is condensed too."
+        },
+        {
+          "id": "B",
+          "text": "Run `/rewind`, select the message where the implementation began, and choose Summarize from here",
+          "correct": false,
+          "why": "That condenses from that message forward, the part they need in full."
+        },
+        {
+          "id": "C",
+          "text": "Run `/rewind`, select the message where the implementation began, and choose Summarize up to here",
+          "correct": true,
+          "why": "It condenses earlier messages while keeping the recent ones in full."
+        },
+        {
+          "id": "D",
+          "text": "Run `/rewind`, select the message where the implementation began, and choose Restore conversation",
+          "correct": false,
+          "why": "Restoring the conversation rewinds past the implementation messages instead of condensing the exploration."
+        }
+      ],
+      "explanation": "The requirement is partial compaction: condense the early part, keep the recent part verbatim. In the rewind menu, Summarize up to here condenses earlier messages and keeps recent ones in full. Summarize from here is the tempting mirror image and condenses the wrong half. `/compact` summarizes everything.",
+      "keywordCues": [
+        "condense only the early exploration",
+        "keep recent messages intact",
+        "needs in full detail"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Una sesión empezó con una exploración larga y ruidosa de logs. Los mensajes recientes contienen la implementación recién escrita, que el desarrollador necesita con todo detalle. Quiere condensar solo la exploración inicial y dejar intactos los mensajes recientes. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar `/compact focus on the implementation`",
+            "why": "Resume toda la conversación, así que también condensa la implementación reciente."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/rewind`, elegir el mensaje donde empezó la implementación y Summarize from here",
+            "why": "Eso condensa desde ese mensaje hacia adelante, justo la parte que necesita completa."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar `/rewind`, elegir el mensaje donde empezó la implementación y Summarize up to here",
+            "why": "Condensa los mensajes anteriores y mantiene completos los recientes."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar `/rewind`, elegir el mensaje donde empezó la implementación y Restore conversation",
+            "why": "Restaurar la conversación retrocede por encima de la implementación en vez de condensar la exploración."
+          }
+        ],
+        "explanation": "El requisito es compactar solo una parte: condensar lo antiguo y dejar lo reciente tal cual. En el menú de rewind, Summarize up to here condensa lo anterior y mantiene completos los mensajes recientes. Summarize from here es el reflejo tentador y condensa la mitad equivocada. `/compact` resume todo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-compact--afd25774",
+      "conceptId": "ctx-compact",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer wants automatic compaction to run earlier in this session and in their future sessions, and wants to know how to undo that later and go back to the window tuned for their model. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/autocompact 500k`",
+          "correct": true,
+          "why": "It sets how full the window gets before auto-compaction, saves it to user settings and applies it now."
+        },
+        {
+          "id": "B",
+          "text": "Run `/compact 500k`",
+          "correct": false,
+          "why": "The argument to `/compact` is focus instructions for a one-off summary, not a threshold."
+        },
+        {
+          "id": "C",
+          "text": "Add a `PostCompact` hook with matcher `auto`",
+          "correct": false,
+          "why": "`PostCompact` runs after compaction and cannot change when it happens."
+        },
+        {
+          "id": "D",
+          "text": "Run `/autocompact auto`",
+          "correct": true,
+          "why": "`auto` returns to the window tuned for the model."
+        },
+        {
+          "id": "E",
+          "text": "Run `/clear` whenever the context looks large",
+          "correct": false,
+          "why": "It drops all context instead of changing when automatic compaction runs."
+        }
+      ],
+      "explanation": "The requirements are a persistent earlier threshold and a way back to the default. `/autocompact` with a size saves the value to user settings and applies it to the current session, and `/autocompact auto` restores the tuned window. `/compact 500k` is the tempting look-alike but just runs one compaction with odd instructions. Hooks and `/clear` do not change the threshold.",
+      "keywordCues": [
+        "automatic compaction to run earlier",
+        "future sessions",
+        "go back to the window tuned for their model"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que la compactación automática ocurra antes en esta sesión y en las futuras, y saber cómo deshacerlo después para volver a la ventana ajustada para su modelo. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar `/autocompact 500k`",
+            "why": "Fija qué tan llena se pone la ventana antes de autocompactar, lo guarda en la configuración de usuario y lo aplica ya."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/compact 500k`",
+            "why": "El argumento de `/compact` son instrucciones de enfoque para un resumen puntual, no un umbral."
+          },
+          {
+            "id": "C",
+            "text": "Añadir un hook `PostCompact` con matcher `auto`",
+            "why": "`PostCompact` corre después de compactar y no puede cambiar cuándo ocurre."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar `/autocompact auto`",
+            "why": "`auto` vuelve a la ventana ajustada para el modelo."
+          },
+          {
+            "id": "E",
+            "text": "Ejecutar `/clear` cuando el contexto parezca grande",
+            "why": "Descarta todo el contexto en vez de cambiar cuándo corre la compactación automática."
+          }
+        ],
+        "explanation": "Los requisitos son un umbral más temprano y persistente y una forma de volver al valor por defecto. `/autocompact` con un tamaño guarda el valor en la configuración de usuario y lo aplica a la sesión actual, y `/autocompact auto` restaura la ventana ajustada. `/compact 500k` es el parecido tentador, pero solo ejecuta una compactación con instrucciones raras. Los hooks y `/clear` no cambian el umbral."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-compact--5c9469ab",
+      "conceptId": "ctx-compact",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which command sets how full the context window gets before Claude Code compacts automatically?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/autocompact",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/autocompact` sets the auto-compact window; pass a size such as `500k`, or `auto` to return to the tuned window. Without an argument it opens a dialog showing the current window. `/compact` is different: it runs one compaction now.",
+      "keywordCues": [
+        "how full the context window gets",
+        "compacts automatically"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando fija qué tan llena se pone la ventana de contexto antes de que Claude Code compacte automáticamente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/autocompact",
+            "why": ""
+          }
+        ],
+        "explanation": "`/autocompact` fija la ventana de autocompactación; pásale un tamaño como `500k`, o `auto` para volver a la ventana ajustada. Sin argumento abre un diálogo con la ventana actual. `/compact` es distinto: ejecuta una compactación ahora."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "ctx-compact--r0",
+      "conceptId": "ctx-compact",
+      "kind": "recall",
+      "prompt": "Explain what /compact does and three ways to control compaction.",
+      "promptEs": "Explica qué hace /compact y tres formas de controlar la compactación.",
+      "idealAnswer": "/compact replaces the conversation with a structured summary so the same task continues with free space; it runs automatically near the limit too. You can pass focus instructions, add a # Compact instructions section to project CLAUDE.md, use /rewind Summarize from here or up to here for part of the conversation, and set the threshold with /autocompact.",
+      "rubric": [
+        "Replaces the conversation with a structured summary; the same task continues",
+        "Also runs automatically as the context approaches the limit",
+        "At least three controls: /compact focus instructions, a Compact Instructions section in CLAUDE.md, /rewind Summarize from here / up to here, /autocompact to set the threshold"
+      ]
+    },
+    {
+      "id": "ctx-compact--r1",
+      "conceptId": "ctx-compact",
+      "kind": "why-not",
+      "prompt": "Mid-task, your window is nearly full and you still need the decisions made so far. Why is /clear the wrong choice?",
+      "promptEs": "A mitad de una tarea la ventana está casi llena y aún necesitas las decisiones tomadas. ¿Por qué /clear no sirve?",
+      "idealAnswer": "/clear starts a new conversation with empty context, so the decisions and progress of the current task are not carried over. Since the same task continues, /compact is the fit: it replaces the history with a summary, optionally focused on what you choose.",
+      "rubric": [
+        "/clear carries nothing into the new conversation",
+        "The same task needs its context carried forward",
+        "/compact keeps a summary, optionally focused"
+      ]
+    }
+  ]
+}

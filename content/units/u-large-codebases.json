@@ -1,0 +1,404 @@
+{
+  "unitId": "u-large-codebases",
+  "audited": true,
+  "overview": {
+    "title": "Monorepos y bases de código grandes",
+    "hook": "Que Claude cargue y lea solo la parte del repo que toca la tarea.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "dev",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "root",
+          "label": "Raíz del repo",
+          "kind": "zone",
+          "x": 30,
+          "y": 20
+        },
+        {
+          "id": "pkg",
+          "label": "packages/api",
+          "kind": "zone",
+          "x": 30,
+          "y": 75
+        },
+        {
+          "id": "claudemd",
+          "label": "CLAUDE.md",
+          "kind": "data",
+          "x": 55,
+          "y": 50
+        },
+        {
+          "id": "excludes",
+          "label": "claudeMdExcludes",
+          "kind": "service",
+          "x": 78,
+          "y": 20
+        },
+        {
+          "id": "deny",
+          "label": "Read deny",
+          "kind": "service",
+          "x": 78,
+          "y": 55
+        },
+        {
+          "id": "adddir",
+          "label": "--add-dir",
+          "kind": "service",
+          "x": 78,
+          "y": 88
+        }
+      ],
+      "edges": [
+        {
+          "from": "dev",
+          "to": "root",
+          "label": "lanza aquí"
+        },
+        {
+          "from": "dev",
+          "to": "pkg",
+          "label": "o aquí"
+        },
+        {
+          "from": "root",
+          "to": "claudemd",
+          "label": "raíz + demanda"
+        },
+        {
+          "from": "pkg",
+          "to": "claudemd",
+          "label": "+ ancestros"
+        },
+        {
+          "from": "adddir",
+          "to": "deny",
+          "label": "y bloquea dist"
+        },
+        {
+          "from": "pkg",
+          "to": "adddir",
+          "label": "suma hermano"
+        },
+        {
+          "from": "claudemd",
+          "to": "excludes",
+          "label": "salta archivos"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "En un monorepo grande, Claude puede llenar su contexto con instrucciones de otros equipos y con archivos generados que no tienen nada que ver con tu tarea. Eso cuesta tokens y empeora sus respuestas.",
+        "show": [
+          "dev"
+        ],
+        "focus": "dev"
+      },
+      {
+        "narration": "La primera decisión es dónde lanzas claude. Desde la raíz accede a todo y carga el CLAUDE.md raíz, y los de cada paquete llegan a demanda. Desde packages/api solo accede a ese subárbol y carga su CLAUDE.md más los de cada ancestro.",
+        "show": [
+          "dev",
+          "root",
+          "pkg",
+          "claudemd"
+        ],
+        "focus": "pkg"
+      },
+      {
+        "narration": "Si trabajas desde la raíz pero nunca tocas ciertos paquetes, claudeMdExcludes salta sus CLAUDE.md y sus reglas. Los patrones son globs sobre rutas absolutas, y el CLAUDE.md de managed policy nunca se puede excluir.",
+        "show": [
+          "dev",
+          "root",
+          "pkg",
+          "claudemd",
+          "excludes"
+        ],
+        "focus": "excludes"
+      },
+      {
+        "narration": "Las búsquedas ya respetan .gitignore. Para código generado o vendorizado que sí está commiteado, agrega reglas Read en permissions.deny. Un plugin de code intelligence evita leer archivos para encontrar definiciones, y worktree.sparsePaths hace checkouts parciales.",
+        "show": [
+          "dev",
+          "root",
+          "pkg",
+          "claudemd",
+          "excludes",
+          "deny"
+        ],
+        "focus": "deny"
+      },
+      {
+        "narration": "Si lanzas desde un paquete y necesitas editar un hermano, tienes dos caminos. additionalDirectories en settings da solo acceso a archivos. --add-dir o /add-dir además carga los skills del hermano.",
+        "show": [
+          "dev",
+          "root",
+          "pkg",
+          "claudemd",
+          "excludes",
+          "deny",
+          "adddir"
+        ],
+        "focus": "adddir"
+      },
+      {
+        "narration": "No los confundas. claudeMdExcludes filtra instrucciones, las reglas deny bloquean lecturas, sparsePaths decide qué hay en disco en un worktree, y --add-dir amplía el acceso. Además, el .claude/settings.json del proyecto no se hereda de directorios padre.",
+        "show": [
+          "dev",
+          "root",
+          "pkg",
+          "claudemd",
+          "excludes",
+          "deny",
+          "adddir"
+        ],
+        "focus": "claudemd"
+      }
+    ],
+    "keyPoints": [
+      "Lanzar desde un paquete limita acceso e instrucciones",
+      "claudeMdExcludes salta CLAUDE.md y reglas de otros equipos",
+      "Reglas Read en permissions.deny bloquean código generado commiteado",
+      "worktree.sparsePaths: checkout parcial; incluye .claude",
+      "--add-dir carga skills; additionalDirectories solo da acceso"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "claudeMdExcludes vs Read deny",
+        "difference": "Uno evita que carguen instrucciones; el otro impide abrir archivos de código."
+      },
+      {
+        "unitOrService": "--add-dir vs additionalDirectories",
+        "difference": "Ambos dan acceso; solo --add-dir carga skills y, con la variable, CLAUDE.md."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-large-codebases--l1",
+      "conceptId": "large-scope-instructions",
+      "format": "lightning",
+      "prompt": "Only root and packages/api instructions today, only root and packages/web tomorrow → ?",
+      "promptEs": "Hoy solo instrucciones de la raíz y packages/api, mañana de la raíz y packages/web → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Edit claudeMdExcludes every day"
+        },
+        {
+          "id": "B",
+          "text": "Start claude from that package's directory"
+        },
+        {
+          "id": "C",
+          "text": "--add-dir the package from root"
+        },
+        {
+          "id": "D",
+          "text": "permissions.additionalDirectories"
+        }
+      ],
+      "answer": "B",
+      "why": "Lanzar desde el paquete carga su CLAUDE.md y los de sus ancestros, nada de hermanos. claudeMdExcludes es una lista estática, no un interruptor por tarea."
+    },
+    {
+      "id": "u-large-codebases--l2",
+      "conceptId": "large-scope-instructions",
+      "format": "thisorthat",
+      "prompt": "Each package's owners maintain their own conventions, versioned with the code → ?",
+      "promptEs": "Los dueños de cada paquete mantienen sus propias convenciones, versionadas con el código → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Path-scoped rule in .claude/rules/"
+        },
+        {
+          "id": "B",
+          "text": "Per-directory CLAUDE.md"
+        }
+      ],
+      "answer": "B",
+      "why": "El CLAUDE.md por directorio vive junto al código que describe y lo mantiene su dueño. Las reglas con paths: viven centralizadas en el .claude/ de la raíz."
+    },
+    {
+      "id": "u-large-codebases--l3",
+      "conceptId": "large-scope-instructions",
+      "format": "lightning",
+      "prompt": "Launching from root, never load another team's CLAUDE.md and rules → ?",
+      "promptEs": "Lanzando desde la raíz, no cargar nunca el CLAUDE.md ni las reglas de otro equipo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "permissions.deny Read rules"
+        },
+        {
+          "id": "B",
+          "text": "worktree.sparsePaths"
+        },
+        {
+          "id": "C",
+          "text": "claudeMdExcludes"
+        },
+        {
+          "id": "D",
+          "text": "permissions.additionalDirectories"
+        }
+      ],
+      "answer": "C",
+      "why": "claudeMdExcludes salta archivos de instrucciones por glob. Las reglas Read deny bloquean abrir código, no la carga de CLAUDE.md como tal."
+    },
+    {
+      "id": "u-large-codebases--l4",
+      "conceptId": "large-reduce-reads",
+      "format": "lightning",
+      "prompt": "Stop Claude opening a checked-in vendored SDK → ?",
+      "promptEs": "Evitar que Claude abra un SDK vendorizado que está commiteado → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claudeMdExcludes"
+        },
+        {
+          "id": "B",
+          "text": "worktree.sparsePaths"
+        },
+        {
+          "id": "C",
+          "text": "permissions.additionalDirectories"
+        },
+        {
+          "id": "D",
+          "text": "Read rule in permissions.deny"
+        }
+      ],
+      "answer": "D",
+      "why": "Una regla Read en permissions.deny impide abrir esos archivos. .gitignore no sirve porque está commiteado, y claudeMdExcludes solo filtra archivos de instrucciones."
+    },
+    {
+      "id": "u-large-codebases--l5",
+      "conceptId": "large-reduce-reads",
+      "format": "lightning",
+      "prompt": "Find a symbol's definition and callers without grepping the tree → ?",
+      "promptEs": "Encontrar la definición y los llamadores de un símbolo sin hacer grep en todo el árbol → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Code intelligence plugin"
+        },
+        {
+          "id": "B",
+          "text": "Read deny rules"
+        },
+        {
+          "id": "C",
+          "text": "Path-scoped rule"
+        },
+        {
+          "id": "D",
+          "text": "worktree.sparsePaths"
+        }
+      ],
+      "answer": "A",
+      "why": "Un plugin de code intelligence conecta Claude a un language server para ir a definiciones y referencias. Las reglas deny solo quitan archivos, no localizan símbolos."
+    },
+    {
+      "id": "u-large-codebases--l6",
+      "conceptId": "large-reduce-reads",
+      "format": "thisorthat",
+      "prompt": "New worktrees must not duplicate node_modules on disk → ?",
+      "promptEs": "Los worktrees nuevos no deben duplicar node_modules en disco → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "worktree.symlinkDirectories"
+        },
+        {
+          "id": "B",
+          "text": "worktree.sparsePaths"
+        }
+      ],
+      "answer": "A",
+      "why": "symlinkDirectories crea un symlink a la copia del repo principal. sparsePaths decide qué directorios se hacen checkout, pero no evita copiar node_modules."
+    },
+    {
+      "id": "u-large-codebases--l7",
+      "conceptId": "large-add-dir",
+      "format": "lightning",
+      "prompt": "Sibling package access committed for everyone who starts in packages/api → ?",
+      "promptEs": "Acceso a un paquete hermano commiteado para todos los que lanzan desde packages/api → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --add-dir ../shared"
+        },
+        {
+          "id": "B",
+          "text": "/add-dir ../shared"
+        },
+        {
+          "id": "C",
+          "text": "claudeMdExcludes"
+        },
+        {
+          "id": "D",
+          "text": "permissions.additionalDirectories"
+        }
+      ],
+      "answer": "D",
+      "why": "additionalDirectories en el .claude/settings.json commiteado llega a todo el equipo. --add-dir y /add-dir son por lanzamiento o por sesión, no persisten."
+    },
+    {
+      "id": "u-large-codebases--l8",
+      "conceptId": "large-add-dir",
+      "format": "thisorthat",
+      "prompt": "Edit a sibling package and also load its skills → ?",
+      "promptEs": "Editar un paquete hermano y además cargar sus skills → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "permissions.additionalDirectories"
+        },
+        {
+          "id": "B",
+          "text": "--add-dir"
+        }
+      ],
+      "answer": "B",
+      "why": "--add-dir y /add-dir cargan los skills del directorio agregado. additionalDirectories da solo acceso a archivos y nunca carga skills."
+    },
+    {
+      "id": "u-large-codebases--l9",
+      "conceptId": "large-add-dir",
+      "format": "lightning",
+      "prompt": "Also load CLAUDE.md and rules from a directory added with --add-dir → ?",
+      "promptEs": "Cargar también CLAUDE.md y reglas de un directorio agregado con --add-dir → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add it to additionalDirectories too"
+        },
+        {
+          "id": "B",
+          "text": "Run /context"
+        },
+        {
+          "id": "C",
+          "text": "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1"
+        },
+        {
+          "id": "D",
+          "text": "claudeMdExcludes"
+        }
+      ],
+      "answer": "C",
+      "why": "Esa variable de entorno hace que se carguen CLAUDE.md y .claude/rules/ de los directorios de --add-dir. No tiene efecto sobre additionalDirectories, que nunca los carga."
+    }
+  ]
+}

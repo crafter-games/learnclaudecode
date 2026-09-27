@@ -1,0 +1,288 @@
+{
+  "unitId": "u-managed-settings",
+  "audited": true,
+  "overview": {
+    "title": "Settings administrados",
+    "hook": "Imponer una política a toda la organización que nadie pueda sobreescribir.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "admin",
+          "label": "Admin",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "console",
+          "label": "Consola claude.ai",
+          "kind": "service",
+          "x": 35,
+          "y": 15
+        },
+        {
+          "id": "mdm",
+          "label": "MDM o registro",
+          "kind": "service",
+          "x": 35,
+          "y": 50
+        },
+        {
+          "id": "file",
+          "label": "Archivo managed",
+          "kind": "data",
+          "x": 35,
+          "y": 85
+        },
+        {
+          "id": "cloud",
+          "label": "Sesión en la nube",
+          "kind": "zone",
+          "x": 68,
+          "y": 15
+        },
+        {
+          "id": "machine",
+          "label": "Máquina del dev",
+          "kind": "zone",
+          "x": 68,
+          "y": 62
+        },
+        {
+          "id": "locks",
+          "label": "Locks managed-only",
+          "kind": "note",
+          "x": 92,
+          "y": 85
+        }
+      ],
+      "edges": [
+        {
+          "from": "admin",
+          "to": "console",
+          "label": "consola"
+        },
+        {
+          "from": "admin",
+          "to": "mdm",
+          "label": "perfil o HKLM"
+        },
+        {
+          "from": "admin",
+          "to": "file",
+          "label": "copia"
+        },
+        {
+          "from": "console",
+          "to": "cloud",
+          "label": "única que llega"
+        },
+        {
+          "from": "console",
+          "to": "machine",
+          "label": "cada hora"
+        },
+        {
+          "from": "mdm",
+          "to": "machine",
+          "label": "política SO"
+        },
+        {
+          "from": "file",
+          "to": "machine",
+          "label": "dir. sistema"
+        },
+        {
+          "from": "machine",
+          "to": "locks",
+          "label": "solo managed"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Tu organización necesita que ciertas reglas se cumplan en cada máquina, sin que un desarrollador pueda cambiarlas. Para eso existen los managed settings: están por encima de cualquier otro nivel.",
+        "show": [
+          "admin"
+        ],
+        "focus": "admin"
+      },
+      {
+        "narration": "Hay tres caminos para un admin. Server-managed settings desde la consola de claude.ai, para planes Team y Enterprise. Una política del sistema por MDM, como el perfil com.anthropic.claudecode en macOS o la clave HKLM en Windows. O un archivo managed-settings.json en un directorio del sistema. El registro HKCU de Windows queda como último recurso.",
+        "show": [
+          "admin",
+          "console",
+          "mdm",
+          "file"
+        ],
+        "focus": "console"
+      },
+      {
+        "narration": "El archivo va en /etc/claude-code/ en Linux, en /Library/Application Support/ClaudeCode/ en macOS y en C:Program FilesClaudeCode en Windows. Varios equipos pueden repartir la política en managed-settings.d.",
+        "show": [
+          "admin",
+          "console",
+          "mdm",
+          "file",
+          "machine"
+        ],
+        "focus": "file"
+      },
+      {
+        "narration": "Si llegan varias fuentes, por defecto gana la primera que trae una clave de política: remote, luego MDM, luego el archivo y al final HKCU. Las demás se ignoran, no se mezclan. Corre /status para ver cuál se usó.",
+        "show": [
+          "admin",
+          "console",
+          "mdm",
+          "file",
+          "machine"
+        ],
+        "focus": "machine"
+      },
+      {
+        "narration": "Una sesión en la nube de Anthropic no lee el MDM ni el archivo del dispositivo. Si tus desarrolladores usan sesiones en la nube, la política tiene que venir de server-managed settings.",
+        "show": [
+          "admin",
+          "console",
+          "mdm",
+          "file",
+          "machine",
+          "cloud"
+        ],
+        "focus": "cloud"
+      },
+      {
+        "narration": "Algunas claves solo se leen desde managed settings, como allowManagedPermissionRulesOnly o allowManagedHooksOnly. Son locks: hacen que solo cuenten las reglas, hooks o servidores MCP del admin. En un settings.json de proyecto no tienen efecto.",
+        "show": [
+          "admin",
+          "console",
+          "mdm",
+          "file",
+          "machine",
+          "cloud",
+          "locks"
+        ],
+        "focus": "locks"
+      }
+    ],
+    "keyPoints": [
+      "Tres vías de admin: consola claude.ai, MDM/registro HKLM o managed-settings.json (HKCU es solo respaldo)",
+      "Por defecto gana una sola fuente: remote, MDM, archivo, HKCU",
+      "Solo server-managed llega a sesiones en la nube",
+      "`/status` muestra qué fuente managed se aplicó",
+      "Los locks allowManaged*Only solo se leen desde managed"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "settings scopes",
+        "difference": "Los scopes user/proyecto/local los editas tú; managed lo despliega la organización y los pisa."
+      },
+      {
+        "unitOrService": "permission rules",
+        "difference": "Las reglas definen qué se permite; allowManagedPermissionRulesOnly decide de qué archivos se leen."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-managed-settings--l1",
+      "conceptId": "managed-delivery",
+      "format": "lightning",
+      "prompt": "Org policy must also reach Anthropic-hosted cloud sessions → which delivery?",
+      "promptEs": "La política de la organización debe llegar también a sesiones en la nube de Anthropic → ¿qué vía?",
+      "options": [
+        {
+          "id": "A",
+          "text": "managed-settings.json on each laptop"
+        },
+        {
+          "id": "B",
+          "text": "macOS configuration profile"
+        },
+        {
+          "id": "C",
+          "text": "Server-managed settings"
+        },
+        {
+          "id": "D",
+          "text": "HKLM registry value"
+        }
+      ],
+      "answer": "C",
+      "why": "Una sesión en la nube de Anthropic no lee el MDM ni el archivo del dispositivo. Solo la consola de claude.ai, con server-managed settings, le entrega la política."
+    },
+    {
+      "id": "u-managed-settings--l2",
+      "conceptId": "managed-delivery",
+      "format": "thisorthat",
+      "prompt": "By default, server-managed settings and managed-settings.json both deliver policy keys → ?",
+      "promptEs": "Por defecto, server-managed settings y managed-settings.json entregan claves de política → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Both files merge key by key"
+        },
+        {
+          "id": "B",
+          "text": "Remote source applies; file is skipped"
+        }
+      ],
+      "answer": "B",
+      "why": "Con el valor por defecto first-wins se usa la primera fuente con una clave de política, y remote va primero. El resto se ignora salvo unas pocas claves cross-source; mezclar requiere \"merge\"."
+    },
+    {
+      "id": "u-managed-settings--l3",
+      "conceptId": "managed-only-locks",
+      "format": "lightning",
+      "prompt": "Only hooks the organization deploys may run; user and project hooks are ignored → ?",
+      "promptEs": "Solo pueden correr los hooks que despliega la organización; se ignoran los de user y proyecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "disableAllHooks"
+        },
+        {
+          "id": "B",
+          "text": "allowManagedHooksOnly"
+        },
+        {
+          "id": "C",
+          "text": "allowManagedPermissionRulesOnly"
+        },
+        {
+          "id": "D",
+          "text": "allowManagedMcpServersOnly"
+        }
+      ],
+      "answer": "B",
+      "why": "allowManagedHooksOnly, leído solo desde managed settings, deja correr únicamente los hooks managed (más los del Agent SDK y de plugins forzados por managed) y bloquea los de user, proyecto y local. disableAllHooks en managed apaga también los hooks de la organización, y fuera de managed no es una política impuesta: otro archivo con más precedencia puede volver a ponerlo en false."
+    },
+    {
+      "id": "u-managed-settings--l4",
+      "conceptId": "managed-only-locks",
+      "format": "lightning",
+      "prompt": "Claude Code must exit if the server-managed settings fetch fails at startup → ?",
+      "promptEs": "Claude Code debe salir si falla la descarga de server-managed settings al iniciar → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "requiredMinimumVersion"
+        },
+        {
+          "id": "B",
+          "text": "managedSourcesBehavior"
+        },
+        {
+          "id": "C",
+          "text": "allowManagedPermissionRulesOnly"
+        },
+        {
+          "id": "D",
+          "text": "forceRemoteSettingsRefresh"
+        }
+      ],
+      "answer": "D",
+      "why": "forceRemoteSettingsRefresh bloquea el arranque hasta descargar la política y sale si falla. requiredMinimumVersion solo bloquea binarios viejos; no tiene que ver con la descarga."
+    }
+  ]
+}

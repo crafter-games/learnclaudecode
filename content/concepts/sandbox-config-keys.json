@@ -1,0 +1,545 @@
+{
+  "conceptId": "sandbox-config-keys",
+  "card": {
+    "en": {
+      "tldr": "The `sandbox` block in settings widens or narrows the boundary: filesystem paths, network domains, excluded commands, and what happens when a command or the sandbox itself can't run. Its paths use normal conventions, unlike `Read`/`Edit` permission rules.",
+      "whenToUse": [
+        "A tool needs to write outside the project, such as `~/.kube`",
+        "Pre-allowing or blocking network domains for sandboxed commands",
+        "A tool like `docker` doesn't work under the sandbox",
+        "Making the sandbox a hard gate in managed settings"
+      ],
+      "keyFacts": [
+        "`filesystem.allowWrite` / `denyWrite` / `denyRead` / `allowRead` take paths; when read rules overlap, the narrower path wins.",
+        "`network.allowedDomains` pre-allows hosts (wildcards like `*.npmjs.org`); `network.deniedDomains` blocks a host even inside an allowed wildcard.",
+        "`excludedCommands` (e.g. `docker *`) runs matching commands outside the sandbox; they still go through the regular permission flow.",
+        "`allowUnsandboxedCommands: false` makes Claude Code ignore the `dangerouslyDisableSandbox` retry (Strict sandbox mode); `failIfUnavailable: true` exits at startup instead of running unsandboxed.",
+        "Paths: `/tmp/build` is absolute, `~/` is home, `./` or no prefix is the project root in project settings but `~/.claude` in user settings.",
+        "Filesystem arrays merge across settings scopes; boolean keys set in managed settings override local values."
+      ],
+      "gotchas": [
+        "Permission rules use `//path` for absolute and `/path` for project-relative; sandbox paths don't.",
+        "`excludedCommands` is a convenience, not a security boundary: prefer `allowWrite` when a tool only needs one write location.",
+        "An exclusion covers a call only if it covers every command in it: `docker *` doesn't exclude `npm ci && docker build .`.",
+        "No `allowWrite` entry lifts the sandbox's protected paths, such as `.claude` settings files or `.mcp.json`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Read/Edit permission-rule paths",
+          "difference": "In `Read(...)`/`Edit(...)` rules `//path` is absolute; in `sandbox.filesystem` arrays `/path` is absolute."
+        }
+      ],
+      "examCues": [
+        "needs to write outside the project",
+        "never retry outside the sandbox",
+        "refuse to start if the sandbox can't",
+        "docker doesn't work in the sandbox",
+        "pre-allow the npm registry"
+      ]
+    },
+    "es": {
+      "tldr": "El bloque `sandbox` en settings amplía o reduce el límite: rutas de archivos, dominios de red, comandos excluidos y qué pasa cuando un comando o el propio sandbox no puede correr. Sus rutas usan convenciones normales, a diferencia de las reglas de permisos `Read`/`Edit`.",
+      "whenToUse": [
+        "Una herramienta necesita escribir fuera del proyecto, como `~/.kube`",
+        "Pre-permitir o bloquear dominios de red para comandos aislados",
+        "Una herramienta como `docker` no funciona dentro del sandbox",
+        "Convertir el sandbox en una barrera obligatoria con managed settings"
+      ],
+      "keyFacts": [
+        "`filesystem.allowWrite` / `denyWrite` / `denyRead` / `allowRead` reciben rutas; si reglas de lectura se solapan, gana la ruta más estrecha.",
+        "`network.allowedDomains` pre-permite hosts (comodines como `*.npmjs.org`); `network.deniedDomains` bloquea un host aunque un comodín permitido lo cubra.",
+        "`excludedCommands` (p. ej. `docker *`) corre esos comandos fuera del sandbox; igual pasan por el flujo normal de permisos.",
+        "`allowUnsandboxedCommands: false` hace que Claude Code ignore el reintento con `dangerouslyDisableSandbox` (Strict sandbox mode); `failIfUnavailable: true` sale al iniciar en vez de correr sin sandbox.",
+        "Rutas: `/tmp/build` es absoluta, `~/` es el home, `./` o sin prefijo es la raíz del proyecto en settings de proyecto pero `~/.claude` en settings de usuario.",
+        "Los arreglos de filesystem se combinan entre scopes; las claves booleanas en managed settings pisan los valores locales."
+      ],
+      "gotchas": [
+        "Las reglas de permisos usan `//path` para absoluta y `/path` relativa al proyecto; las rutas del sandbox no.",
+        "`excludedCommands` es una comodidad, no un límite de seguridad: prefiere `allowWrite` cuando la herramienta solo necesita escribir en un lugar.",
+        "Una exclusión cubre una llamada solo si cubre todos sus comandos: `docker *` no excluye `npm ci && docker build .`.",
+        "Ninguna entrada de `allowWrite` levanta las rutas protegidas del sandbox, como los settings de `.claude` o `.mcp.json`."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Rutas en reglas Read/Edit",
+          "difference": "En reglas `Read(...)`/`Edit(...)` `//path` es absoluta; en los arreglos `sandbox.filesystem` `/path` es absoluta."
+        }
+      ],
+      "examCues": [
+        "needs to write outside the project",
+        "never retry outside the sandbox",
+        "refuse to start if the sandbox can't",
+        "docker doesn't work in the sandbox",
+        "pre-allow the npm registry"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sandboxing.md",
+      "https://code.claude.com/docs/en/settings-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sandbox-config-keys--6dc0e0d8",
+      "conceptId": "sandbox-config-keys",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "With the Bash sandbox on, `kubectl` fails because it needs to write to `~/.kube`, outside the project. The developer wants `kubectl` to keep running inside the sandbox, with its network limits intact, and without opening write access anywhere else. What should they add to their settings?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"excludedCommands\": [\"kubectl *\"]` in the `sandbox` block",
+          "correct": false,
+          "why": "It takes `kubectl` out of the sandbox entirely, dropping its filesystem and network limits."
+        },
+        {
+          "id": "B",
+          "text": "`\"filesystem\": { \"disabled\": true }` in the `sandbox` block",
+          "correct": false,
+          "why": "It turns off filesystem isolation for every path and every command, not just `~/.kube`."
+        },
+        {
+          "id": "C",
+          "text": "`\"filesystem\": { \"allowWrite\": [\"~/.kube\"] }` in the `sandbox` block",
+          "correct": true,
+          "why": "It grants write access to that one path while `kubectl` stays sandboxed."
+        },
+        {
+          "id": "D",
+          "text": "`\"allowUnsandboxedCommands\": true` in the `sandbox` block",
+          "correct": false,
+          "why": "It lets Claude retry the command outside the sandbox, which drops isolation for that run."
+        }
+      ],
+      "explanation": "The requirement is to stay sandboxed while writing to one extra path. `sandbox.filesystem.allowWrite` grants exactly that, enforced at the OS level for the command and its children, and the docs recommend it over excluding a tool. `excludedCommands` is the tempting choice, but it runs the tool with no sandbox at all. Disabling the filesystem layer or allowing unsandboxed retries both widen far beyond one path.",
+      "keywordCues": [
+        "keep running inside the sandbox",
+        "without opening write access anywhere else",
+        "`~/.kube`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Con el sandbox de Bash activo, `kubectl` falla porque necesita escribir en `~/.kube`, fuera del proyecto. El desarrollador quiere que `kubectl` siga corriendo dentro del sandbox, con sus límites de red intactos, y sin abrir escritura en ningún otro lugar. ¿Qué debe agregar a sus settings?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"excludedCommands\": [\"kubectl *\"]` en el bloque `sandbox`",
+            "why": "Saca a `kubectl` del sandbox por completo y le quita los límites de archivos y red."
+          },
+          {
+            "id": "B",
+            "text": "`\"filesystem\": { \"disabled\": true }` en el bloque `sandbox`",
+            "why": "Apaga el aislamiento de archivos para todas las rutas y todos los comandos, no solo `~/.kube`."
+          },
+          {
+            "id": "C",
+            "text": "`\"filesystem\": { \"allowWrite\": [\"~/.kube\"] }` en el bloque `sandbox`",
+            "why": "Concede escritura en esa única ruta mientras `kubectl` sigue aislado."
+          },
+          {
+            "id": "D",
+            "text": "`\"allowUnsandboxedCommands\": true` en el bloque `sandbox`",
+            "why": "Deja que Claude reintente el comando fuera del sandbox, lo que quita el aislamiento en esa ejecución."
+          }
+        ],
+        "explanation": "El requisito es seguir aislado y escribir en una ruta extra. `sandbox.filesystem.allowWrite` concede justo eso, impuesto por el SO para el comando y sus hijos, y la documentación lo recomienda antes que excluir la herramienta. `excludedCommands` tienta, pero corre la herramienta sin sandbox. Apagar la capa de archivos o permitir reintentos sin sandbox amplían mucho más que una ruta."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-config-keys--6a66656a",
+      "conceptId": "sandbox-config-keys",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A security team deploys managed settings with `\"sandbox\": { \"enabled\": true }`. They now require that a machine where the sandbox can't initialize must not run Claude Code at all, and that a command blocked by the sandbox can never be retried outside it. Which two keys should they add? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"failIfUnavailable\": true`",
+          "correct": true,
+          "why": "Claude Code exits at startup when the sandbox can't start instead of warning and running unsandboxed."
+        },
+        {
+          "id": "B",
+          "text": "`\"autoAllowBashIfSandboxed\": false`",
+          "correct": false,
+          "why": "It only brings back prompts for sandboxed commands; it doesn't stop startup or retries."
+        },
+        {
+          "id": "C",
+          "text": "`\"allowUnsandboxedCommands\": false`",
+          "correct": true,
+          "why": "Claude Code ignores `dangerouslyDisableSandbox`, so blocked commands can't be retried outside the sandbox."
+        },
+        {
+          "id": "D",
+          "text": "`\"excludedCommands\": []`",
+          "correct": false,
+          "why": "An empty list excludes nothing extra, but it controls neither startup failure nor retries, and arrays merge across scopes anyway."
+        },
+        {
+          "id": "E",
+          "text": "`\"enableWeakerNestedSandbox\": true`",
+          "correct": false,
+          "why": "It weakens the Linux sandbox to work inside unprivileged containers; it doesn't enforce anything stricter."
+        }
+      ],
+      "explanation": "Two different failure paths must be closed. `failIfUnavailable: true` turns a missing dependency or unsupported platform into a hard failure at startup instead of a warning and unsandboxed execution. `allowUnsandboxedCommands: false` makes Claude Code ignore the `dangerouslyDisableSandbox` retry. `autoAllowBashIfSandboxed: false` is tempting but only affects prompting, not whether commands escape the sandbox.",
+      "keywordCues": [
+        "can't initialize must not run Claude Code",
+        "never be retried outside it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Un equipo de seguridad despliega managed settings con `\"sandbox\": { \"enabled\": true }`. Ahora exige que una máquina donde el sandbox no puede iniciar no ejecute Claude Code en absoluto, y que un comando bloqueado por el sandbox nunca pueda reintentarse fuera de él. ¿Qué dos claves deben agregar? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"failIfUnavailable\": true`",
+            "why": "Claude Code sale al iniciar cuando el sandbox no puede arrancar, en vez de avisar y correr sin sandbox."
+          },
+          {
+            "id": "B",
+            "text": "`\"autoAllowBashIfSandboxed\": false`",
+            "why": "Solo trae de vuelta los prompts para comandos aislados; no detiene el inicio ni los reintentos."
+          },
+          {
+            "id": "C",
+            "text": "`\"allowUnsandboxedCommands\": false`",
+            "why": "Claude Code ignora `dangerouslyDisableSandbox`, así que los comandos bloqueados no se reintentan fuera del sandbox."
+          },
+          {
+            "id": "D",
+            "text": "`\"excludedCommands\": []`",
+            "why": "Una lista vacía no excluye nada extra, pero no controla ni el fallo al iniciar ni los reintentos, y los arreglos se combinan entre scopes."
+          },
+          {
+            "id": "E",
+            "text": "`\"enableWeakerNestedSandbox\": true`",
+            "why": "Debilita el sandbox de Linux para funcionar en contenedores sin privilegios; no impone nada más estricto."
+          }
+        ],
+        "explanation": "Hay que cerrar dos caminos de fallo distintos. `failIfUnavailable: true` convierte una dependencia faltante o una plataforma no soportada en un fallo al iniciar, en vez de un aviso y ejecución sin sandbox. `allowUnsandboxedCommands: false` hace que Claude Code ignore el reintento con `dangerouslyDisableSandbox`. `autoAllowBashIfSandboxed: false` tienta, pero solo afecta los prompts, no si los comandos escapan del sandbox."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-config-keys--f6bf766f",
+      "conceptId": "sandbox-config-keys",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer adds `\"sandbox\": { \"enabled\": true, \"filesystem\": { \"denyRead\": [\"~/\"], \"allowRead\": [\".\"] } }` to `~/.claude/settings.json` to hide their home directory from sandboxed commands while keeping one repository readable. Inside that repository, sandboxed commands now fail to read project files. What fixes it while keeping the rest of the home directory blocked?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change `\".\"` to `\"./\"` in the same file",
+          "correct": false,
+          "why": "`./` resolves the same way as `.`: relative to `~/.claude` in user settings."
+        },
+        {
+          "id": "B",
+          "text": "Move the block into the repository's `.claude/settings.json`",
+          "correct": true,
+          "why": "In project settings `.` resolves to the project root, so the narrower allow re-opens the project."
+        },
+        {
+          "id": "C",
+          "text": "Remove `\"~/\"` from `denyRead`",
+          "correct": false,
+          "why": "It unblocks the whole home directory, defeating the goal."
+        },
+        {
+          "id": "D",
+          "text": "Set `\"filesystem\": { \"disabled\": true }` in user settings",
+          "correct": false,
+          "why": "With the filesystem layer off, `denyRead` isn't enforced at all, so the home directory is exposed."
+        }
+      ],
+      "explanation": "In sandbox paths, `./` or no prefix is relative to the project root in project settings but to `~/.claude` in user settings. In `~/.claude/settings.json`, `.` therefore re-opens only `~/.claude`, and the project stays under `denyRead`. Placing the same block in the project's `.claude/settings.json` makes `.` the project root, and the narrower `allowRead` wins over the wider `denyRead`. Rewriting `.` as `./` changes nothing.",
+      "keywordCues": [
+        "`~/.claude/settings.json`",
+        "`\"allowRead\": [\".\"]`",
+        "keeping the rest of the home directory blocked"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador agrega `\"sandbox\": { \"enabled\": true, \"filesystem\": { \"denyRead\": [\"~/\"], \"allowRead\": [\".\"] } }` a `~/.claude/settings.json` para ocultar su home a los comandos aislados y dejar legible un repositorio. Dentro de ese repositorio, los comandos aislados ya no pueden leer los archivos del proyecto. ¿Qué lo arregla manteniendo bloqueado el resto del home?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cambiar `\".\"` por `\"./\"` en el mismo archivo",
+            "why": "`./` se resuelve igual que `.`: relativo a `~/.claude` en settings de usuario."
+          },
+          {
+            "id": "B",
+            "text": "Mover el bloque al `.claude/settings.json` del repositorio",
+            "why": "En settings de proyecto `.` se resuelve a la raíz del proyecto, así que el allow más estrecho reabre el proyecto."
+          },
+          {
+            "id": "C",
+            "text": "Quitar `\"~/\"` de `denyRead`",
+            "why": "Desbloquea todo el home y anula el objetivo."
+          },
+          {
+            "id": "D",
+            "text": "Poner `\"filesystem\": { \"disabled\": true }` en settings de usuario",
+            "why": "Con la capa de archivos apagada, `denyRead` no se aplica, así que el home queda expuesto."
+          }
+        ],
+        "explanation": "En rutas del sandbox, `./` o sin prefijo es relativo a la raíz del proyecto en settings de proyecto, pero a `~/.claude` en settings de usuario. En `~/.claude/settings.json`, `.` solo reabre `~/.claude` y el proyecto sigue bajo `denyRead`. Poner el mismo bloque en el `.claude/settings.json` del proyecto hace que `.` sea la raíz del proyecto, y el `allowRead` más estrecho gana sobre el `denyRead` más amplio. Reescribir `.` como `./` no cambia nada."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-config-keys--af6c30fb",
+      "conceptId": "sandbox-config-keys",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "`docker` commands fail under the sandbox. What single entry do you add to `sandbox.excludedCommands` so every `docker` command runs outside it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "docker *",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`excludedCommands` entries use the same syntax as the content of a `Bash(...)` permission rule, so `docker *` matches any command that starts with `docker`. The docs list `docker *` as the fix because `docker` is incompatible with the sandbox. Excluded commands still go through the regular permission flow.",
+      "keywordCues": [
+        "`sandbox.excludedCommands`",
+        "every `docker` command"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Los comandos `docker` fallan dentro del sandbox. ¿Qué entrada única agregas a `sandbox.excludedCommands` para que todo comando `docker` corra fuera de él?",
+        "options": [
+          {
+            "id": "A",
+            "text": "docker *",
+            "why": ""
+          }
+        ],
+        "explanation": "Las entradas de `excludedCommands` usan la misma sintaxis que el contenido de una regla `Bash(...)`, así que `docker *` cubre cualquier comando que empiece con `docker`. La documentación da `docker *` como solución porque `docker` es incompatible con el sandbox. Los comandos excluidos igual pasan por el flujo normal de permisos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-config-keys--c2a2b97e",
+      "conceptId": "sandbox-config-keys",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this `settings.json` so Claude can never retry a blocked command outside the sandbox, sandboxed commands can write to `/tmp/build`, and requests to the npm registry don't prompt.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "autoAllowBashIfSandboxed",
+          "correct": false,
+          "why": "Setting it to `false` only brings back prompts for sandboxed commands; retries outside the sandbox stay possible."
+        },
+        {
+          "id": "1b",
+          "text": "allowUnsandboxedCommands",
+          "correct": true,
+          "why": "`false` makes Claude Code ignore the `dangerouslyDisableSandbox` retry."
+        },
+        {
+          "id": "1c",
+          "text": "failIfUnavailable",
+          "correct": false,
+          "why": "It controls startup when the sandbox can't start, and `false` is already its default."
+        },
+        {
+          "id": "2a",
+          "text": "allowRead",
+          "correct": false,
+          "why": "It re-allows reads inside a `denyRead` region; it grants no write access."
+        },
+        {
+          "id": "2b",
+          "text": "denyWrite",
+          "correct": false,
+          "why": "It blocks writes to the path, the opposite of the goal."
+        },
+        {
+          "id": "2c",
+          "text": "allowWrite",
+          "correct": true,
+          "why": "It adds `/tmp/build`, an absolute path in sandbox syntax, to the writable paths."
+        },
+        {
+          "id": "3a",
+          "text": "allowedDomains",
+          "correct": true,
+          "why": "It pre-allows the host so sandboxed commands don't prompt for it."
+        },
+        {
+          "id": "3b",
+          "text": "deniedDomains",
+          "correct": false,
+          "why": "It blocks the host instead of pre-allowing it."
+        }
+      ],
+      "explanation": "`allowUnsandboxedCommands: false` disables the unsandboxed retry escape hatch. `filesystem.allowWrite` adds writable paths, and `/tmp/build` is absolute because sandbox paths use standard conventions. `network.allowedDomains` pre-allows hosts so the first request doesn't prompt, while `deniedDomains` would block them.",
+      "keywordCues": [
+        "never retry a blocked command outside the sandbox",
+        "write to `/tmp/build`",
+        "don't prompt"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandboxing.md",
+        "https://code.claude.com/docs/en/settings-reference.md"
+      ],
+      "es": {
+        "stem": "Completa este `settings.json` para que Claude nunca pueda reintentar un comando bloqueado fuera del sandbox, los comandos aislados puedan escribir en `/tmp/build` y las peticiones al registro de npm no pregunten.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "autoAllowBashIfSandboxed",
+            "why": "Ponerla en `false` solo trae de vuelta los prompts para comandos aislados; los reintentos fuera del sandbox siguen posibles."
+          },
+          {
+            "id": "1b",
+            "text": "allowUnsandboxedCommands",
+            "why": "`false` hace que Claude Code ignore el reintento con `dangerouslyDisableSandbox`."
+          },
+          {
+            "id": "1c",
+            "text": "failIfUnavailable",
+            "why": "Controla el inicio cuando el sandbox no puede arrancar, y `false` ya es su valor por defecto."
+          },
+          {
+            "id": "2a",
+            "text": "allowRead",
+            "why": "Vuelve a permitir lecturas dentro de una región `denyRead`; no concede escritura."
+          },
+          {
+            "id": "2b",
+            "text": "denyWrite",
+            "why": "Bloquea la escritura en la ruta, lo contrario del objetivo."
+          },
+          {
+            "id": "2c",
+            "text": "allowWrite",
+            "why": "Agrega `/tmp/build`, ruta absoluta en la sintaxis del sandbox, a las rutas escribibles."
+          },
+          {
+            "id": "3a",
+            "text": "allowedDomains",
+            "why": "Pre-permite el host para que los comandos aislados no pregunten por él."
+          },
+          {
+            "id": "3b",
+            "text": "deniedDomains",
+            "why": "Bloquea el host en vez de pre-permitirlo."
+          }
+        ],
+        "explanation": "`allowUnsandboxedCommands: false` desactiva el reintento fuera del sandbox. `filesystem.allowWrite` agrega rutas escribibles, y `/tmp/build` es absoluta porque las rutas del sandbox usan convenciones normales. `network.allowedDomains` pre-permite hosts para que la primera petición no pregunte, mientras que `deniedDomains` los bloquearía."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"sandbox\": {\n    \"enabled\": true,\n    \"{{1}}\": false,\n    \"filesystem\": {\n      \"{{2}}\": [\"/tmp/build\"]\n    },\n    \"network\": {\n      \"{{3}}\": [\"registry.npmjs.org\"]\n    }\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "sandbox-config-keys--r0",
+      "conceptId": "sandbox-config-keys",
+      "kind": "recall",
+      "prompt": "Name the sandbox keys that widen writes, pre-allow domains, exclude a command, forbid unsandboxed retries and fail when unavailable, and how sandbox paths resolve.",
+      "promptEs": "Nombra las claves del sandbox que amplían escritura, pre-permiten dominios, excluyen un comando, prohíben reintentos sin sandbox y fallan si no está disponible, y cómo se resuelven sus rutas.",
+      "idealAnswer": "`filesystem.allowWrite` adds writable paths, `network.allowedDomains` pre-allows hosts, and `excludedCommands` such as `docker *` runs commands outside the sandbox. `allowUnsandboxedCommands: false` ignores the `dangerouslyDisableSandbox` retry and `failIfUnavailable: true` exits at startup instead of running unsandboxed. In sandbox paths `/` is absolute, `~/` is home, and `./` is the project root in project settings or `~/.claude` in user settings.",
+      "rubric": [
+        "allowWrite and allowedDomains widen writes and network",
+        "excludedCommands runs a command outside the sandbox",
+        "allowUnsandboxedCommands false and failIfUnavailable true",
+        "/ is absolute; ./ depends on project vs user settings"
+      ]
+    },
+    {
+      "id": "sandbox-config-keys--r1",
+      "conceptId": "sandbox-config-keys",
+      "kind": "why-not",
+      "prompt": "Why doesn't `/tmp/build` mean the same thing in a sandbox `allowWrite` array as in an `Edit(...)` permission rule?",
+      "promptEs": "¿Por qué `/tmp/build` no funciona igual en un arreglo `allowWrite` del sandbox que en una regla de permisos `Edit(...)`?",
+      "idealAnswer": "In `Read(...)` and `Edit(...)` permission rules, `//path` is absolute and `/path` is relative to the settings source, so `/tmp/build` there is not the system `/tmp`. Sandbox filesystem arrays use standard conventions, so `/tmp/build` is already absolute and `./` means the project root or `~/.claude`. Copying a path between the two without converting it points at the wrong place.",
+      "rubric": [
+        "Permission rules: //path absolute, /path relative",
+        "Sandbox arrays: /path absolute, ./ project root or ~/.claude",
+        "Copying paths between them without converting breaks them"
+      ]
+    }
+  ]
+}

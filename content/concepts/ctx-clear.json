@@ -1,0 +1,503 @@
+{
+  "conceptId": "ctx-clear",
+  "card": {
+    "en": {
+      "tldr": "`/clear` starts a new conversation with empty context; the previous one is saved and can be resumed with `/resume`. Use it when switching to unrelated work or when the context is cluttered with failed attempts; unlike `/compact`, it costs nothing.",
+      "whenToUse": [
+        "Switching to a task unrelated to the current conversation",
+        "After correcting Claude more than twice on the same issue: clear, then re-prompt with what you learned",
+        "When you want nothing carried over, not even a summary"
+      ],
+      "keyFacts": [
+        "Aliases: `/reset` and `/new`",
+        "The previous conversation is saved; return to it with `/resume`",
+        "`/clear <name>` labels the conversation you are leaving in the `/resume` picker; the new one starts unnamed",
+        "Project memory (CLAUDE.md) still loads in the new conversation",
+        "`/btw` asks a side question whose answer never enters conversation history"
+      ],
+      "gotchas": [
+        "`/clear` does not delete the old conversation; it is still resumable",
+        "To free space while continuing the same task, use `/compact`, not `/clear`",
+        "`/rename` after `/clear` names the new conversation, not the one you left"
+      ],
+      "confusedWith": [
+        {
+          "concept": "ctx-compact",
+          "difference": "`/compact` carries a summary forward and is itself a large request; `/clear` carries nothing and costs nothing."
+        }
+      ],
+      "examCues": [
+        "switching to an unrelated task",
+        "start fresh",
+        "corrected Claude several times",
+        "nothing carried over",
+        "side question that shouldn't stay in context"
+      ]
+    },
+    "es": {
+      "tldr": "`/clear` empieza una conversación nueva con el contexto vacío; la anterior se guarda y puedes retomarla con `/resume`. Úsalo al cambiar a trabajo no relacionado o cuando el contexto está lleno de intentos fallidos; a diferencia de `/compact`, no cuesta nada.",
+      "whenToUse": [
+        "Al pasar a una tarea no relacionada con la conversación actual",
+        "Tras corregir a Claude más de dos veces en lo mismo: limpia y vuelve a pedir con lo aprendido",
+        "Cuando no quieres arrastrar nada, ni siquiera un resumen"
+      ],
+      "keyFacts": [
+        "Alias: `/reset` y `/new`",
+        "La conversación anterior se guarda; vuelves a ella con `/resume`",
+        "`/clear <name>` etiqueta en el selector de `/resume` la conversación que dejas; la nueva empieza sin nombre",
+        "La memoria del proyecto (CLAUDE.md) se sigue cargando en la conversación nueva",
+        "`/btw` hace una pregunta al margen cuya respuesta nunca entra al historial"
+      ],
+      "gotchas": [
+        "`/clear` no borra la conversación anterior; se puede retomar",
+        "Para liberar espacio sin dejar la tarea, usa `/compact`, no `/clear`",
+        "`/rename` después de `/clear` nombra la conversación nueva, no la que dejaste"
+      ],
+      "confusedWith": [
+        {
+          "concept": "ctx-compact",
+          "difference": "`/compact` arrastra un resumen y es en sí una petición grande; `/clear` no arrastra nada y no cuesta nada."
+        }
+      ],
+      "examCues": [
+        "switching to an unrelated task",
+        "start fresh",
+        "corrected Claude several times",
+        "nothing carried over",
+        "side question that shouldn't stay in context"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/commands.md",
+      "https://code.claude.com/docs/en/best-practices.md",
+      "https://code.claude.com/docs/en/sessions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "ctx-clear--9771fc73",
+      "conceptId": "ctx-clear",
+      "secondaryConcepts": [
+        "ctx-compact"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer just finished a long session refactoring the authentication module. Next, they need to build an unrelated CSV export feature. They want the new task to start with none of the auth discussion in context, without paying for a summarization request. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/compact focus on the CSV export`",
+          "correct": false,
+          "why": "Compacting reads the whole conversation, so it is a large request, and it still carries a summary of the auth work forward."
+        },
+        {
+          "id": "B",
+          "text": "Run `/btw` before each question about the CSV export",
+          "correct": false,
+          "why": "`/btw` keeps side answers out of history but leaves the existing auth conversation in context."
+        },
+        {
+          "id": "C",
+          "text": "Run `/clear`",
+          "correct": true,
+          "why": "It starts a new conversation with empty context and costs nothing; the auth session stays resumable."
+        },
+        {
+          "id": "D",
+          "text": "Run `/rewind` and choose Summarize up to here on the last message",
+          "correct": false,
+          "why": "Summarizing still keeps a condensed version of the auth work and requires a summarization request."
+        }
+      ],
+      "explanation": "The requirements are an unrelated task, nothing carried over, and no summarization cost. `/clear` starts a new conversation with empty context and costs nothing, while saving the old one for `/resume`. `/compact` is the tempting choice, but it reads the whole conversation (a large request) and keeps a summary. `/btw` and the rewind summarize options do not remove the auth context.",
+      "keywordCues": [
+        "unrelated CSV export feature",
+        "none of the auth discussion in context",
+        "without paying for a summarization request"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador terminó una sesión larga refactorizando el módulo de autenticación. Ahora debe construir una función de exportación CSV sin relación. Quiere que la nueva tarea empiece sin nada de la discusión de auth en el contexto y sin pagar una petición de resumen. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar `/compact focus on the CSV export`",
+            "why": "Compactar lee toda la conversación, así que es una petición grande, y además arrastra un resumen del trabajo de auth."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/btw` antes de cada pregunta sobre el CSV",
+            "why": "`/btw` mantiene fuera del historial las respuestas al margen, pero deja la conversación de auth en el contexto."
+          },
+          {
+            "id": "C",
+            "text": "Ejecutar `/clear`",
+            "why": "Empieza una conversación nueva con el contexto vacío y no cuesta nada; la sesión de auth queda para retomarla."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar `/rewind` y elegir Summarize up to here en el último mensaje",
+            "why": "Resumir igual conserva una versión condensada del trabajo de auth y requiere una petición de resumen."
+          }
+        ],
+        "explanation": "Los requisitos son: tarea no relacionada, nada arrastrado y sin costo de resumen. `/clear` empieza una conversación nueva con el contexto vacío, no cuesta nada y guarda la anterior para `/resume`. `/compact` tienta, pero lee toda la conversación (una petición grande) y conserva un resumen. `/btw` y las opciones de resumen del rewind no quitan el contexto de auth."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-clear--5bc57d0d",
+      "conceptId": "ctx-clear",
+      "secondaryConcepts": [
+        "ctx-compact"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer has corrected Claude three times on the same flaky test fix in one session, and each attempt builds on the previous wrong approach. They now understand the real cause: a shared fixture mutated between tests. What does the recommended practice say to do next?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/compact focus on the flaky test` and continue correcting",
+          "correct": false,
+          "why": "The summary still carries the failed approaches forward; the context stays cluttered."
+        },
+        {
+          "id": "B",
+          "text": "Run `/clear` and write a more specific prompt that names the shared fixture",
+          "correct": true,
+          "why": "A clean session with a better prompt that includes what you learned beats a long session of accumulated corrections."
+        },
+        {
+          "id": "C",
+          "text": "Keep correcting in the same session with more detail each time",
+          "correct": false,
+          "why": "The context remains full of failed attempts, which is exactly the problem."
+        },
+        {
+          "id": "D",
+          "text": "Run `/context` to see which attempts use the most tokens",
+          "correct": false,
+          "why": "`/context` only shows what fills the window; it removes nothing."
+        }
+      ],
+      "explanation": "After correcting Claude more than twice on the same issue, the context is cluttered with failed approaches. The documented fix is `/clear` and a fresh, more specific prompt that incorporates what you learned. `/compact` is tempting because it frees space, but its summary keeps the wrong approaches alive. `/context` diagnoses usage but changes nothing.",
+      "keywordCues": [
+        "corrected Claude three times on the same",
+        "builds on the previous wrong approach",
+        "now understand the real cause"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador corrigió a Claude tres veces sobre el mismo arreglo de un test inestable en una sesión, y cada intento se apoya en el enfoque equivocado anterior. Ya entiende la causa real: un fixture compartido que se modifica entre tests. ¿Qué recomiendan las buenas prácticas?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar `/compact focus on the flaky test` y seguir corrigiendo",
+            "why": "El resumen sigue arrastrando los enfoques fallidos; el contexto sigue contaminado."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/clear` y escribir un prompt más específico que mencione el fixture compartido",
+            "why": "Una sesión limpia con un mejor prompt que incluye lo aprendido supera a una sesión larga de correcciones acumuladas."
+          },
+          {
+            "id": "C",
+            "text": "Seguir corrigiendo en la misma sesión con más detalle cada vez",
+            "why": "El contexto sigue lleno de intentos fallidos, que es justo el problema."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar `/context` para ver qué intentos usan más tokens",
+            "why": "`/context` solo muestra qué llena la ventana; no quita nada."
+          }
+        ],
+        "explanation": "Tras corregir a Claude más de dos veces en lo mismo, el contexto está lleno de enfoques fallidos. La solución documentada es `/clear` y un prompt nuevo y más específico con lo aprendido. `/compact` tienta porque libera espacio, pero su resumen mantiene vivos los enfoques equivocados. `/context` diagnostica el uso pero no cambia nada."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-clear--873ac674",
+      "conceptId": "ctx-clear",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Midway through a database migration, a developer wants to quickly ask Claude what a config option in the current session means. The answer is only for them; it must not grow the conversation history or disturb the migration context. What should they use?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask it as a normal prompt, then run `/compact`",
+          "correct": false,
+          "why": "The question and answer enter history, and the summary may still carry them."
+        },
+        {
+          "id": "B",
+          "text": "Run `/clear`, then ask the question",
+          "correct": false,
+          "why": "That discards the migration context the developer still needs in this conversation."
+        },
+        {
+          "id": "C",
+          "text": "`/btw` with the question",
+          "correct": true,
+          "why": "A `/btw` side question about the current session never enters conversation history."
+        },
+        {
+          "id": "D",
+          "text": "Ask it as a normal prompt, then check `/context`",
+          "correct": false,
+          "why": "The exchange is already in history; `/context` only reports usage."
+        }
+      ],
+      "explanation": "The requirement is a side question that never enters conversation history while the current task continues. `/btw` asks about the current session without adding to the conversation. `/clear` removes the history but also the migration context that must stay. Asking normally always grows history, whatever you run afterwards.",
+      "keywordCues": [
+        "must not grow the conversation history",
+        "disturb the migration context",
+        "quickly ask"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "A mitad de una migración de base de datos, un desarrollador quiere preguntarle rápido a Claude qué significa una opción de configuración de la sesión actual. La respuesta es solo para él; no debe hacer crecer el historial ni alterar el contexto de la migración. ¿Qué debe usar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Preguntar como prompt normal y luego ejecutar `/compact`",
+            "why": "La pregunta y la respuesta entran al historial, y el resumen puede seguir llevándolas."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/clear` y luego preguntar",
+            "why": "Eso descarta el contexto de la migración que todavía necesita en esta conversación."
+          },
+          {
+            "id": "C",
+            "text": "`/btw` con la pregunta",
+            "why": "Una pregunta al margen con `/btw` sobre la sesión actual nunca entra al historial."
+          },
+          {
+            "id": "D",
+            "text": "Preguntar como prompt normal y luego revisar `/context`",
+            "why": "El intercambio ya está en el historial; `/context` solo informa el uso."
+          }
+        ],
+        "explanation": "El requisito es una pregunta al margen que nunca entre al historial mientras la tarea sigue. `/btw` pregunta sobre la sesión actual sin añadir nada a la conversación. `/clear` quita el historial pero también el contexto de la migración que debe quedarse. Preguntar normal siempre hace crecer el historial, hagas lo que hagas después."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-clear--7fcc75cc",
+      "conceptId": "ctx-clear",
+      "secondaryConcepts": [
+        "ctx-compact"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer must drop a half-finished payments bugfix to handle an unrelated urgent task. They want to start the new task with empty context and, next week, find the payments conversation easily by name and continue it. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/clear payments-bugfix`",
+          "correct": true,
+          "why": "Passing a name labels the conversation being left in the `/resume` picker and starts a new, empty one."
+        },
+        {
+          "id": "B",
+          "text": "Run `/compact payments-bugfix`",
+          "correct": false,
+          "why": "The argument to `/compact` is focus instructions for the summary, not a name, and context is not emptied."
+        },
+        {
+          "id": "C",
+          "text": "Export the transcript first, because `/clear` deletes the previous conversation",
+          "correct": false,
+          "why": "`/clear` saves the previous conversation; nothing needs exporting."
+        },
+        {
+          "id": "D",
+          "text": "Later, run `/resume` and pick the labeled conversation",
+          "correct": true,
+          "why": "`/resume` returns to a conversation saved by `/clear`."
+        },
+        {
+          "id": "E",
+          "text": "Run `/clear`, then `/rename payments-bugfix`",
+          "correct": false,
+          "why": "`/rename` after clearing names the new conversation, not the payments one you left."
+        }
+      ],
+      "explanation": "The requirements are empty context now and an easy, named return later. `/clear payments-bugfix` labels the conversation you are leaving and starts a fresh one, and `/resume` brings it back. `/clear` then `/rename` is the tempting trap: it names the new conversation instead. `/compact` treats its argument as summary instructions and keeps the old context.",
+      "keywordCues": [
+        "start the new task with empty context",
+        "find the payments conversation easily by name",
+        "continue it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador debe dejar a medias un arreglo de pagos para atender una tarea urgente no relacionada. Quiere empezar la nueva tarea con el contexto vacío y, la próxima semana, encontrar fácilmente por nombre la conversación de pagos y continuarla. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ejecutar `/clear payments-bugfix`",
+            "why": "Pasar un nombre etiqueta en el selector de `/resume` la conversación que dejas y empieza una nueva y vacía."
+          },
+          {
+            "id": "B",
+            "text": "Ejecutar `/compact payments-bugfix`",
+            "why": "El argumento de `/compact` son instrucciones de enfoque para el resumen, no un nombre, y el contexto no se vacía."
+          },
+          {
+            "id": "C",
+            "text": "Exportar la transcripción antes, porque `/clear` borra la conversación anterior",
+            "why": "`/clear` guarda la conversación anterior; no hace falta exportar nada."
+          },
+          {
+            "id": "D",
+            "text": "Más tarde, ejecutar `/resume` y elegir la conversación etiquetada",
+            "why": "`/resume` vuelve a una conversación guardada por `/clear`."
+          },
+          {
+            "id": "E",
+            "text": "Ejecutar `/clear` y luego `/rename payments-bugfix`",
+            "why": "`/rename` después de limpiar nombra la conversación nueva, no la de pagos que dejaste."
+          }
+        ],
+        "explanation": "Los requisitos son contexto vacío ahora y un regreso fácil y con nombre después. `/clear payments-bugfix` etiqueta la conversación que dejas y empieza una nueva, y `/resume` la recupera. `/clear` y luego `/rename` es la trampa: nombra la conversación nueva. `/compact` trata su argumento como instrucciones de resumen y mantiene el contexto viejo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-clear--f818f6f2",
+      "conceptId": "ctx-clear",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which command starts a new conversation with empty context, saving the current one so it can be resumed later?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/clear",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/reset",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "/new",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/clear` starts a new conversation with empty context, and the previous one stays resumable with `/resume`. `/reset` and `/new` are its aliases. Do not confuse it with `/compact`, which keeps a summary in the same conversation.",
+      "keywordCues": [
+        "new conversation with empty context",
+        "resumed later"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/commands.md",
+        "https://code.claude.com/docs/en/best-practices.md",
+        "https://code.claude.com/docs/en/sessions.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando empieza una conversación nueva con el contexto vacío y guarda la actual para retomarla después?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/clear",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/reset",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "/new",
+            "why": ""
+          }
+        ],
+        "explanation": "`/clear` empieza una conversación nueva con el contexto vacío, y la anterior se puede retomar con `/resume`. `/reset` y `/new` son sus alias. No lo confundas con `/compact`, que conserva un resumen en la misma conversación."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "ctx-clear--r0",
+      "conceptId": "ctx-clear",
+      "kind": "recall",
+      "prompt": "What does /clear do to the current conversation, and when is it the right choice?",
+      "promptEs": "¿Qué hace /clear con la conversación actual y cuándo es la opción correcta?",
+      "idealAnswer": "/clear starts a new conversation with empty context; the previous conversation is saved and can be resumed with /resume, and /clear <name> labels it. Use it when switching to unrelated work or after repeated corrections on the same issue, then re-prompt with what you learned; it costs nothing, unlike /compact.",
+      "rubric": [
+        "Starts a new conversation with empty context",
+        "Previous conversation is saved and resumable with /resume",
+        "Use for unrelated work or context cluttered by failed attempts",
+        "Costs nothing, unlike /compact"
+      ]
+    },
+    {
+      "id": "ctx-clear--r1",
+      "conceptId": "ctx-clear",
+      "kind": "why-not",
+      "prompt": "You are switching to an unrelated task. Why is /compact the wrong choice here?",
+      "promptEs": "Vas a pasar a una tarea no relacionada. ¿Por qué /compact no es la opción adecuada?",
+      "idealAnswer": "/compact keeps a summary of the old task in context, so irrelevant content still rides along and costs tokens on every message. It also reads the whole conversation, making it a large request, while /clear gives an empty context at no cost and keeps the old conversation resumable.",
+      "rubric": [
+        "/compact carries a summary of the old task forward",
+        "Stale context wastes tokens and can hurt performance",
+        "Compacting is itself a large request; /clear costs nothing"
+      ]
+    }
+  ]
+}

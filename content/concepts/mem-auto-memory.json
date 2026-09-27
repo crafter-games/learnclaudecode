@@ -1,0 +1,701 @@
+{
+  "conceptId": "mem-auto-memory",
+  "card": {
+    "en": {
+      "tldr": "Auto memory is notes Claude writes for itself from your corrections and preferences, stored per repository on your machine. Its MEMORY.md index loads every session and topic files are read on demand. Use it for what Claude should learn about you; use CLAUDE.md for what the team must know.",
+      "whenToUse": [
+        "You ask Claude to \"remember\" a preference or correction",
+        "You want to audit, edit or delete what Claude saved about a project",
+        "You need to turn auto memory off globally or for one project",
+        "You want the memory stored in a different directory"
+      ],
+      "keyFacts": [
+        "Location: `~/.claude/projects/<project>/memory/`, derived from the git repo; all worktrees and subdirectories share it. It is machine-local.",
+        "`MEMORY.md` is the index: its first 200 lines or 25KB, whichever comes first, load at the start of every session. Topic files are read on demand.",
+        "Note types, recorded in a `type` frontmatter field: `user`, `feedback`, `project`, `reference`.",
+        "On by default. Toggle in `/memory` (saves `autoMemoryEnabled` to user settings), set `\"autoMemoryEnabled\": false` in a project's settings, or set `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`.",
+        "`autoMemoryDirectory` relocates it; the value must be an absolute path or start with `~/`.",
+        "\"Remember X\" goes to auto memory; \"add this to CLAUDE.md\" goes to CLAUDE.md."
+      ],
+      "gotchas": [
+        "Auto memory is not shared across machines, cloud environments or teammates.",
+        "Memory files are excluded from the `cleanupPeriodDays` sweep; they stay until you or Claude edit or delete them.",
+        "The main conversation's auto memory isn't loaded into subagents, except a fork.",
+        "It is context, not enforcement: to block an action, use a PreToolUse hook."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md",
+          "difference": "You write it and share it through git; auto memory is written by Claude and stays on your machine."
+        },
+        {
+          "concept": "Subagent memory",
+          "difference": "A subagent with the `memory` field keeps its own separate directory, not your main auto memory."
+        }
+      ],
+      "examCues": [
+        "remember that",
+        "Claude should learn from my corrections",
+        "what did Claude save",
+        "turn off auto memory for this project",
+        "store memory in a different folder"
+      ]
+    },
+    "es": {
+      "tldr": "Auto memory son notas que Claude escribe para sí mismo a partir de tus correcciones y preferencias, guardadas por repositorio en tu máquina. Su índice MEMORY.md se carga en cada sesión y los archivos de tema se leen bajo demanda. Úsala para lo que Claude debe aprender de ti; usa CLAUDE.md para lo que el equipo debe saber.",
+      "whenToUse": [
+        "Le pides a Claude que \"recuerde\" una preferencia o corrección",
+        "Quieres revisar, editar o borrar lo que Claude guardó de un proyecto",
+        "Necesitas apagar auto memory en general o para un proyecto",
+        "Quieres guardar la memoria en otro directorio"
+      ],
+      "keyFacts": [
+        "Ubicación: `~/.claude/projects/<project>/memory/`, derivada del repo git; todos los worktrees y subdirectorios la comparten. Es local a la máquina.",
+        "`MEMORY.md` es el índice: sus primeras 200 líneas o 25KB, lo que llegue primero, se cargan al inicio de cada sesión. Los archivos de tema se leen bajo demanda.",
+        "Tipos de nota, registrados en el campo `type` del frontmatter: `user`, `feedback`, `project`, `reference`.",
+        "Activada por defecto. Se alterna en `/memory` (guarda `autoMemoryEnabled` en user settings), con `\"autoMemoryEnabled\": false` en los settings de un proyecto, o con `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`.",
+        "`autoMemoryDirectory` la reubica; el valor debe ser una ruta absoluta o empezar con `~/`.",
+        "\"Recuerda X\" va a auto memory; \"agrega esto a CLAUDE.md\" va a CLAUDE.md."
+      ],
+      "gotchas": [
+        "Auto memory no se comparte entre máquinas, entornos en la nube ni compañeros.",
+        "Los archivos de memoria quedan fuera de la limpieza de `cleanupPeriodDays`; siguen ahí hasta que tú o Claude los editen o borren.",
+        "La auto memory de la conversación principal no se carga en subagentes, salvo en un fork.",
+        "Es contexto, no una restricción: para bloquear una acción usa un hook PreToolUse."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md",
+          "difference": "Lo escribes tú y se comparte por git; auto memory la escribe Claude y queda en tu máquina."
+        },
+        {
+          "concept": "Memoria de subagentes",
+          "difference": "Un subagente con el campo `memory` tiene su propio directorio, separado de tu auto memory principal."
+        }
+      ],
+      "examCues": [
+        "remember that",
+        "Claude should learn from my corrections",
+        "what did Claude save",
+        "turn off auto memory for this project",
+        "store memory in a different folder"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/memory.md",
+      "https://code.claude.com/docs/en/claude-directory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mem-auto-memory--69f1d674",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You keep correcting Claude to use pnpm instead of npm in one repository. You want Claude to carry this preference into future sessions of this project only, without editing any file yourself and without adding anything inside the repository directory. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask Claude to add the preference to CLAUDE.md",
+          "correct": false,
+          "why": "CLAUDE.md lives inside the repository directory."
+        },
+        {
+          "id": "B",
+          "text": "Add the preference to `~/.claude/CLAUDE.md`",
+          "correct": false,
+          "why": "You would edit a file yourself, and it applies to all your projects."
+        },
+        {
+          "id": "C",
+          "text": "Tell Claude: \"remember to always use pnpm, not npm\"",
+          "correct": true,
+          "why": "Claude saves it to auto memory under `~/.claude/projects/<project>/memory/`, outside the repo and scoped to this project."
+        },
+        {
+          "id": "D",
+          "text": "Ask Claude to add the preference to CLAUDE.local.md",
+          "correct": false,
+          "why": "CLAUDE.local.md sits in the project directory."
+        }
+      ],
+      "explanation": "The deciding constraints are: this project only, no manual editing, and nothing inside the repository directory. Asking Claude to remember something saves it to auto memory, which lives in `~/.claude/projects/<project>/memory/` and is keyed to the repository. CLAUDE.md and CLAUDE.local.md both sit in the project directory, and `~/.claude/CLAUDE.md` needs a manual edit and applies to every project.",
+      "keywordCues": [
+        "this project only",
+        "without editing any file yourself",
+        "without adding anything inside the repository directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Corriges una y otra vez a Claude para que use pnpm en vez de npm en un repositorio. Quieres que Claude lleve esa preferencia a las próximas sesiones solo de este proyecto, sin editar ningún archivo tú mismo y sin agregar nada dentro del directorio del repositorio. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pedirle a Claude que agregue la preferencia a CLAUDE.md",
+            "why": "CLAUDE.md vive dentro del directorio del repositorio."
+          },
+          {
+            "id": "B",
+            "text": "Agregar la preferencia a `~/.claude/CLAUDE.md`",
+            "why": "Editarías un archivo tú mismo, y aplica a todos tus proyectos."
+          },
+          {
+            "id": "C",
+            "text": "Decirle a Claude: \"recuerda usar siempre pnpm, no npm\"",
+            "why": "Claude lo guarda en auto memory en `~/.claude/projects/<project>/memory/`, fuera del repo y limitado a este proyecto."
+          },
+          {
+            "id": "D",
+            "text": "Pedirle a Claude que agregue la preferencia a CLAUDE.local.md",
+            "why": "CLAUDE.local.md está en el directorio del proyecto."
+          }
+        ],
+        "explanation": "Las restricciones que deciden son: solo este proyecto, sin editar a mano y nada dentro del directorio del repositorio. Pedirle a Claude que recuerde algo lo guarda en auto memory, que vive en `~/.claude/projects/<project>/memory/` y se asocia al repositorio. CLAUDE.md y CLAUDE.local.md están en el directorio del proyecto, y `~/.claude/CLAUDE.md` requiere editarlo a mano y aplica a todos los proyectos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--9ed97960",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "On your laptop, Claude saved to auto memory that the API tests need a local Redis instance. Your teammates, and you on your desktop, keep hitting the same failure because Claude doesn't know it there. You want the fact available to everyone who clones the repo. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add it to the project CLAUDE.md and commit it",
+          "correct": true,
+          "why": "Project CLAUDE.md is shared with the team through source control and loads every session."
+        },
+        {
+          "id": "B",
+          "text": "Ask Claude to remember it on each machine",
+          "correct": false,
+          "why": "Auto memory is machine-local; anyone who hasn't done this still lacks the fact."
+        },
+        {
+          "id": "C",
+          "text": "Add a rule to `~/.claude/rules/`",
+          "correct": false,
+          "why": "User-level rules live in your home directory and apply only on your machine."
+        },
+        {
+          "id": "D",
+          "text": "Set `\"autoMemoryEnabled\": true` in `.claude/settings.json`",
+          "correct": false,
+          "why": "It only keeps auto memory on; the notes themselves still stay on each machine."
+        }
+      ],
+      "explanation": "Auto memory is machine-local: its files are not shared across machines, cloud environments or teammates. To reach everyone who clones the repo, the fact must live in a file committed to the repository, and project CLAUDE.md is the documented place for team-shared instructions. Enabling auto memory in project settings doesn't move notes between machines, and `~/.claude/rules/` is personal.",
+      "keywordCues": [
+        "everyone who clones the repo",
+        "on your desktop",
+        "Claude doesn't know it there"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "En tu laptop, Claude guardó en auto memory que los tests de la API necesitan un Redis local. Tus compañeros, y tú en tu computadora de escritorio, siguen chocando con la misma falla porque Claude no lo sabe allí. Quieres que el dato esté disponible para todos los que clonen el repo. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregarlo al CLAUDE.md del proyecto y hacer commit",
+            "why": "El CLAUDE.md del proyecto se comparte con el equipo por control de versiones y se carga en cada sesión."
+          },
+          {
+            "id": "B",
+            "text": "Pedirle a Claude que lo recuerde en cada máquina",
+            "why": "Auto memory es local a la máquina; quien no lo haya hecho sigue sin el dato."
+          },
+          {
+            "id": "C",
+            "text": "Agregar una regla en `~/.claude/rules/`",
+            "why": "Las reglas de usuario viven en tu home y solo aplican en tu máquina."
+          },
+          {
+            "id": "D",
+            "text": "Poner `\"autoMemoryEnabled\": true` en `.claude/settings.json`",
+            "why": "Solo mantiene auto memory activa; las notas siguen quedando en cada máquina."
+          }
+        ],
+        "explanation": "Auto memory es local a la máquina: sus archivos no se comparten entre máquinas, entornos en la nube ni compañeros. Para llegar a todos los que clonen el repo, el dato tiene que estar en un archivo versionado, y el CLAUDE.md del proyecto es el lugar documentado para instrucciones del equipo. Activar auto memory en los settings del proyecto no mueve notas entre máquinas, y `~/.claude/rules/` es personal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--3f0269a3",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your company requires that Claude keep no auto memory notes for a client repository, but auto memory should keep working in your other projects. The setting should travel with the repository so every teammate who clones it gets the same behavior. What should you do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Turn off the auto memory toggle in `/memory`",
+          "correct": false,
+          "why": "The toggle saves `autoMemoryEnabled` to user settings, so it turns memory off in all your projects and only for you."
+        },
+        {
+          "id": "B",
+          "text": "Commit `\"autoMemoryEnabled\": false` in the repo's `.claude/settings.json`",
+          "correct": true,
+          "why": "Project settings scope it to this repository and are shared through git."
+        },
+        {
+          "id": "C",
+          "text": "Export `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` in your shell profile",
+          "correct": false,
+          "why": "It disables auto memory in every session you start, and teammates don't get it."
+        },
+        {
+          "id": "D",
+          "text": "Delete `~/.claude/projects/<project>/memory/`",
+          "correct": false,
+          "why": "It removes today's notes, but auto memory stays on and Claude keeps saving new ones."
+        }
+      ],
+      "explanation": "Two requirements decide: only this repository, and shared with everyone who clones it. Setting `autoMemoryEnabled` to false in the project's committed `.claude/settings.json` meets both. The `/memory` toggle writes to your user settings, the environment variable in your shell profile affects all your sessions, and deleting the folder doesn't stop Claude from writing again.",
+      "keywordCues": [
+        "keep working in your other projects",
+        "travel with the repository",
+        "every teammate who clones it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Tu empresa exige que Claude no guarde notas de auto memory en el repositorio de un cliente, pero auto memory debe seguir funcionando en tus otros proyectos. El ajuste debe viajar con el repositorio para que cada compañero que lo clone tenga el mismo comportamiento. ¿Qué haces?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Apagar el toggle de auto memory en `/memory`",
+            "why": "El toggle guarda `autoMemoryEnabled` en user settings: apaga la memoria en todos tus proyectos y solo para ti."
+          },
+          {
+            "id": "B",
+            "text": "Hacer commit de `\"autoMemoryEnabled\": false` en `.claude/settings.json` del repo",
+            "why": "Los settings del proyecto lo limitan a este repositorio y se comparten por git."
+          },
+          {
+            "id": "C",
+            "text": "Exportar `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` en tu perfil de shell",
+            "why": "Apaga auto memory en todas las sesiones que inicies, y tus compañeros no lo reciben."
+          },
+          {
+            "id": "D",
+            "text": "Borrar `~/.claude/projects/<project>/memory/`",
+            "why": "Elimina las notas actuales, pero auto memory sigue activa y Claude guarda notas nuevas."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: solo este repositorio y compartido con todos los que lo clonen. Poner `autoMemoryEnabled` en false en el `.claude/settings.json` versionado del proyecto cumple ambos. El toggle de `/memory` escribe en tus user settings, la variable de entorno en tu perfil de shell afecta todas tus sesiones, y borrar la carpeta no impide que Claude vuelva a escribir."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--e565bb6e",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Claude keeps acting on an outdated note about your staging URL that it saved to auto memory weeks ago. You want to find the note and correct or remove it. Which two actions work? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Wait for the `cleanupPeriodDays` sweep to delete it",
+          "correct": false,
+          "why": "Memory files are excluded from that retention sweep; they stay until edited or deleted."
+        },
+        {
+          "id": "B",
+          "text": "Run `/memory` and open the auto memory folder",
+          "correct": true,
+          "why": "`/memory` provides an option to open the auto memory folder and browse what Claude saved."
+        },
+        {
+          "id": "C",
+          "text": "Run `/compact` to drop the note",
+          "correct": false,
+          "why": "Compaction doesn't change memory files; `MEMORY.md` loads again at the next session."
+        },
+        {
+          "id": "D",
+          "text": "Add the note's path to `claudeMdExcludes`",
+          "correct": false,
+          "why": "`claudeMdExcludes` skips CLAUDE.md and rules files, not auto memory."
+        },
+        {
+          "id": "E",
+          "text": "Edit or delete the file in `~/.claude/projects/<project>/memory/`",
+          "correct": true,
+          "why": "Auto memory files are plain markdown you can edit or delete at any time."
+        }
+      ],
+      "explanation": "Auto memory is plain markdown in `~/.claude/projects/<project>/memory/`, so you can browse it through `/memory` or edit the files directly. It is deliberately excluded from the `cleanupPeriodDays` sweep, so waiting won't remove the stale note. `/compact` only affects the conversation, and `claudeMdExcludes` targets CLAUDE.md and rules files.",
+      "keywordCues": [
+        "outdated note",
+        "saved to auto memory",
+        "find the note and correct or remove it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "Claude sigue actuando según una nota vieja sobre tu URL de staging que guardó en auto memory hace semanas. Quieres encontrar la nota y corregirla o borrarla. ¿Qué dos acciones funcionan? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Esperar a que la limpieza de `cleanupPeriodDays` la borre",
+            "why": "Los archivos de memoria quedan fuera de esa limpieza; siguen hasta que se editen o borren."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/memory` y abrir la carpeta de auto memory",
+            "why": "`/memory` ofrece abrir la carpeta de auto memory para revisar lo que Claude guardó."
+          },
+          {
+            "id": "C",
+            "text": "Correr `/compact` para descartar la nota",
+            "why": "Compactar no cambia los archivos de memoria; `MEMORY.md` se vuelve a cargar en la siguiente sesión."
+          },
+          {
+            "id": "D",
+            "text": "Agregar la ruta de la nota a `claudeMdExcludes`",
+            "why": "`claudeMdExcludes` omite archivos CLAUDE.md y de reglas, no auto memory."
+          },
+          {
+            "id": "E",
+            "text": "Editar o borrar el archivo en `~/.claude/projects/<project>/memory/`",
+            "why": "Los archivos de auto memory son markdown plano que puedes editar o borrar cuando quieras."
+          }
+        ],
+        "explanation": "Auto memory es markdown plano en `~/.claude/projects/<project>/memory/`, así que puedes revisarla desde `/memory` o editar los archivos directamente. Está excluida a propósito de la limpieza de `cleanupPeriodDays`, así que esperar no borra la nota vieja. `/compact` solo afecta la conversación, y `claudeMdExcludes` apunta a archivos CLAUDE.md y de reglas."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--324e2e8e",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which settings key stores auto memory somewhere other than `~/.claude/projects/<project>/memory/`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "autoMemoryDirectory",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`autoMemoryDirectory` sets a different location for auto memory. It is read from any settings scope, and its value must be an absolute path or start with `~/`.",
+      "keywordCues": [
+        "settings key",
+        "stores auto memory somewhere other than"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de settings guarda auto memory en un lugar distinto de `~/.claude/projects/<project>/memory/`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "autoMemoryDirectory",
+            "why": ""
+          }
+        ],
+        "explanation": "`autoMemoryDirectory` define otra ubicación para auto memory. Se lee desde cualquier scope de settings, y su valor debe ser una ruta absoluta o empezar con `~/`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--c855095b",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a CI job you want auto memory disabled through an environment variable set to 1. Which variable?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CODE_DISABLE_AUTO_MEMORY=1",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Setting `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` disables auto memory. It is the environment-variable alternative to setting `autoMemoryEnabled` to false in settings.",
+      "keywordCues": [
+        "environment variable",
+        "auto memory disabled"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "En un job de CI quieres apagar auto memory con una variable de entorno puesta en 1. ¿Qué variable?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "CLAUDE_CODE_DISABLE_AUTO_MEMORY=1",
+            "why": ""
+          }
+        ],
+        "explanation": "Poner `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` apaga auto memory. Es la alternativa por variable de entorno a poner `autoMemoryEnabled` en false en los settings."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-auto-memory--65bcb240",
+      "conceptId": "mem-auto-memory",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In `~/.claude/settings.json`, keep auto memory on and store it in a `claude-notes` folder in your home directory.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "false",
+          "correct": false,
+          "why": "It would turn auto memory off."
+        },
+        {
+          "id": "1b",
+          "text": "true",
+          "correct": true,
+          "why": "Keeps auto memory on."
+        },
+        {
+          "id": "1c",
+          "text": "\"on\"",
+          "correct": false,
+          "why": "The setting is typed Boolean in the settings reference, so the string \"on\" is not a valid value."
+        },
+        {
+          "id": "2a",
+          "text": "memoryDirectory",
+          "correct": false,
+          "why": "Not a documented setting."
+        },
+        {
+          "id": "2b",
+          "text": "autoMemoryPath",
+          "correct": false,
+          "why": "Not a documented setting."
+        },
+        {
+          "id": "2c",
+          "text": "autoMemoryDirectory",
+          "correct": true,
+          "why": "The documented key for relocating auto memory."
+        },
+        {
+          "id": "3a",
+          "text": "~/claude-notes",
+          "correct": true,
+          "why": "Starts with `~/`, which the setting accepts."
+        },
+        {
+          "id": "3b",
+          "text": "claude-notes",
+          "correct": false,
+          "why": "The value must be an absolute path or start with `~/`."
+        },
+        {
+          "id": "3c",
+          "text": "./claude-notes",
+          "correct": false,
+          "why": "Relative paths are not accepted."
+        }
+      ],
+      "explanation": "`autoMemoryEnabled` is a boolean, so `true` keeps auto memory on. `autoMemoryDirectory` relocates it, and its value must be an absolute path or start with `~/`, so `~/claude-notes` is the only valid way to point at a folder in your home directory. Relative values such as `claude-notes` or `./claude-notes` don't meet that rule.",
+      "keywordCues": [
+        "keep auto memory on",
+        "in your home directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md",
+        "https://code.claude.com/docs/en/claude-directory.md"
+      ],
+      "es": {
+        "stem": "En `~/.claude/settings.json`, mantén auto memory activa y guárdala en una carpeta `claude-notes` dentro de tu home.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "false",
+            "why": "Apagaría auto memory."
+          },
+          {
+            "id": "1b",
+            "text": "true",
+            "why": "Mantiene auto memory activa."
+          },
+          {
+            "id": "1c",
+            "text": "\"on\"",
+            "why": "La referencia de settings define el ajuste como booleano, así que el string \"on\" no es un valor válido."
+          },
+          {
+            "id": "2a",
+            "text": "memoryDirectory",
+            "why": "No es un ajuste documentado."
+          },
+          {
+            "id": "2b",
+            "text": "autoMemoryPath",
+            "why": "No es un ajuste documentado."
+          },
+          {
+            "id": "2c",
+            "text": "autoMemoryDirectory",
+            "why": "Es la clave documentada para reubicar auto memory."
+          },
+          {
+            "id": "3a",
+            "text": "~/claude-notes",
+            "why": "Empieza con `~/`, que el ajuste acepta."
+          },
+          {
+            "id": "3b",
+            "text": "claude-notes",
+            "why": "El valor debe ser una ruta absoluta o empezar con `~/`."
+          },
+          {
+            "id": "3c",
+            "text": "./claude-notes",
+            "why": "No se aceptan rutas relativas."
+          }
+        ],
+        "explanation": "`autoMemoryEnabled` es booleano, así que `true` mantiene auto memory activa. `autoMemoryDirectory` la reubica, y su valor debe ser una ruta absoluta o empezar con `~/`, así que `~/claude-notes` es la única forma válida de apuntar a una carpeta en tu home. Valores relativos como `claude-notes` o `./claude-notes` no cumplen esa regla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"autoMemoryEnabled\": {{1}},\n  \"{{2}}\": \"{{3}}\"\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mem-auto-memory--r0",
+      "conceptId": "mem-auto-memory",
+      "kind": "recall",
+      "prompt": "Describe where auto memory is stored, what part of it loads at the start of a session, and how to turn it off for one project.",
+      "promptEs": "Describe dónde se guarda auto memory, qué parte se carga al inicio de una sesión y cómo apagarla para un proyecto.",
+      "idealAnswer": "Auto memory lives on your machine in ~/.claude/projects/<project>/memory/, one directory per git repository shared by its worktrees. Only the MEMORY.md index loads at session start, up to its first 200 lines or 25KB; topic files are read on demand. To turn it off for one project, set autoMemoryEnabled to false in that project's settings.",
+      "rubric": [
+        "Stored in ~/.claude/projects/<project>/memory/, machine-local, per repository",
+        "MEMORY.md index loads each session (first 200 lines or 25KB)",
+        "Topic files are read on demand",
+        "autoMemoryEnabled: false in project settings for one project"
+      ]
+    },
+    {
+      "id": "mem-auto-memory--r1",
+      "conceptId": "mem-auto-memory",
+      "kind": "why-not",
+      "prompt": "A developer asks Claude to \"remember\" the team's build command so every teammate's Claude knows it. Why doesn't this achieve that goal?",
+      "promptEs": "Un desarrollador le pide a Claude que \"recuerde\" el comando de build del equipo para que el Claude de cada compañero lo sepa. ¿Por qué no logra ese objetivo?",
+      "idealAnswer": "Asking Claude to remember saves the note to auto memory, which is machine-local in ~/.claude/projects/<project>/memory/ and not shared with teammates or other machines. A build command every teammate needs belongs in the project CLAUDE.md, which is committed and shared through source control.",
+      "rubric": [
+        "\"Remember\" writes to auto memory",
+        "Auto memory is machine-local, not shared with teammates",
+        "Use the project CLAUDE.md committed to the repo"
+      ]
+    }
+  ]
+}

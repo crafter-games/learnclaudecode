@@ -1,0 +1,485 @@
+{
+  "conceptId": "cache-invalidators",
+  "card": {
+    "en": {
+      "tldr": "Some actions change the start of the request, so the next turn reads the whole history uncached: one slower, more expensive turn, after which the new prefix is cached. Others only append to the end or don't touch the request, and keep the cache. Pick model and effort at session start and save /compact for natural breaks.",
+      "whenToUse": [
+        "Deciding whether to switch model or effort mid-task",
+        "Choosing between /compact, /rewind and /recap",
+        "Diagnosing a slow turn that came right after a change",
+        "Adding MCP servers or deny rules during a session"
+      ],
+      "keyFacts": [
+        "Invalidate: switching models, changing effort on most models, turning on fast mode, compaction, dropping a batch of old images, and upgrading Claude Code.",
+        "Connecting or removing an MCP server, or adding a bare-tool deny rule like `Bash`, invalidates only when tools load into the prefix (tool search unavailable or disabled).",
+        "Keep: editing repo files, editing CLAUDE.md, changing permission mode or output style, invoking skills and commands, `/recap`, `/rewind`, spawning a subagent.",
+        "With `opusplan`, each plan-mode toggle is a model switch; a skill whose frontmatter sets `model` is a model switch for that turn.",
+        "Editing CLAUDE.md mid-session keeps the cache but doesn't apply until `/clear`, `/compact` or a restart.",
+        "`/usage` shows a `Prompt cache (main)` line with the hit ratio, misses and whether the cache is warm."
+      ],
+      "gotchas": [
+        "Scoped deny rules like `Bash(rm *)`, and all allow and ask rules, don't change which tools Claude sees, so they keep the cache.",
+        "Fast mode costs one miss per conversation; turning it off and back on later keeps the cache.",
+        "A plugin's skills, commands, agents, hooks, monitors and themes are appended and keep the cache; a plugin's MCP servers follow the same rules as connecting or removing an MCP server.",
+        "Editing your MCP config alone changes nothing until a restart."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Cache expiry (TTL)",
+          "difference": "Expiry means nothing changed but you were idle longer than the TTL."
+        },
+        {
+          "concept": "/rewind vs /compact",
+          "difference": "/rewind returns to an already-cached prefix; /compact builds a new one."
+        }
+      ],
+      "examCues": [
+        "switch to a different model mid-task",
+        "right after running /compact",
+        "abandon this approach entirely",
+        "edited CLAUDE.md but Claude still follows the old version",
+        "without invalidating the cache"
+      ]
+    },
+    "es": {
+      "tldr": "Algunas acciones cambian el inicio de la solicitud, así que el siguiente turno lee todo el historial sin caché: un turno más lento y caro, y luego el nuevo prefijo queda en caché. Otras solo agregan al final o no tocan la solicitud, y conservan el caché. Elige modelo y esfuerzo al iniciar la sesión y guarda /compact para pausas naturales.",
+      "whenToUse": [
+        "Decidir si cambiar de modelo o de esfuerzo a mitad de tarea",
+        "Elegir entre /compact, /rewind y /recap",
+        "Diagnosticar un turno lento que llegó justo después de un cambio",
+        "Agregar servidores MCP o reglas deny durante una sesión"
+      ],
+      "keyFacts": [
+        "Invalidan: cambiar de modelo, cambiar el esfuerzo en la mayoría de modelos, activar fast mode, compactar, descartar un lote de imágenes antiguas y actualizar Claude Code.",
+        "Conectar o quitar un servidor MCP, o agregar una regla deny con una herramienta completa como `Bash`, invalida solo cuando las herramientas se cargan en el prefijo (tool search no disponible o desactivado).",
+        "Conservan: editar archivos del repo, editar CLAUDE.md, cambiar el modo de permisos o el output style, invocar skills y comandos, `/recap`, `/rewind`, lanzar un subagente.",
+        "Con `opusplan`, cada entrada o salida de plan mode es un cambio de modelo; un skill cuyo frontmatter define `model` cambia de modelo en ese turno.",
+        "Editar CLAUDE.md a mitad de sesión conserva el caché, pero no aplica hasta `/clear`, `/compact` o reiniciar.",
+        "`/usage` muestra una línea `Prompt cache (main)` con la tasa de aciertos, los fallos y si el caché está caliente."
+      ],
+      "gotchas": [
+        "Las reglas deny con alcance como `Bash(rm *)`, y todas las reglas allow y ask, no cambian qué herramientas ve Claude, así que conservan el caché.",
+        "Fast mode cuesta un fallo por conversación; apagarlo y volver a encenderlo después conserva el caché.",
+        "Los skills, comandos, agentes, hooks, monitores y temas de un plugin se agregan al final y conservan el caché; sus servidores MCP siguen las mismas reglas que conectar o quitar un servidor MCP.",
+        "Editar tu config de MCP por sí solo no cambia nada hasta reiniciar."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Expiración del caché (TTL)",
+          "difference": "Expirar significa que no cambiaste nada pero estuviste inactivo más que el TTL."
+        },
+        {
+          "concept": "/rewind vs /compact",
+          "difference": "/rewind vuelve a un prefijo ya cacheado; /compact construye uno nuevo."
+        }
+      ],
+      "examCues": [
+        "switch to a different model mid-task",
+        "right after running /compact",
+        "abandon this approach entirely",
+        "edited CLAUDE.md but Claude still follows the old version",
+        "without invalidating the cache"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/prompt-caching.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cache-invalidators--07ac345f",
+      "conceptId": "cache-invalidators",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "Deep into a long debugging session on Sonnet, a developer wants Opus to review one tricky function and then keep working on Sonnet. They plan to do this through a skill whose frontmatter names the Opus model. The main conversation must not reread its history uncached. How should the skill be set up?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Give the skill `context: fork` so its `model` applies to the forked subagent",
+          "correct": true,
+          "why": "A `context: fork` skill sets the forked subagent's model; the subagent's call and result just append to the parent conversation."
+        },
+        {
+          "id": "B",
+          "text": "Keep the skill inline; the session model resumes on the next prompt",
+          "correct": false,
+          "why": "An inline skill that names another model is a model switch for that turn, so that request reads the whole history uncached."
+        },
+        {
+          "id": "C",
+          "text": "Drop the skill and run /model to Opus, then /model back to Sonnet",
+          "correct": false,
+          "why": "Switching to Opus with /model is a model switch, so the next request reads the entire history with no cache hits."
+        },
+        {
+          "id": "D",
+          "text": "Set the session model to `opusplan` and ask for the review in plan mode",
+          "correct": false,
+          "why": "With `opusplan`, each plan-mode toggle is a model switch and starts a fresh cache."
+        }
+      ],
+      "explanation": "The requirement is to use a different model without a model switch in the main conversation. A skill with `context: fork` runs in a subagent, and its frontmatter `model` sets that subagent's model; from the parent's side the call and result only append, so the parent's cache is untouched. An inline skill naming another model looks equivalent, but it switches the model for that turn and forces a full uncached reread. `/model` and `opusplan` are model switches too.",
+      "keywordCues": [
+        "must not reread its history uncached",
+        "skill whose frontmatter names the Opus model"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "Bien avanzado en una sesión larga de debugging con Sonnet, un desarrollador quiere que Opus revise una función complicada y luego seguir trabajando con Sonnet. Planea hacerlo con un skill cuyo frontmatter nombra el modelo Opus. La conversación principal no debe releer su historial sin caché. ¿Cómo debe configurar el skill?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Darle al skill `context: fork` para que su `model` aplique al subagente bifurcado",
+            "why": "Un skill con `context: fork` define el modelo del subagente bifurcado; la llamada y el resultado del subagente solo se agregan a la conversación padre."
+          },
+          {
+            "id": "B",
+            "text": "Dejar el skill en línea; el modelo de la sesión vuelve en el siguiente prompt",
+            "why": "Un skill en línea que nombra otro modelo es un cambio de modelo en ese turno, así que esa solicitud lee todo el historial sin caché."
+          },
+          {
+            "id": "C",
+            "text": "Olvidar el skill y correr /model a Opus y luego /model de vuelta a Sonnet",
+            "why": "Cambiar a Opus con /model es un cambio de modelo, así que la siguiente solicitud lee todo el historial sin aciertos de caché."
+          },
+          {
+            "id": "D",
+            "text": "Poner `opusplan` como modelo de la sesión y pedir la revisión en plan mode",
+            "why": "Con `opusplan`, cada entrada o salida de plan mode es un cambio de modelo y empieza un caché nuevo."
+          }
+        ],
+        "explanation": "El requisito es usar otro modelo sin cambiar de modelo en la conversación principal. Un skill con `context: fork` corre en un subagente, y el `model` de su frontmatter define el modelo de ese subagente; del lado del padre, la llamada y el resultado solo se agregan, así que su caché queda intacto. Un skill en línea que nombra otro modelo parece equivalente, pero cambia el modelo en ese turno y fuerza una relectura completa sin caché. `/model` y `opusplan` también son cambios de modelo."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-invalidators--ef9ba146",
+      "conceptId": "cache-invalidators",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Over the last several turns, Claude pursued an implementation approach the developer now wants to abandon entirely. They want to drop those turns and continue from the point before them, while paying the least cache rebuild cost on the next request. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /compact to summarize the failed attempt",
+          "correct": false,
+          "why": "Compaction replaces the history with a summary, building a new prefix instead of reusing a cached one."
+        },
+        {
+          "id": "B",
+          "text": "Run /recap and then continue",
+          "correct": false,
+          "why": "/recap only appends a summary for display; the abandoned turns stay in the conversation."
+        },
+        {
+          "id": "C",
+          "text": "Run /rewind to the turn before the attempt",
+          "correct": true,
+          "why": "Rewinding truncates back to a prefix that is already cached, so the next request hits the earlier cache entry."
+        },
+        {
+          "id": "D",
+          "text": "Run /clear and re-explain the task",
+          "correct": false,
+          "why": "It throws away all the earlier useful context instead of continuing from the turn before the attempt, so the task has to be re-explained."
+        }
+      ],
+      "explanation": "The requirements are to remove the abandoned turns and to keep the rebuild cost minimal. /rewind truncates the conversation to an earlier turn whose prefix is already cached, and every turn since has kept that entry warm. /compact is the tempting choice, but it builds a new, different prefix. /recap keeps the dead-end turns, and /clear throws away the useful earlier context.",
+      "keywordCues": [
+        "abandon entirely",
+        "least cache rebuild cost"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "En los últimos turnos, Claude siguió un enfoque de implementación que el desarrollador ahora quiere abandonar por completo. Quiere descartar esos turnos y seguir desde el punto anterior a ellos, pagando el menor costo de reconstrucción del caché en la siguiente solicitud. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr /compact para resumir el intento fallido",
+            "why": "Compactar reemplaza el historial con un resumen y construye un prefijo nuevo en vez de reutilizar uno cacheado."
+          },
+          {
+            "id": "B",
+            "text": "Correr /recap y seguir",
+            "why": "/recap solo agrega un resumen para mostrar; los turnos abandonados siguen en la conversación."
+          },
+          {
+            "id": "C",
+            "text": "Correr /rewind al turno anterior al intento",
+            "why": "Rebobinar trunca a un prefijo que ya está en caché, así que la siguiente solicitud usa esa entrada anterior."
+          },
+          {
+            "id": "D",
+            "text": "Correr /clear y volver a explicar la tarea",
+            "why": "Descarta todo el contexto útil anterior en vez de seguir desde el turno previo al intento, así que hay que volver a explicar la tarea."
+          }
+        ],
+        "explanation": "Los requisitos son quitar los turnos abandonados y minimizar el costo de reconstrucción. /rewind trunca la conversación a un turno anterior cuyo prefijo ya está en caché, y cada turno posterior mantuvo esa entrada caliente. /compact tienta, pero construye un prefijo nuevo y distinto. /recap conserva los turnos sin salida y /clear descarta el contexto útil anterior."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-invalidators--61171791",
+      "conceptId": "cache-invalidators",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Mid-task with a warm cache, a developer is on a model where each effort level has its own cache, and tool search is active. They plan five changes and want to know which will make the next request reread the whole conversation uncached. Which two will? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Changing the effort level",
+          "correct": true,
+          "why": "On models where each effort level has its own cache, changing effort mid-session means no cache hits on the next request."
+        },
+        {
+          "id": "B",
+          "text": "Adding a bare `WebFetch` deny rule through /permissions",
+          "correct": false,
+          "why": "With tool search active, the request's tool definitions don't change, so the cached prefix survives."
+        },
+        {
+          "id": "C",
+          "text": "Turning on fast mode for the first time in this conversation",
+          "correct": true,
+          "why": "Fast mode adds a request header that is part of the cache key, so its first request reads the history uncached."
+        },
+        {
+          "id": "D",
+          "text": "Switching the permission mode from Manual to accept edits",
+          "correct": false,
+          "why": "Permission mode changes don't touch the system prompt or tool definitions."
+        },
+        {
+          "id": "E",
+          "text": "Editing the project CLAUDE.md",
+          "correct": false,
+          "why": "CLAUDE.md is held in memory from session start, so the edit neither applies nor invalidates the cache."
+        }
+      ],
+      "explanation": "The deciding question is whether the change alters what the cache is keyed on or the start of the prefix. Changing effort on such a model and the first fast mode request both change the cache key, so the whole history is reread. A bare deny rule would invalidate only when tools load into the prefix, which tool search prevents. Permission mode and CLAUDE.md edits leave the request untouched.",
+      "keywordCues": [
+        "each effort level has its own cache",
+        "tool search is active",
+        "reread the whole conversation uncached"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "A mitad de una tarea con el caché caliente, un desarrollador usa un modelo donde cada nivel de esfuerzo tiene su propio caché, y tool search está activo. Planea cinco cambios y quiere saber cuáles harán que la siguiente solicitud relea toda la conversación sin caché. ¿Cuáles dos lo harán? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cambiar el nivel de esfuerzo",
+            "why": "En modelos donde cada nivel de esfuerzo tiene su propio caché, cambiar el esfuerzo a mitad de sesión deja la siguiente solicitud sin aciertos."
+          },
+          {
+            "id": "B",
+            "text": "Agregar una regla deny con solo `WebFetch` desde /permissions",
+            "why": "Con tool search activo, las definiciones de herramientas de la solicitud no cambian, así que el prefijo cacheado se mantiene."
+          },
+          {
+            "id": "C",
+            "text": "Activar fast mode por primera vez en esta conversación",
+            "why": "Fast mode agrega un header que forma parte de la clave del caché, así que su primera solicitud lee el historial sin caché."
+          },
+          {
+            "id": "D",
+            "text": "Cambiar el modo de permisos de Manual a accept edits",
+            "why": "Cambiar el modo de permisos no toca el system prompt ni las definiciones de herramientas."
+          },
+          {
+            "id": "E",
+            "text": "Editar el CLAUDE.md del proyecto",
+            "why": "CLAUDE.md queda en memoria desde el inicio de la sesión, así que la edición ni aplica ni invalida el caché."
+          }
+        ],
+        "explanation": "La pregunta que decide es si el cambio altera la clave del caché o el inicio del prefijo. Cambiar el esfuerzo en ese modelo y la primera solicitud con fast mode cambian la clave, así que se relee todo el historial. Una regla deny con la herramienta completa solo invalidaría si las herramientas se cargaran en el prefijo, lo que tool search evita. El modo de permisos y las ediciones de CLAUDE.md no tocan la solicitud."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-invalidators--fd13cf06",
+      "conceptId": "cache-invalidators",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A team's setup has tool search disabled, so tool definitions load into the prompt prefix. Mid-session, a developer wants to stop Claude from running `rm` commands while still letting it run other shell commands, without invalidating the cache. Which deny rule should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Bash`",
+          "correct": false,
+          "why": "A bare tool name removes the Bash definition from the next request, which invalidates the cache, and it also blocks every shell command."
+        },
+        {
+          "id": "B",
+          "text": "`Bash(*)`",
+          "correct": false,
+          "why": "This is equivalent to the bare tool name, so it removes the tool definition and invalidates the cache."
+        },
+        {
+          "id": "C",
+          "text": "`Bash(rm *)`",
+          "correct": true,
+          "why": "Scoped deny rules don't change which tools Claude sees; they are checked when Claude attempts a call, leaving the prefix intact."
+        },
+        {
+          "id": "D",
+          "text": "`mcp__*`",
+          "correct": false,
+          "why": "It blocks only MCP tools, so it doesn't stop `rm`, and it removes those definitions from the prefix."
+        }
+      ],
+      "explanation": "Two requirements decide it: block only `rm`, and keep the cache while tools load into the prefix. Only deny rules that match in the tool-name position remove a tool definition; a scoped rule like `Bash(rm *)` is checked at call time and leaves the request unchanged. `Bash` and `Bash(*)` are tempting because they block `rm`, but they remove the whole tool, invalidating the cache and blocking every other command.",
+      "keywordCues": [
+        "tool search disabled",
+        "still letting it run other shell commands",
+        "without invalidating the cache"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "La configuración de un equipo tiene tool search desactivado, así que las definiciones de herramientas se cargan en el prefijo. A mitad de sesión, un desarrollador quiere impedir que Claude corra comandos `rm` pero dejarle correr otros comandos de shell, sin invalidar el caché. ¿Qué regla deny debe agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Bash`",
+            "why": "Un nombre de herramienta solo quita la definición de Bash de la siguiente solicitud, lo que invalida el caché, y además bloquea todo comando de shell."
+          },
+          {
+            "id": "B",
+            "text": "`Bash(*)`",
+            "why": "Equivale al nombre de herramienta solo, así que quita la definición e invalida el caché."
+          },
+          {
+            "id": "C",
+            "text": "`Bash(rm *)`",
+            "why": "Las reglas deny con alcance no cambian qué herramientas ve Claude; se revisan cuando Claude intenta la llamada y dejan el prefijo intacto."
+          },
+          {
+            "id": "D",
+            "text": "`mcp__*`",
+            "why": "Solo bloquea herramientas MCP, así que no detiene `rm`, y además quita esas definiciones del prefijo."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: bloquear solo `rm` y conservar el caché mientras las herramientas se cargan en el prefijo. Solo las reglas deny que coinciden en la posición del nombre de herramienta quitan una definición; una regla con alcance como `Bash(rm *)` se revisa al momento de la llamada y deja la solicitud igual. `Bash` y `Bash(*)` tientan porque bloquean `rm`, pero quitan toda la herramienta, invalidan el caché y bloquean cualquier otro comando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-invalidators--f719a124",
+      "conceptId": "cache-invalidators",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command shows the session's `Prompt cache (main)` line with the hit ratio, miss count and whether the cache is warm?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/cost",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/usage` adds a `Prompt cache (main)` line to its Session block after the main conversation's first response. It shows how much input came from cache, the misses with a likely cause when one can be identified, and whether the cache is warm. `/cost` is an alias for `/usage`.",
+      "keywordCues": [
+        "Prompt cache (main)",
+        "hit ratio, miss count"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando de barra muestra la línea `Prompt cache (main)` de la sesión con la tasa de aciertos, la cantidad de fallos y si el caché está caliente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/usage",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/cost",
+            "why": ""
+          }
+        ],
+        "explanation": "`/usage` agrega una línea `Prompt cache (main)` a su bloque Session después de la primera respuesta de la conversación principal. Muestra cuánto input vino del caché, los fallos con una causa probable cuando se puede identificar, y si el caché está caliente. `/cost` es un alias de `/usage`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cache-invalidators--r0",
+      "conceptId": "cache-invalidators",
+      "kind": "recall",
+      "prompt": "Name actions that invalidate the prompt cache and actions that keep it, and say what an invalidation costs you.",
+      "promptEs": "Nombra acciones que invalidan el caché de prompts y acciones que lo conservan, y di qué te cuesta una invalidación.",
+      "idealAnswer": "Switching models, changing effort on most models, turning on fast mode, compacting, dropping old images and upgrading Claude Code invalidate the cache; MCP or bare deny-rule changes do too when tools load into the prefix. Editing files or CLAUDE.md, changing permission mode or output style, invoking skills, /recap, /rewind and spawning subagents keep it. An invalidation costs one slower, more expensive turn that rereads the history uncached, then the new prefix is cached.",
+      "rubric": [
+        "At least three invalidators (model, effort, fast mode, compaction...)",
+        "At least three keepers (file or CLAUDE.md edits, permission mode, /rewind, /recap...)",
+        "Cost: one slower, more expensive uncached turn, then cached again"
+      ]
+    },
+    {
+      "id": "cache-invalidators--r1",
+      "conceptId": "cache-invalidators",
+      "kind": "why-not",
+      "prompt": "Your first turn after /model was slow, though you had only paused thirty seconds. Why is cache expiry not the explanation?",
+      "promptEs": "Tu primer turno después de /model fue lento, aunque solo pausaste treinta segundos. ¿Por qué la expiración del caché no es la explicación?",
+      "idealAnswer": "Thirty seconds is well within even the five-minute TTL, so the cache had not expired. Each model has its own cache, so the model switch itself made the next request reread the entire history uncached.",
+      "rubric": [
+        "The idle gap was shorter than any TTL",
+        "Each model has its own cache",
+        "The switch invalidated the cache, not expiry"
+      ]
+    }
+  ]
+}

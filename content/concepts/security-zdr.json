@@ -1,0 +1,228 @@
+{
+  "conceptId": "security-zdr",
+  "card": {
+    "en": {
+      "tldr": "Zero Data Retention means Anthropic doesn't store Claude Code prompts and responses after the response returns. Anthropic enables it per organization for qualified Claude for Enterprise accounts, it covers only sessions authenticated into that org, and it disables features that must store data.",
+      "whenToUse": [
+        "A compliance requirement says prompts and responses must not be retained",
+        "Checking whether a developer's session is actually covered by ZDR",
+        "Explaining why cloud sessions, Remote Control or /feedback fail in your org",
+        "Deciding whether MCP servers or other integrations fall under ZDR"
+      ],
+      "keyFacts": [
+        "Available to qualified Claude for Enterprise accounts; not part of the standard plan and can't be enabled from admin settings.",
+        "Enabled per organization by Anthropic; a new organization under the same account needs its own enablement.",
+        "Covers only requests authenticated into the ZDR organization; enforce it with the `forceLoginMethod` and `forceLoginOrgUUID` managed settings.",
+        "Disabled under ZDR: cloud sessions, Claude Tag, artifacts, feedback submission (`/feedback`, `/bug`, `/share`) and Remote Control, blocked at the backend.",
+        "Not covered: claude.ai chat, Cowork, third-party tools and MCP servers, and administrative data such as seat assignments.",
+        "Applies to Anthropic's direct platform; Bedrock, Google Cloud's Agent Platform and Foundry follow their own policies."
+      ],
+      "gotchas": [
+        "A developer signed in with a personal account or another org's API key isn't covered.",
+        "Data processed by MCP servers follows those services' own policies.",
+        "Anthropic may still retain data where required by law or to address Usage Policy violations."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Standard data policy and telemetry opt-outs",
+          "difference": "Opt-out variables stop optional client traffic; ZDR changes whether Anthropic stores the prompts and responses themselves."
+        }
+      ],
+      "examCues": [
+        "prompts must not be retained",
+        "zero data retention",
+        "personal account not covered",
+        "cloud sessions disabled for our org",
+        "forceLoginOrgUUID"
+      ]
+    },
+    "es": {
+      "tldr": "Zero Data Retention significa que Anthropic no guarda los prompts ni las respuestas de Claude Code después de devolver la respuesta. Anthropic la activa por organización para cuentas Claude for Enterprise calificadas, cubre solo las sesiones autenticadas en esa organización y desactiva las funciones que necesitan guardar datos.",
+      "whenToUse": [
+        "Un requisito de cumplimiento exige que no se retengan prompts ni respuestas",
+        "Verificar si la sesión de un desarrollador está realmente cubierta por ZDR",
+        "Explicar por qué fallan las sesiones en la nube, Remote Control o /feedback en tu organización",
+        "Decidir si los servidores MCP u otras integraciones quedan bajo ZDR"
+      ],
+      "keyFacts": [
+        "Disponible para cuentas Claude for Enterprise calificadas; no viene en el plan estándar y no se activa desde admin settings.",
+        "Anthropic la activa por organización; una organización nueva bajo la misma cuenta necesita su propia activación.",
+        "Cubre solo las solicitudes autenticadas en la organización con ZDR; se hace cumplir con los managed settings `forceLoginMethod` y `forceLoginOrgUUID`.",
+        "Desactivadas con ZDR: sesiones en la nube, Claude Tag, artifacts, envío de feedback (`/feedback`, `/bug`, `/share`) y Remote Control, bloqueadas en el backend.",
+        "No cubiertos: el chat de claude.ai, Cowork, herramientas de terceros y servidores MCP, y datos administrativos como la asignación de asientos.",
+        "Aplica a la plataforma directa de Anthropic; Bedrock, Google Cloud's Agent Platform y Foundry siguen sus propias políticas."
+      ],
+      "gotchas": [
+        "Un desarrollador que entra con una cuenta personal o con una API key de otra organización no está cubierto.",
+        "Los datos que procesan los servidores MCP siguen las políticas de esos servicios.",
+        "Anthropic aún puede retener datos cuando lo exige la ley o para atender violaciones de la Usage Policy."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Política estándar y variables de opt-out",
+          "difference": "Las variables cortan tráfico opcional del cliente; ZDR cambia si Anthropic guarda los prompts y respuestas mismos."
+        }
+      ],
+      "examCues": [
+        "prompts must not be retained",
+        "zero data retention",
+        "personal account not covered",
+        "cloud sessions disabled for our org",
+        "forceLoginOrgUUID"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/zero-data-retention.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "security-zdr--d03b71d5",
+      "conceptId": "security-zdr",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A company's Claude for Enterprise organization has Zero Data Retention enabled. The security team finds that some developers sign in to Claude Code with personal claude.ai accounts, so their sessions aren't covered. They want every developer's claude.ai login to belong to the ZDR organization, enforced centrally. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask Anthropic to extend ZDR to the developers' personal accounts",
+          "correct": false,
+          "why": "ZDR is enabled per organization and covers only requests authenticated into it; it doesn't follow personal accounts."
+        },
+        {
+          "id": "B",
+          "text": "Set CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC for every developer",
+          "correct": false,
+          "why": "Stops optional telemetry, but prompts from a personal account still go under that account's policy."
+        },
+        {
+          "id": "C",
+          "text": "Deploy forceLoginMethod and forceLoginOrgUUID in managed settings",
+          "correct": true,
+          "why": "These managed settings require claude.ai logins to belong to the specified organization."
+        },
+        {
+          "id": "D",
+          "text": "Add a CLAUDE.md note asking developers to use their work account",
+          "correct": false,
+          "why": "CLAUDE.md is read by the model; it enforces nothing about how people log in."
+        }
+      ],
+      "explanation": "The requirement is that sessions authenticate into the ZDR organization, enforced centrally. ZDR only covers requests authenticated into a ZDR-enabled org, and the docs point to the forceLoginMethod and forceLoginOrgUUID managed settings to require that claude.ai logins belong to it. The telemetry variable is tempting but doesn't change which organization handles the prompts. Personal accounts can't be brought under the org's ZDR.",
+      "keywordCues": [
+        "personal claude.ai accounts",
+        "belong to the ZDR organization",
+        "enforced centrally"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/zero-data-retention.md"
+      ],
+      "es": {
+        "stem": "La organización Claude for Enterprise de una empresa tiene Zero Data Retention activada. El equipo de seguridad descubre que algunos desarrolladores entran a Claude Code con cuentas personales de claude.ai, así que sus sesiones no están cubiertas. Quieren que el login de claude.ai de cada desarrollador pertenezca a la organización con ZDR, impuesto de forma centralizada. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pedir a Anthropic que extienda ZDR a las cuentas personales",
+            "why": "ZDR se activa por organización y cubre solo las solicitudes autenticadas en ella; no sigue a las cuentas personales."
+          },
+          {
+            "id": "B",
+            "text": "Definir CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC para cada desarrollador",
+            "why": "Corta la telemetría opcional, pero los prompts de una cuenta personal siguen bajo la política de esa cuenta."
+          },
+          {
+            "id": "C",
+            "text": "Desplegar forceLoginMethod y forceLoginOrgUUID en managed settings",
+            "why": "Estos managed settings exigen que los logins de claude.ai pertenezcan a la organización indicada."
+          },
+          {
+            "id": "D",
+            "text": "Agregar una nota en CLAUDE.md pidiendo usar la cuenta del trabajo",
+            "why": "CLAUDE.md lo lee el modelo; no impone nada sobre cómo inician sesión las personas."
+          }
+        ],
+        "explanation": "El requisito es que las sesiones se autentiquen en la organización con ZDR, impuesto de forma central. ZDR solo cubre solicitudes autenticadas en una organización con ZDR, y la documentación indica los managed settings forceLoginMethod y forceLoginOrgUUID para exigir que los logins de claude.ai pertenezcan a ella. La variable de telemetría tienta, pero no cambia qué organización recibe los prompts. Las cuentas personales no pueden entrar en el ZDR de la organización."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "security-zdr--fc69e28c",
+      "conceptId": "security-zdr",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which managed settings key, paired with forceLoginMethod, requires developers' claude.ai logins to belong to a specific Anthropic organization?",
+      "options": [
+        {
+          "id": "A",
+          "text": "forceLoginOrgUUID",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "forceLoginOrgUUID holds the organization ID; with forceLoginMethod in managed settings, Claude Code rejects claude.ai logins to any other organization. This is how a ZDR org keeps developer sessions inside the covered organization.",
+      "keywordCues": [
+        "paired with forceLoginMethod",
+        "belong to a specific Anthropic organization"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/zero-data-retention.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de managed settings, junto con forceLoginMethod, exige que los logins de claude.ai de los desarrolladores pertenezcan a una organización específica de Anthropic?",
+        "options": [
+          {
+            "id": "A",
+            "text": "forceLoginOrgUUID",
+            "why": ""
+          }
+        ],
+        "explanation": "forceLoginOrgUUID guarda el ID de la organización; junto con forceLoginMethod en managed settings, Claude Code rechaza logins de claude.ai a cualquier otra organización. Así una organización con ZDR mantiene las sesiones dentro de la organización cubierta."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "security-zdr--r0",
+      "conceptId": "security-zdr",
+      "kind": "recall",
+      "prompt": "Describe Zero Data Retention for Claude Code: who can get it, how it is enabled, what it covers and which features it disables.",
+      "promptEs": "Describe Zero Data Retention para Claude Code: quién puede tenerla, cómo se activa, qué cubre y qué funciones desactiva.",
+      "idealAnswer": "ZDR is for qualified Claude for Enterprise accounts and Anthropic enables it per organization, not from admin settings. It covers inference from sessions authenticated into that org, not MCP servers or other integrations. Features that store data, like cloud sessions, Remote Control, artifacts and /feedback, are disabled.",
+      "rubric": [
+        "Qualified Claude for Enterprise, enabled by Anthropic per org",
+        "Covers only sessions authenticated into the org",
+        "Excludes MCP and third-party integrations",
+        "Names at least two disabled features"
+      ]
+    },
+    {
+      "id": "security-zdr--r1",
+      "conceptId": "security-zdr",
+      "kind": "why-not",
+      "prompt": "A ZDR organization's developer uses an MCP server from a SaaS vendor. Why can't the team assume that vendor's data is zero-retained?",
+      "promptEs": "Un desarrollador de una organización con ZDR usa un servidor MCP de un proveedor SaaS. ¿Por qué el equipo no puede asumir que esos datos tienen retención cero?",
+      "idealAnswer": "ZDR covers Claude Code model inference on Anthropic's side only. Data processed by MCP servers and other third-party integrations follows those services' own policies, so the team must review the vendor's data handling separately.",
+      "rubric": [
+        "ZDR covers Anthropic inference only",
+        "MCP and third-party data follow their own policies",
+        "Review the vendor independently"
+      ]
+    }
+  ]
+}

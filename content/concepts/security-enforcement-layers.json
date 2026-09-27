@@ -1,0 +1,409 @@
+{
+  "conceptId": "security-enforcement-layers",
+  "card": {
+    "en": {
+      "tldr": "Permission rules are enforced by Claude Code, not by the model: text in CLAUDE.md or a prompt shapes what Claude tries but grants or revokes nothing. For a hard boundary, use permission rules, a permission mode, a PreToolUse hook or the sandbox.",
+      "whenToUse": [
+        "Claude ignored a CLAUDE.md instruction and you need it enforced",
+        "Working with untrusted repos or web content that may contain prompt injection",
+        "Running claude -p on a repository you didn't write",
+        "Choosing between a rule, a hook and the sandbox for a restriction"
+      ],
+      "keyFacts": [
+        "To grant or revoke access, use `/permissions`, permission rules, a permission mode or a PreToolUse hook; `CLAUDE.md` only steers the model.",
+        "Trust verification is required for first-time codebases and new MCP servers, and is disabled with `-p`.",
+        "Project `permissions.allow` rules and `additionalDirectories` apply only after you accept the workspace trust dialog; `deny` and `ask` rules apply regardless.",
+        "Commands that fetch web content such as `curl` and `wget` are not auto-approved by default, and WebFetch uses a separate context window.",
+        "In Manual mode, Claude Code writes only inside the folder where it started and its subfolders unless you grant more.",
+        "Sandbox restrictions still apply even if a prompt injection bypasses Claude's decision-making; it covers Bash, PowerShell and Monitor commands and their child processes."
+      ],
+      "gotchas": [
+        "A deny rule matches the command as written: it misses the same program by full path or inside `sh -c`, so pair it with the sandbox when it must hold.",
+        "Under `claude -p` in an untrusted folder, project hooks and the `env` block still run; use `--setting-sources user` to skip project settings.",
+        "Starting Claude Code in your home directory keeps trust for that session only, so the prompt returns every launch.",
+        "With untrusted content, review proposed commands and prefer a VM, especially when interacting with external web services."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Auto mode classifier",
+          "difference": "A second model that reviews only actions the rules didn't resolve, and only in auto mode; deny rules block in every mode, including bypassPermissions."
+        },
+        {
+          "concept": "Sandbox",
+          "difference": "OS-level file and network limits on the shell process; permission rules decide which tool calls may start at all."
+        }
+      ],
+      "examCues": [
+        "Claude ignored the instruction in CLAUDE.md",
+        "enforced, not just guidance",
+        "untrusted repository or prompt injection",
+        "even if the model is manipulated",
+        "trust dialog"
+      ]
+    },
+    "es": {
+      "tldr": "Las reglas de permisos las hace cumplir Claude Code, no el modelo: el texto en CLAUDE.md o en un prompt orienta lo que Claude intenta, pero no otorga ni quita nada. Para un límite duro, usa reglas de permisos, un modo, un hook PreToolUse o el sandbox.",
+      "whenToUse": [
+        "Claude ignoró una instrucción de CLAUDE.md y necesitas que se cumpla",
+        "Trabajar con repos o contenido web no confiable que puede traer inyección de prompt",
+        "Correr claude -p sobre un repositorio que no escribiste",
+        "Elegir entre una regla, un hook y el sandbox para una restricción"
+      ],
+      "keyFacts": [
+        "Para otorgar o quitar acceso usa `/permissions`, reglas de permisos, un modo de permisos o un hook PreToolUse; `CLAUDE.md` solo orienta al modelo.",
+        "La verificación de confianza se exige para codebases nuevos y servidores MCP nuevos, y se desactiva con `-p`.",
+        "Las reglas `permissions.allow` y `additionalDirectories` del proyecto solo aplican tras aceptar el diálogo de confianza; las reglas `deny` y `ask` aplican siempre.",
+        "Los comandos que traen contenido web como `curl` y `wget` no se auto-aprueban por defecto, y WebFetch usa una ventana de contexto aparte.",
+        "En modo Manual, Claude Code solo escribe dentro de la carpeta donde arrancó y sus subcarpetas, salvo que le des más.",
+        "El sandbox sigue aplicando aunque una inyección de prompt engañe al modelo; cubre comandos de Bash, PowerShell y Monitor y sus procesos hijos."
+      ],
+      "gotchas": [
+        "Una regla deny compara el comando tal como está escrito: no atrapa el mismo programa por ruta completa ni dentro de `sh -c`, así que combínala con el sandbox si debe cumplirse.",
+        "Con `claude -p` en una carpeta no confiable, los hooks del proyecto y el bloque `env` sí corren; usa `--setting-sources user` para no cargar los settings del proyecto.",
+        "Si arrancas Claude Code en tu directorio home, la confianza dura solo esa sesión y el diálogo vuelve en cada inicio.",
+        "Con contenido no confiable, revisa los comandos propuestos y prefiere una máquina virtual, sobre todo al interactuar con servicios web externos."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Clasificador de auto mode",
+          "difference": "Un segundo modelo que revisa solo lo que las reglas no resolvieron, y solo en auto mode; las reglas deny bloquean en todo modo, incluido bypassPermissions."
+        },
+        {
+          "concept": "Sandbox",
+          "difference": "Límites de archivos y red a nivel de sistema operativo sobre el proceso; las reglas deciden qué tool calls pueden empezar."
+        }
+      ],
+      "examCues": [
+        "Claude ignored the instruction in CLAUDE.md",
+        "enforced, not just guidance",
+        "untrusted repository or prompt injection",
+        "even if the model is manipulated",
+        "trust dialog"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/security.md",
+      "https://code.claude.com/docs/en/permissions.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "security-enforcement-layers--1a853b44",
+      "conceptId": "security-enforcement-layers",
+      "secondaryConcepts": [
+        "perm-rule-eval-order"
+      ],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A team's CLAUDE.md says \"Never edit files under migrations/\", yet during a refactor Claude edited one. The tech lead wants edits there blocked every time, not just discouraged, so it applies to everyone who clones the repo. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rewrite the CLAUDE.md line in capitals and mark it IMPORTANT",
+          "correct": false,
+          "why": "CLAUDE.md shapes what Claude tries but Claude Code does not enforce it, however it is worded."
+        },
+        {
+          "id": "B",
+          "text": "Add a deny rule for edits under migrations/ to the project's .claude/settings.json",
+          "correct": true,
+          "why": "Claude Code enforces deny rules before the tool runs, and project settings are shared with everyone who clones the repo."
+        },
+        {
+          "id": "C",
+          "text": "Move the instruction to CLAUDE.local.md",
+          "correct": false,
+          "why": "Still an instruction to the model, and CLAUDE.local.md is personal, not shared."
+        },
+        {
+          "id": "D",
+          "text": "Add the same deny rule to ~/.claude/settings.json",
+          "correct": false,
+          "why": "Enforced, but user settings live only on the lead's machine, so teammates aren't covered."
+        }
+      ],
+      "explanation": "The requirement is an enforced block shared with the whole team. Permission rules are enforced by Claude Code, not the model, and a rule in the project's .claude/settings.json reaches everyone who clones the repo; deny rules don't even wait for workspace trust. Rewording CLAUDE.md or moving it to CLAUDE.local.md is still guidance. A deny rule in user settings is enforced but not shared.",
+      "keywordCues": [
+        "blocked every time, not just discouraged",
+        "everyone who clones the repo"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/security.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "El CLAUDE.md de un equipo dice \"Nunca edites archivos en migrations/\", pero en un refactor Claude editó uno. El líder técnico quiere que esas ediciones se bloqueen siempre, no solo que se desaconsejen, y que aplique a todos los que clonan el repo. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reescribir la línea de CLAUDE.md en mayúsculas y marcarla IMPORTANT",
+            "why": "CLAUDE.md orienta lo que Claude intenta, pero Claude Code no lo hace cumplir, sin importar cómo esté escrito."
+          },
+          {
+            "id": "B",
+            "text": "Agregar una regla deny para ediciones en migrations/ en el .claude/settings.json del proyecto",
+            "why": "Claude Code aplica las reglas deny antes de que corra la herramienta, y el settings del proyecto se comparte con todos los que clonan el repo."
+          },
+          {
+            "id": "C",
+            "text": "Mover la instrucción a CLAUDE.local.md",
+            "why": "Sigue siendo una instrucción al modelo, y CLAUDE.local.md es personal, no compartido."
+          },
+          {
+            "id": "D",
+            "text": "Agregar la misma regla deny en ~/.claude/settings.json",
+            "why": "Se hace cumplir, pero el settings de usuario vive solo en la máquina del líder, así que no cubre al equipo."
+          }
+        ],
+        "explanation": "El requisito es un bloqueo que se haga cumplir y que se comparta con todo el equipo. Las reglas de permisos las aplica Claude Code, no el modelo, y una regla en el .claude/settings.json del proyecto llega a todos los que clonan el repo; las reglas deny ni siquiera esperan la confianza del workspace. Reescribir CLAUDE.md o moverlo a CLAUDE.local.md sigue siendo una guía. Una regla deny en el settings de usuario se aplica, pero no se comparte."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "security-enforcement-layers--412d1b29",
+      "conceptId": "security-enforcement-layers",
+      "secondaryConcepts": [
+        "sandbox-bash-basics"
+      ],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer wants Claude to triage issues in an untrusted open-source repository. Files there might contain prompt injection that tries to make Claude read local credentials and send them out with a shell command. Which two measures set limits that still hold even if injected text manipulates the model? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Enable the sandbox with filesystem and network isolation",
+          "correct": true,
+          "why": "The OS enforces the sandbox on the shell process, and it still applies if a prompt injection bypasses Claude's decision-making."
+        },
+        {
+          "id": "B",
+          "text": "Add a CLAUDE.md rule telling Claude to ignore instructions found in files",
+          "correct": false,
+          "why": "CLAUDE.md steers the model; a manipulated model is exactly what this can't stop."
+        },
+        {
+          "id": "C",
+          "text": "Run the session inside a virtual machine without your credentials",
+          "correct": true,
+          "why": "The docs recommend VMs for untrusted content; the isolation doesn't depend on what the model decides."
+        },
+        {
+          "id": "D",
+          "text": "Start the prompt with a warning to treat file contents as untrusted",
+          "correct": false,
+          "why": "Prompt text shapes what Claude tries but grants or revokes nothing."
+        },
+        {
+          "id": "E",
+          "text": "Pick an output style focused on security explanations",
+          "correct": false,
+          "why": "An output style changes how Claude responds, not what Claude Code allows."
+        }
+      ],
+      "explanation": "The requirement is a limit that survives a manipulated model, so it must be enforced outside the model. The sandbox applies OS-level file and network restrictions that hold even if a prompt injection bypasses Claude's decisions, and a VM isolates the whole session from your machine. CLAUDE.md, prompt warnings and output styles all act on the model's behavior, which is exactly what injection attacks. They can help, but they are not boundaries.",
+      "keywordCues": [
+        "untrusted open-source repository",
+        "prompt injection",
+        "still hold even if injected text manipulates the model"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/security.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere que Claude clasifique issues de un repositorio open source no confiable. Sus archivos podrían traer inyección de prompt que intente que Claude lea credenciales locales y las envíe con un comando de shell. ¿Qué dos medidas ponen límites que se mantienen aunque el texto inyectado manipule al modelo? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Activar el sandbox con aislamiento de archivos y red",
+            "why": "El sistema operativo aplica el sandbox sobre el proceso de shell, y sigue aplicando aunque una inyección de prompt salte las decisiones de Claude."
+          },
+          {
+            "id": "B",
+            "text": "Agregar en CLAUDE.md una regla para ignorar instrucciones de los archivos",
+            "why": "CLAUDE.md orienta al modelo; justo un modelo manipulado es lo que esto no puede frenar."
+          },
+          {
+            "id": "C",
+            "text": "Correr la sesión dentro de una máquina virtual sin tus credenciales",
+            "why": "La documentación recomienda VMs para contenido no confiable; el aislamiento no depende de lo que decida el modelo."
+          },
+          {
+            "id": "D",
+            "text": "Empezar el prompt con un aviso de tratar los archivos como no confiables",
+            "why": "El texto del prompt orienta lo que Claude intenta, pero no otorga ni quita nada."
+          },
+          {
+            "id": "E",
+            "text": "Elegir un output style centrado en explicaciones de seguridad",
+            "why": "Un output style cambia cómo responde Claude, no lo que Claude Code permite."
+          }
+        ],
+        "explanation": "El requisito es un límite que sobreviva a un modelo manipulado, así que debe aplicarse fuera del modelo. El sandbox impone restricciones de archivos y red a nivel de sistema operativo que se mantienen aunque una inyección salte las decisiones de Claude, y una VM aísla toda la sesión de tu máquina. CLAUDE.md, los avisos en el prompt y los output styles actúan sobre el comportamiento del modelo, que es justo lo que ataca la inyección. Pueden ayudar, pero no son límites."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "security-enforcement-layers--d6b84b00",
+      "conceptId": "security-enforcement-layers",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A CI job will run claude -p against third-party repositories nobody on the team has reviewed. Some include .claude/settings.json with hooks and a .mcp.json with servers. The job must not read the repository's settings files or its .mcp.json at all. What should the job do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rely on the workspace trust dialog to hold project settings",
+          "correct": false,
+          "why": "A claude -p run never shows the trust dialog, and project hooks and .mcp.json servers are still used there."
+        },
+        {
+          "id": "B",
+          "text": "Start with --bare",
+          "correct": false,
+          "why": "--bare skips hooks and .mcp.json, but the project's env block and helpers in its settings files still apply."
+        },
+        {
+          "id": "C",
+          "text": "Pass --setting-sources user",
+          "correct": true,
+          "why": "Claude Code then reads neither the project's settings files nor its .mcp.json."
+        },
+        {
+          "id": "D",
+          "text": "Pass --settings '{\"disableAllHooks\": true}'",
+          "correct": false,
+          "why": "Turns off hooks for the run, but .mcp.json servers still connect and the settings files are still read."
+        }
+      ],
+      "explanation": "The requirement is that none of the repository's settings files or .mcp.json are read in a non-interactive run. Trust verification is disabled with -p, and in an untrusted folder project hooks, the env block and .mcp.json servers are still used. --setting-sources user limits settings to user scope, so neither project settings nor .mcp.json are read. --bare is tempting but still applies the project's env block and helpers, and disableAllHooks only covers hooks.",
+      "keywordCues": [
+        "claude -p",
+        "nobody on the team has reviewed",
+        "must not read the repository's settings files or its .mcp.json at all"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/security.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "Un job de CI va a correr claude -p sobre repositorios de terceros que nadie del equipo revisó. Algunos traen .claude/settings.json con hooks y un .mcp.json con servidores. El job no debe leer en absoluto los settings del repositorio ni su .mcp.json. ¿Qué debe hacer el job?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Confiar en el diálogo de confianza del workspace para retener los settings del proyecto",
+            "why": "Una corrida claude -p nunca muestra el diálogo de confianza, y ahí se siguen usando los hooks del proyecto y los servidores de .mcp.json."
+          },
+          {
+            "id": "B",
+            "text": "Arrancar con --bare",
+            "why": "--bare omite hooks y .mcp.json, pero el bloque env del proyecto y los helpers de sus settings siguen aplicando."
+          },
+          {
+            "id": "C",
+            "text": "Pasar --setting-sources user",
+            "why": "Así Claude Code no lee ni los settings del proyecto ni su .mcp.json."
+          },
+          {
+            "id": "D",
+            "text": "Pasar --settings '{\"disableAllHooks\": true}'",
+            "why": "Apaga los hooks en esa corrida, pero los servidores de .mcp.json igual se conectan y los settings se siguen leyendo."
+          }
+        ],
+        "explanation": "El requisito es no leer ningún settings del repositorio ni su .mcp.json en una corrida no interactiva. Con -p la verificación de confianza está desactivada, y en una carpeta no confiable se siguen usando los hooks, el bloque env y los servidores de .mcp.json del proyecto. --setting-sources user limita los settings al ámbito de usuario, así que no se lee ni el settings del proyecto ni .mcp.json. --bare tienta, pero sigue aplicando el bloque env y los helpers del proyecto, y disableAllHooks solo cubre los hooks."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "security-enforcement-layers--dd49189d",
+      "conceptId": "security-enforcement-layers",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command opens the dialog that lists every permission rule and the settings.json file each one comes from?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/permissions",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/permissions lists all permission rules with their source settings file, and lets you add or remove rules. The docs recommend auditing it regularly, since these rules, not CLAUDE.md, are what Claude Code enforces.",
+      "keywordCues": [
+        "lists every permission rule",
+        "settings.json file each one comes from"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/security.md",
+        "https://code.claude.com/docs/en/permissions.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando de barra abre el diálogo que lista cada regla de permisos y el archivo settings.json del que viene?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/permissions",
+            "why": ""
+          }
+        ],
+        "explanation": "/permissions lista todas las reglas de permisos con el settings de origen y te deja agregar o quitar reglas. La documentación recomienda auditarlo con regularidad, porque son estas reglas, y no CLAUDE.md, lo que Claude Code hace cumplir."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "security-enforcement-layers--r0",
+      "conceptId": "security-enforcement-layers",
+      "kind": "recall",
+      "prompt": "Explain who enforces permission boundaries in Claude Code, and name the mechanisms that create a hard boundary versus those that only guide Claude.",
+      "promptEs": "Explica quién hace cumplir los límites de permisos en Claude Code y nombra los mecanismos que crean un límite duro frente a los que solo guían a Claude.",
+      "idealAnswer": "Claude Code enforces permission rules, not the model. Hard boundaries come from permission rules, permission modes, PreToolUse hooks and the OS-level sandbox, which holds even if prompt injection fools the model. CLAUDE.md and prompt text only shape what Claude tries and grant or revoke nothing.",
+      "rubric": [
+        "Claude Code enforces, not the model",
+        "Names rules, modes, PreToolUse hooks or sandbox as hard boundaries",
+        "CLAUDE.md or prompts only guide",
+        "Sandbox holds even under prompt injection"
+      ]
+    },
+    {
+      "id": "security-enforcement-layers--r1",
+      "conceptId": "security-enforcement-layers",
+      "kind": "why-not",
+      "prompt": "Why doesn't adding \"never run curl\" to CLAUDE.md protect you when Claude reads files from an untrusted repository?",
+      "promptEs": "¿Por qué agregar \"nunca corras curl\" en CLAUDE.md no te protege cuando Claude lee archivos de un repositorio no confiable?",
+      "idealAnswer": "CLAUDE.md only steers the model, and prompt injection in those files attacks exactly the model's behavior, so the instruction can be overridden. An enforced layer is needed: a deny rule or PreToolUse hook checked by Claude Code, or better the sandbox's network isolation, which doesn't depend on the command text.",
+      "rubric": [
+        "CLAUDE.md is guidance, not enforcement",
+        "Prompt injection targets the model",
+        "Proposes an enforced alternative such as sandbox, deny rule or hook"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,423 @@
+{
+  "unitId": "u-costs",
+  "audited": true,
+  "overview": {
+    "title": "Costos y uso",
+    "hook": "Saber cuánto gastas, por qué sube y cómo bajarlo, solo o en equipo.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "session",
+          "label": "Sesión",
+          "kind": "service",
+          "x": 30,
+          "y": 50
+        },
+        {
+          "id": "usage",
+          "label": "/usage",
+          "kind": "service",
+          "x": 55,
+          "y": 20
+        },
+        {
+          "id": "context",
+          "label": "/context",
+          "kind": "service",
+          "x": 55,
+          "y": 80
+        },
+        {
+          "id": "levers",
+          "label": "Palancas de ahorro",
+          "kind": "note",
+          "x": 30,
+          "y": 90
+        },
+        {
+          "id": "otel",
+          "label": "OpenTelemetry",
+          "kind": "service",
+          "x": 80,
+          "y": 45
+        },
+        {
+          "id": "dash",
+          "label": "Tu observabilidad",
+          "kind": "zone",
+          "x": 95,
+          "y": 80
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "session",
+          "label": "prompts"
+        },
+        {
+          "from": "session",
+          "to": "usage",
+          "label": "costo y caché"
+        },
+        {
+          "from": "session",
+          "to": "context",
+          "label": "qué ocupa"
+        },
+        {
+          "from": "levers",
+          "to": "session",
+          "label": "menos tokens"
+        },
+        {
+          "from": "session",
+          "to": "otel",
+          "label": "métricas"
+        },
+        {
+          "from": "otel",
+          "to": "dash",
+          "label": "por usuario"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cada request reenvía toda la conversación, así que una pregunta de una línea en una sesión abierta todo el día consume uso por todo ese historial. Sin medir, no sabes qué te está costando.",
+        "show": [
+          "you",
+          "session"
+        ],
+        "focus": "session"
+      },
+      {
+        "narration": "Para medir tu sesión corre /usage, con los alias /cost y /stats. Muestra un costo estimado localmente, tokens por modelo, la línea Prompt cache (main) con aciertos y misses, y en planes de suscripción qué skills, subagentes y servidores MCP consumen tu plan.",
+        "show": [
+          "you",
+          "session",
+          "usage"
+        ],
+        "focus": "usage"
+      },
+      {
+        "narration": "No lo confundas con /context: ese muestra qué ocupa tu ventana ahora mismo, no cuánto costó. Y /insights es otra cosa: un reporte HTML sobre cómo trabajas, no sobre tokens.",
+        "show": [
+          "you",
+          "session",
+          "usage",
+          "context"
+        ],
+        "focus": "context"
+      },
+      {
+        "narration": "Para gastar menos: /clear entre tareas no relacionadas, Sonnet para la mayoría del trabajo y Opus para razonamiento difícil, menos esfuerzo de thinking, desactivar servidores MCP que no usas, pasar instrucciones de CLAUDE.md a skills y delegar salidas verbosas a subagentes.",
+        "show": [
+          "you",
+          "session",
+          "usage",
+          "context",
+          "levers"
+        ],
+        "focus": "levers"
+      },
+      {
+        "narration": "Para toda una organización, /usage no sirve: solo ve el historial de esta máquina. OpenTelemetry exporta tokens y costo por usuario a tu propio stack. Actívalo con CLAUDE_CODE_ENABLE_TELEMETRY en el bloque env de los managed settings.",
+        "show": [
+          "you",
+          "session",
+          "usage",
+          "context",
+          "levers",
+          "otel",
+          "dash"
+        ],
+        "focus": "otel"
+      },
+      {
+        "narration": "Ojo: el .claude/settings.json de un repositorio no puede activar la telemetría, y el contenido de los prompts queda redactado salvo que actives OTEL_LOG_USER_PROMPTS.",
+        "show": [
+          "you",
+          "session",
+          "usage",
+          "context",
+          "levers",
+          "otel",
+          "dash"
+        ],
+        "focus": "dash"
+      }
+    ],
+    "keyPoints": [
+      "/usage: costo estimado, caché y desglose del plan",
+      "/context muestra la ventana; /usage muestra el consumo",
+      "/clear y elegir bien el modelo: los hábitos de mayor impacto",
+      "Uso por usuario en equipo: OpenTelemetry vía managed settings"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/context",
+        "difference": "Muestra qué ocupa la ventana ahora; /usage muestra costo, caché y consumo del plan."
+      },
+      {
+        "unitOrService": "/insights",
+        "difference": "Reporte HTML sobre cómo trabajas, no sobre cuántos tokens usaste."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-costs--l1",
+      "conceptId": "cost-usage-command",
+      "format": "lightning",
+      "prompt": "See this session's estimated cost and prompt cache hit ratio → ?",
+      "promptEs": "Ver el costo estimado de esta sesión y la tasa de aciertos de caché → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context"
+        },
+        {
+          "id": "B",
+          "text": "/usage"
+        },
+        {
+          "id": "C",
+          "text": "/insights"
+        },
+        {
+          "id": "D",
+          "text": "/status"
+        }
+      ],
+      "answer": "B",
+      "why": "/usage muestra el Session block con el costo estimado y la línea Prompt cache (main). /context muestra qué ocupa la ventana, no cuánto costó."
+    },
+    {
+      "id": "u-costs--l2",
+      "conceptId": "cost-usage-command",
+      "format": "thisorthat",
+      "prompt": "Find what is filling your context window right now → ?",
+      "promptEs": "Averiguar qué está llenando tu ventana de contexto ahora mismo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage"
+        },
+        {
+          "id": "B",
+          "text": "/context"
+        }
+      ],
+      "answer": "B",
+      "why": "La pregunta es qué hay en la ventana, y eso lo responde /context. /usage responde cuánto costó y qué consumió tu plan."
+    },
+    {
+      "id": "u-costs--l3",
+      "conceptId": "cost-usage-command",
+      "format": "lightning",
+      "prompt": "An HTML report on how you work and your friction points → ?",
+      "promptEs": "Un reporte HTML sobre cómo trabajas y tus puntos de fricción → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage"
+        },
+        {
+          "id": "B",
+          "text": "/export"
+        },
+        {
+          "id": "C",
+          "text": "/context"
+        },
+        {
+          "id": "D",
+          "text": "/insights"
+        }
+      ],
+      "answer": "D",
+      "why": "/insights analiza tus sesiones recientes y escribe un reporte HTML sobre cómo trabajas. /usage cuenta tokens y costo, no analiza tus hábitos."
+    },
+    {
+      "id": "u-costs--l4",
+      "conceptId": "cost-usage-command",
+      "format": "thisorthat",
+      "prompt": "Which MCP servers and subagents consume your Max plan usage → ?",
+      "promptEs": "Qué servidores MCP y subagentes consumen el uso de tu plan Max → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage"
+        },
+        {
+          "id": "B",
+          "text": "/context"
+        }
+      ],
+      "answer": "A",
+      "why": "En planes Pro, Max, Team o Enterprise, /usage atribuye el uso reciente a skills, subagentes, plugins y servidores MCP. /context solo muestra la ventana actual."
+    },
+    {
+      "id": "u-costs--l5",
+      "conceptId": "cost-reduce-tokens",
+      "format": "lightning",
+      "prompt": "Switch to unrelated work without paying for stale context → ?",
+      "promptEs": "Pasar a un trabajo no relacionado sin pagar por contexto viejo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact"
+        },
+        {
+          "id": "B",
+          "text": "/rewind"
+        },
+        {
+          "id": "C",
+          "text": "/clear"
+        },
+        {
+          "id": "D",
+          "text": "/resume"
+        }
+      ],
+      "answer": "C",
+      "why": "/clear empieza de cero y no cuesta nada. /compact tienta, pero lee toda la conversación para resumirla, así que es en sí un request grande."
+    },
+    {
+      "id": "u-costs--l6",
+      "conceptId": "cost-reduce-tokens",
+      "format": "lightning",
+      "prompt": "Make a simple, repetitive subagent cheaper to run → ?",
+      "promptEs": "Hacer más barato un subagente simple y repetitivo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "model: haiku"
+        },
+        {
+          "id": "B",
+          "text": "model: inherit"
+        },
+        {
+          "id": "C",
+          "text": "isolation: worktree"
+        },
+        {
+          "id": "D",
+          "text": "background: true"
+        }
+      ],
+      "answer": "A",
+      "why": "Para tareas simples de subagente, la documentación recomienda model: haiku. inherit hereda el modelo de tu sesión, que puede ser Opus; worktree y background no cambian el costo."
+    },
+    {
+      "id": "u-costs--l7",
+      "conceptId": "cost-reduce-tokens",
+      "format": "lightning",
+      "prompt": "Lower the thinking budget on a fixed-budget model → ?",
+      "promptEs": "Bajar el presupuesto de thinking en un modelo con presupuesto fijo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_MAX_OUTPUT_TOKENS"
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CODE_DISABLE_THINKING"
+        },
+        {
+          "id": "C",
+          "text": "/compact"
+        },
+        {
+          "id": "D",
+          "text": "MAX_THINKING_TOKENS"
+        }
+      ],
+      "answer": "D",
+      "why": "MAX_THINKING_TOKENS fija el presupuesto de thinking en modelos de presupuesto fijo. CLAUDE_CODE_DISABLE_THINKING solo omite el parámetro para proxies; el modelo podría pensar igual."
+    },
+    {
+      "id": "u-costs--l8",
+      "conceptId": "cost-reduce-tokens",
+      "format": "thisorthat",
+      "prompt": "Keep a verbose test run's output out of the main conversation → ?",
+      "promptEs": "Mantener la salida verbosa de los tests fuera de la conversación principal → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Delegate to a subagent"
+        },
+        {
+          "id": "B",
+          "text": "Move instructions to a skill"
+        }
+      ],
+      "answer": "A",
+      "why": "El subagente trabaja en su propio contexto y solo devuelve un resumen. Una skill carga conocimiento bajo demanda, pero la salida de los tests seguiría entrando a tu contexto."
+    },
+    {
+      "id": "u-costs--l9",
+      "conceptId": "cost-org-monitoring",
+      "format": "lightning",
+      "prompt": "Stream per-user token and cost metrics into your own observability stack → ?",
+      "promptEs": "Enviar métricas de tokens y costo por usuario a tu propio stack de observabilidad → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/usage on each machine"
+        },
+        {
+          "id": "B",
+          "text": "claude.ai analytics dashboard"
+        },
+        {
+          "id": "C",
+          "text": "OpenTelemetry export"
+        },
+        {
+          "id": "D",
+          "text": "/insights reports"
+        }
+      ],
+      "answer": "C",
+      "why": "OpenTelemetry es la única opción que envía tokens y costo por usuario a tu propio stack casi en tiempo real. El dashboard de analytics vive en claude.ai, no en tu stack."
+    },
+    {
+      "id": "u-costs--l10",
+      "conceptId": "cost-org-monitoring",
+      "format": "lightning",
+      "prompt": "Enable OpenTelemetry for every developer's Claude Code → where?",
+      "promptEs": "Activar OpenTelemetry en el Claude Code de todos los desarrolladores → ¿dónde?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Repo .claude/settings.json env"
+        },
+        {
+          "id": "B",
+          "text": ".claude/settings.local.json env"
+        },
+        {
+          "id": "C",
+          "text": "Project CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "Managed settings env block"
+        }
+      ],
+      "answer": "D",
+      "why": "Los managed settings aplican a todos. Claude Code ignora CLAUDE_CODE_ENABLE_TELEMETRY y los exportadores en .claude/settings.json y settings.local.json de un repositorio."
+    }
+  ]
+}

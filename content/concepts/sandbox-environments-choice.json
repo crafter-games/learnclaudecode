@@ -1,0 +1,525 @@
+{
+  "conceptId": "sandbox-environments-choice",
+  "card": {
+    "en": {
+      "tldr": "Pick the isolation boundary by what must be contained and how much you trust the code. The built-in Bash sandbox covers shell commands only; the sandbox runtime, containers, VMs and cloud sessions put the whole Claude Code process, including file tools, MCP servers and hooks, inside the boundary.",
+      "whenToUse": [
+        "Planning an unattended run with `--dangerously-skip-permissions`",
+        "MCP servers and hooks must be isolated too",
+        "Working on a repository you don't trust",
+        "Standardizing one isolated environment across a team"
+      ],
+      "keyFacts": [
+        "Sandboxed Bash tool: Bash, PowerShell and Monitor commands only, no Docker; for fewer prompts in everyday work.",
+        "Sandbox runtime: `npx @anthropic-ai/sandbox-runtime claude` wraps the whole process in the same Seatbelt or bubblewrap isolation, without Docker; configure it in `~/.srt-settings.json`.",
+        "Dev container: the Claude Code Dev Container Feature installs Claude Code; the reference container runs as a non-root user with a default-deny egress firewall, and suits trusted repositories.",
+        "A dedicated VM gives the strongest separation and is the pick for untrusted code; a cloud session runs in an Anthropic-managed VM.",
+        "Always run `--dangerously-skip-permissions` inside a container, VM or the sandbox runtime; the flag is refused as root on Linux and macOS.",
+        "In a dev container, mount a volume at `~/.claude` and set `CLAUDE_CONFIG_DIR` to the same path to keep sign-in across rebuilds."
+      ],
+      "gotchas": [
+        "The Bash sandbox alone is not sufficient for fully unattended runs: file tools, MCP servers and hooks stay on the host.",
+        "Committing a dev container is a convention, not enforcement; the built-in Bash sandbox is the only approach Claude Code enforces itself.",
+        "Mounting only `~/.claude` doesn't keep you signed in, because `~/.claude.json` lives outside it unless `CLAUDE_CONFIG_DIR` points into the volume.",
+        "No sandbox changes what is sent to the model: prompts and files Claude reads still go to the API."
+      ],
+      "confusedWith": [
+        {
+          "concept": "bypassPermissions / dontAsk",
+          "difference": "Modes decide whether a tool call runs without a prompt; the boundary decides what it can reach once it runs."
+        },
+        {
+          "concept": "Sandboxed Bash tool",
+          "difference": "It isolates shell commands only; the runtime and containers isolate the whole process."
+        }
+      ],
+      "examCues": [
+        "untrusted repository",
+        "unattended with --dangerously-skip-permissions",
+        "isolate MCP servers and hooks without Docker",
+        "same environment for the whole team",
+        "stay signed in after rebuilding the container"
+      ]
+    },
+    "es": {
+      "tldr": "Elige el límite de aislamiento según qué debe quedar contenido y cuánto confías en el código. El Bash con sandbox solo cubre comandos de shell; el sandbox runtime, los contenedores, las VMs y las sesiones en la nube meten todo el proceso de Claude Code, incluidas herramientas de archivos, servidores MCP y hooks, dentro del límite.",
+      "whenToUse": [
+        "Planificar una ejecución desatendida con `--dangerously-skip-permissions`",
+        "Los servidores MCP y los hooks también deben quedar aislados",
+        "Trabajar en un repositorio en el que no confías",
+        "Estandarizar un entorno aislado para todo un equipo"
+      ],
+      "keyFacts": [
+        "Bash con sandbox: solo comandos Bash, PowerShell y Monitor, sin Docker; para menos prompts en el trabajo diario.",
+        "Sandbox runtime: `npx @anthropic-ai/sandbox-runtime claude` envuelve todo el proceso con el mismo aislamiento Seatbelt o bubblewrap, sin Docker; se configura en `~/.srt-settings.json`.",
+        "Dev container: el Claude Code Dev Container Feature instala Claude Code; el contenedor de referencia corre como usuario no root con un firewall de salida que niega por defecto, y es para repositorios confiables.",
+        "Una VM dedicada da la separación más fuerte y es la opción para código no confiable; una sesión en la nube corre en una VM gestionada por Anthropic.",
+        "Corre siempre `--dangerously-skip-permissions` dentro de un contenedor, una VM o el sandbox runtime; el flag se rechaza como root en Linux y macOS.",
+        "En un dev container, monta un volumen en `~/.claude` y apunta `CLAUDE_CONFIG_DIR` a esa misma ruta para conservar el login entre rebuilds."
+      ],
+      "gotchas": [
+        "El Bash con sandbox solo no basta para ejecuciones totalmente desatendidas: herramientas de archivos, servidores MCP y hooks quedan en el host.",
+        "Commitear un dev container es una convención, no una imposición; el sandbox de Bash integrado es el único enfoque que Claude Code impone por sí mismo.",
+        "Montar solo `~/.claude` no conserva el login, porque `~/.claude.json` vive fuera salvo que `CLAUDE_CONFIG_DIR` apunte dentro del volumen.",
+        "Ningún sandbox cambia lo que se envía al modelo: los prompts y archivos que lee Claude siguen yendo a la API."
+      ],
+      "confusedWith": [
+        {
+          "concept": "bypassPermissions / dontAsk",
+          "difference": "Los modos deciden si una llamada corre sin prompt; el límite decide qué alcanza una vez que corre."
+        },
+        {
+          "concept": "Bash con sandbox",
+          "difference": "Aísla solo comandos de shell; el runtime y los contenedores aíslan todo el proceso."
+        }
+      ],
+      "examCues": [
+        "untrusted repository",
+        "unattended with --dangerously-skip-permissions",
+        "isolate MCP servers and hooks without Docker",
+        "same environment for the whole team",
+        "stay signed in after rebuilding the container"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sandbox-environments.md",
+      "https://code.claude.com/docs/en/devcontainer.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sandbox-environments-choice--c6d68e47",
+      "conceptId": "sandbox-environments-choice",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer wants to run Claude Code with `--dangerously-skip-permissions` overnight on their Linux laptop. The project uses a local stdio MCP server and a `PostToolUse` command hook, and both must be confined along with shell commands and file tools. Docker is not installed and they don't want to install it. What should they use?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The built-in Bash sandbox with `allowUnsandboxedCommands: false`",
+          "correct": false,
+          "why": "It confines shell commands only; the MCP server, hooks and file tools still run on the host."
+        },
+        {
+          "id": "B",
+          "text": "The reference dev container with its egress firewall",
+          "correct": false,
+          "why": "It requires Docker, which they don't want to install."
+        },
+        {
+          "id": "C",
+          "text": "`npx @anthropic-ai/sandbox-runtime claude` with a configured `~/.srt-settings.json`",
+          "correct": true,
+          "why": "The runtime wraps the whole Claude Code process, including file tools, MCP servers and hooks, without Docker."
+        },
+        {
+          "id": "D",
+          "text": "Auto mode instead of `--dangerously-skip-permissions`",
+          "correct": false,
+          "why": "The classifier is a per-action control, not an isolation boundary, so nothing confines what the MCP server or hooks reach."
+        }
+      ],
+      "explanation": "The requirements are a boundary around the whole process, including MCP servers and hooks, and no Docker. The sandbox runtime wraps the entire Claude Code process in Seatbelt or bubblewrap isolation without containers. The built-in Bash sandbox is the tempting pick, but MCP servers and command hooks run unconstrained on the host under it. The dev container needs Docker, and auto mode is not an isolation boundary.",
+      "keywordCues": [
+        "MCP server and a `PostToolUse` command hook",
+        "must be confined",
+        "Docker is not installed"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandbox-environments.md",
+        "https://code.claude.com/docs/en/devcontainer.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador quiere correr Claude Code con `--dangerously-skip-permissions` toda la noche en su laptop Linux. El proyecto usa un servidor MCP stdio local y un command hook de `PostToolUse`, y ambos deben quedar confinados junto con los comandos de shell y las herramientas de archivos. Docker no está instalado y no quiere instalarlo. ¿Qué debe usar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "El sandbox de Bash integrado con `allowUnsandboxedCommands: false`",
+            "why": "Solo confina comandos de shell; el servidor MCP, los hooks y las herramientas de archivos siguen en el host."
+          },
+          {
+            "id": "B",
+            "text": "El dev container de referencia con su firewall de salida",
+            "why": "Requiere Docker, que no quiere instalar."
+          },
+          {
+            "id": "C",
+            "text": "`npx @anthropic-ai/sandbox-runtime claude` con un `~/.srt-settings.json` configurado",
+            "why": "El runtime envuelve todo el proceso de Claude Code, incluidos herramientas de archivos, servidores MCP y hooks, sin Docker."
+          },
+          {
+            "id": "D",
+            "text": "Auto mode en vez de `--dangerously-skip-permissions`",
+            "why": "El clasificador es un control por acción, no un límite de aislamiento, así que nada confina lo que alcanzan el servidor MCP o los hooks."
+          }
+        ],
+        "explanation": "Los requisitos son un límite alrededor de todo el proceso, incluidos servidores MCP y hooks, y sin Docker. El sandbox runtime envuelve todo el proceso de Claude Code con aislamiento Seatbelt o bubblewrap sin contenedores. El sandbox de Bash integrado tienta, pero con él los servidores MCP y los command hooks corren sin límites en el host. El dev container necesita Docker, y auto mode no es un límite de aislamiento."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-environments-choice--778cbe81",
+      "conceptId": "sandbox-environments-choice",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A platform team wants every engineer to run Claude Code in the same isolated environment, defined in the repository so it applies to everyone who clones it. It should run Claude Code as a non-root user, restrict outbound traffic to approved destinations, and support unattended work with `--dangerously-skip-permissions`. What fits best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `.devcontainer/` based on the reference dev container, committed to the repo",
+          "correct": true,
+          "why": "It is defined in the repository, runs as a non-root user and includes a default-deny egress firewall suited to unattended runs."
+        },
+        {
+          "id": "B",
+          "text": "`sandbox.enabled: true` in the committed `.claude/settings.json`",
+          "correct": false,
+          "why": "The Bash sandbox only confines shell commands, so it isn't sufficient for fully unattended runs."
+        },
+        {
+          "id": "C",
+          "text": "A cloud session per engineer",
+          "correct": false,
+          "why": "It isn't an environment defined in the repository, and it depends on each engineer's Claude subscription."
+        },
+        {
+          "id": "D",
+          "text": "A dedicated VM per engineer",
+          "correct": false,
+          "why": "It gives strong isolation but isn't defined in the repository for everyone who clones it, and it takes the most setup."
+        }
+      ],
+      "explanation": "The deciding requirements are a shared definition in the repository plus a non-root, egress-restricted environment for unattended runs. The docs recommend the preconfigured dev container, copied into the repository, to standardize an isolated environment across a team; its firewall is what makes `--dangerously-skip-permissions` reasonable. A committed Bash sandbox setting is tempting but leaves file tools, MCP servers and hooks on the host.",
+      "keywordCues": [
+        "same isolated environment",
+        "defined in the repository",
+        "non-root user",
+        "restrict outbound traffic"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandbox-environments.md",
+        "https://code.claude.com/docs/en/devcontainer.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma quiere que cada ingeniero corra Claude Code en el mismo entorno aislado, definido en el repositorio para que aplique a todos los que lo clonen. Debe correr Claude Code como usuario no root, restringir el tráfico de salida a destinos aprobados y permitir trabajo desatendido con `--dangerously-skip-permissions`. ¿Qué encaja mejor?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un `.devcontainer/` basado en el dev container de referencia, commiteado al repo",
+            "why": "Se define en el repositorio, corre como usuario no root e incluye un firewall de salida que niega por defecto, apto para ejecuciones desatendidas."
+          },
+          {
+            "id": "B",
+            "text": "`sandbox.enabled: true` en el `.claude/settings.json` commiteado",
+            "why": "El sandbox de Bash solo confina comandos de shell, así que no basta para ejecuciones totalmente desatendidas."
+          },
+          {
+            "id": "C",
+            "text": "Una sesión en la nube por ingeniero",
+            "why": "No es un entorno definido en el repositorio y depende de la suscripción a Claude de cada ingeniero."
+          },
+          {
+            "id": "D",
+            "text": "Una VM dedicada por ingeniero",
+            "why": "Da un aislamiento fuerte, pero no se define en el repositorio para todos los que lo clonan y es lo que más configuración exige."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son una definición compartida en el repositorio más un entorno no root con salida restringida para ejecuciones desatendidas. La documentación recomienda el dev container preconfigurado, copiado al repositorio, para estandarizar un entorno aislado en un equipo; su firewall es lo que hace razonable `--dangerously-skip-permissions`. Un setting de sandbox de Bash commiteado tienta, pero deja herramientas de archivos, servidores MCP y hooks en el host."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-environments-choice--62464a47",
+      "conceptId": "sandbox-environments-choice",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A consultant receives a repository from an unknown third party and wants Claude Code to analyze and run its code. Their security policy requires kernel-level separation between the agent and their own machine. Which two approaches do the docs point to for this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "A dedicated virtual machine",
+          "correct": true,
+          "why": "A VM has its own kernel and is recommended for untrusted code and kernel-level separation."
+        },
+        {
+          "id": "B",
+          "text": "The reference dev container",
+          "correct": false,
+          "why": "The docs say to use dev containers only with trusted repositories, and a container shares the host kernel."
+        },
+        {
+          "id": "C",
+          "text": "The built-in Bash sandbox in auto-allow mode",
+          "correct": false,
+          "why": "It confines only shell commands on the host OS and is not kernel-level separation."
+        },
+        {
+          "id": "D",
+          "text": "A cloud session in an Anthropic-managed VM",
+          "correct": true,
+          "why": "It runs in an isolated VM, and the docs list it next to a dedicated VM for untrusted repositories."
+        },
+        {
+          "id": "E",
+          "text": "The sandbox runtime wrapping the whole process",
+          "correct": false,
+          "why": "It uses the host's Seatbelt or bubblewrap, so the agent still shares the host kernel."
+        }
+      ],
+      "explanation": "For an untrusted repository the docs point to a dedicated virtual machine, or a cloud session, which runs in an isolated Anthropic-managed VM. A VM provides its own kernel, which is what kernel-level separation requires. The dev container is the tempting distractor, but the docs restrict it to trusted repositories. The Bash sandbox and the sandbox runtime run on the host operating system.",
+      "keywordCues": [
+        "unknown third party",
+        "kernel-level separation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandbox-environments.md",
+        "https://code.claude.com/docs/en/devcontainer.md"
+      ],
+      "es": {
+        "stem": "Un consultor recibe un repositorio de un tercero desconocido y quiere que Claude Code analice y ejecute su código. Su política de seguridad exige separación a nivel de kernel entre el agente y su propia máquina. ¿Qué dos enfoques indica la documentación para esto? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una máquina virtual dedicada",
+            "why": "Una VM tiene su propio kernel y se recomienda para código no confiable y separación a nivel de kernel."
+          },
+          {
+            "id": "B",
+            "text": "El dev container de referencia",
+            "why": "La documentación dice usar dev containers solo con repositorios confiables, y un contenedor comparte el kernel del host."
+          },
+          {
+            "id": "C",
+            "text": "El sandbox de Bash integrado en modo auto-allow",
+            "why": "Solo confina comandos de shell en el SO del host y no es separación a nivel de kernel."
+          },
+          {
+            "id": "D",
+            "text": "Una sesión en la nube en una VM gestionada por Anthropic",
+            "why": "Corre en una VM aislada, y la documentación la pone junto a la VM dedicada para repositorios no confiables."
+          },
+          {
+            "id": "E",
+            "text": "El sandbox runtime envolviendo todo el proceso",
+            "why": "Usa Seatbelt o bubblewrap del host, así que el agente sigue compartiendo el kernel del host."
+          }
+        ],
+        "explanation": "Para un repositorio no confiable la documentación indica una máquina virtual dedicada, o una sesión en la nube, que corre en una VM aislada gestionada por Anthropic. Una VM aporta su propio kernel, que es lo que exige la separación a nivel de kernel. El dev container es el distractor tentador, pero la documentación lo limita a repositorios confiables. El sandbox de Bash y el sandbox runtime corren sobre el sistema operativo del host."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-environments-choice--e67fc809",
+      "conceptId": "sandbox-environments-choice",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Your `~/.srt-settings.json` is ready. What command launches Claude Code inside the standalone sandbox runtime?",
+      "options": [
+        {
+          "id": "A",
+          "text": "npx @anthropic-ai/sandbox-runtime claude",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The sandbox runtime is launched with `npx`, passing `claude` as the command to wrap: `npx @anthropic-ai/sandbox-runtime claude`. Claude Code then starts inside the filesystem and network boundaries configured in `~/.srt-settings.json`.",
+      "keywordCues": [
+        "standalone sandbox runtime",
+        "launches Claude Code"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandbox-environments.md",
+        "https://code.claude.com/docs/en/devcontainer.md"
+      ],
+      "es": {
+        "stem": "Tu `~/.srt-settings.json` está listo. ¿Qué comando inicia Claude Code dentro del sandbox runtime independiente?",
+        "options": [
+          {
+            "id": "A",
+            "text": "npx @anthropic-ai/sandbox-runtime claude",
+            "why": ""
+          }
+        ],
+        "explanation": "El sandbox runtime se lanza con `npx`, pasando `claude` como el comando a envolver: `npx @anthropic-ai/sandbox-runtime claude`. Claude Code arranca dentro de los límites de archivos y red configurados en `~/.srt-settings.json`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "sandbox-environments-choice--7434e909",
+      "conceptId": "sandbox-environments-choice",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this `devcontainer.json` fragment so engineers stay signed in to Claude Code after the container is rebuilt. The container's `remoteUser` is `node`.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "/workspace",
+          "correct": false,
+          "why": "That is where the project is mounted; Claude Code's auth and settings live under `~/.claude`."
+        },
+        {
+          "id": "1b",
+          "text": "/home/node/.claude",
+          "correct": true,
+          "why": "The volume must hold `~/.claude`, where Claude Code stores its token, settings and history."
+        },
+        {
+          "id": "1c",
+          "text": "/home/node/.claude.json",
+          "correct": false,
+          "why": "A volume mounts a directory; the docs mount it at `~/.claude` and move `.claude.json` inside with `CLAUDE_CONFIG_DIR`."
+        },
+        {
+          "id": "2a",
+          "text": "CLAUDE_CODE_TMPDIR",
+          "correct": false,
+          "why": "It overrides the temp directory, not where configuration is stored."
+        },
+        {
+          "id": "2b",
+          "text": "DISABLE_AUTOUPDATER",
+          "correct": false,
+          "why": "It stops auto-updates; it doesn't move configuration into the volume."
+        },
+        {
+          "id": "2c",
+          "text": "CLAUDE_CONFIG_DIR",
+          "correct": true,
+          "why": "Pointing it at the volume makes Claude Code write `.claude.json` inside it too, so sign-in survives rebuilds."
+        }
+      ],
+      "explanation": "Claude Code keeps its token, settings and history in `~/.claude`, but the OAuth account lives in `~/.claude.json`, outside that directory. Mounting a named volume at `/home/node/.claude` and setting `CLAUDE_CONFIG_DIR` to the same path puts both inside the volume, so they survive a rebuild. Mounting only `~/.claude` without the variable is the tempting half-fix that still loses sign-in.",
+      "keywordCues": [
+        "stay signed in",
+        "after the container is rebuilt",
+        "`remoteUser` is `node`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sandbox-environments.md",
+        "https://code.claude.com/docs/en/devcontainer.md"
+      ],
+      "es": {
+        "stem": "Completa este fragmento de `devcontainer.json` para que los ingenieros sigan con sesión iniciada en Claude Code después de reconstruir el contenedor. El `remoteUser` del contenedor es `node`.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "/workspace",
+            "why": "Ahí se monta el proyecto; la autenticación y los settings de Claude Code viven en `~/.claude`."
+          },
+          {
+            "id": "1b",
+            "text": "/home/node/.claude",
+            "why": "El volumen debe contener `~/.claude`, donde Claude Code guarda su token, settings e historial."
+          },
+          {
+            "id": "1c",
+            "text": "/home/node/.claude.json",
+            "why": "Un volumen monta un directorio; la documentación lo monta en `~/.claude` y mueve `.claude.json` adentro con `CLAUDE_CONFIG_DIR`."
+          },
+          {
+            "id": "2a",
+            "text": "CLAUDE_CODE_TMPDIR",
+            "why": "Cambia el directorio temporal, no dónde se guarda la configuración."
+          },
+          {
+            "id": "2b",
+            "text": "DISABLE_AUTOUPDATER",
+            "why": "Detiene las actualizaciones automáticas; no mueve la configuración al volumen."
+          },
+          {
+            "id": "2c",
+            "text": "CLAUDE_CONFIG_DIR",
+            "why": "Al apuntarla al volumen, Claude Code también escribe `.claude.json` ahí, así que el login sobrevive a los rebuilds."
+          }
+        ],
+        "explanation": "Claude Code guarda su token, settings e historial en `~/.claude`, pero la cuenta OAuth vive en `~/.claude.json`, fuera de ese directorio. Montar un volumen con nombre en `/home/node/.claude` y poner `CLAUDE_CONFIG_DIR` en esa misma ruta deja ambos dentro del volumen, así que sobreviven al rebuild. Montar solo `~/.claude` sin la variable es la media solución tentadora que igual pierde el login."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "\"mounts\": [\n  \"source=claude-code-config,target={{1}},type=volume\"\n],\n\"containerEnv\": {\n  \"{{2}}\": \"/home/node/.claude\"\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "sandbox-environments-choice--r0",
+      "conceptId": "sandbox-environments-choice",
+      "kind": "recall",
+      "prompt": "Match isolation approaches to needs: everyday fewer prompts, isolating MCP and hooks without Docker, a team standard for unattended runs, and an untrusted repository.",
+      "promptEs": "Relaciona enfoques de aislamiento con necesidades: menos prompts a diario, aislar MCP y hooks sin Docker, un estándar de equipo para ejecuciones desatendidas y un repositorio no confiable.",
+      "idealAnswer": "For everyday work on your own machine, the built-in Bash sandbox via `/sandbox`. To isolate MCP servers and hooks without Docker, run `npx @anthropic-ai/sandbox-runtime claude`. For a team standard that supports `--dangerously-skip-permissions`, commit the reference dev container with its non-root user and egress firewall; for an untrusted repository, use a dedicated VM or a cloud session.",
+      "rubric": [
+        "Everyday: built-in Bash sandbox",
+        "MCP and hooks without Docker: sandbox runtime",
+        "Team standard and unattended: dev container",
+        "Untrusted repo: dedicated VM or cloud session"
+      ]
+    },
+    {
+      "id": "sandbox-environments-choice--r1",
+      "conceptId": "sandbox-environments-choice",
+      "kind": "why-not",
+      "prompt": "Why isn't switching to `bypassPermissions` or `dontAsk` a substitute for choosing an isolation boundary in an unattended run?",
+      "promptEs": "¿Por qué cambiar a `bypassPermissions` o `dontAsk` no reemplaza elegir un límite de aislamiento en una ejecución desatendida?",
+      "idealAnswer": "Permission modes only decide whether a tool call runs without a prompt: `dontAsk` denies anything unlisted and `bypassPermissions` skips the checks. Neither limits what a call can read, write or reach once it runs. With no prompts to catch mistakes, the container, VM or sandbox runtime is what protects the system.",
+      "rubric": [
+        "Modes decide whether a call runs without a prompt",
+        "They don't limit what a running call can reach",
+        "The isolation boundary is what protects the system when nobody is prompted"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,500 @@
+{
+  "conceptId": "session-continue",
+  "card": {
+    "en": {
+      "tldr": "`claude --continue` (`-c`) reopens the most recent conversation in the current directory with no picker. Use it when you just want to pick up where you left off here; when you need a specific or older session, use `--resume` instead.",
+      "whenToUse": [
+        "You closed the terminal or crashed and want the last conversation in this project back",
+        "You ran `/clear` and exited, and want to return to the most recent conversation",
+        "A script needs to send a follow-up to the latest `claude -p` run: `claude -p --continue`"
+      ],
+      "keyFacts": [
+        "Skips sessions created with `claude -p` or the Agent SDK, and sessions whose first prompt was `/loop`; `claude -p --continue` includes them.",
+        "Includes sessions that added this directory with `/add-dir`.",
+        "Opens a background session that has finished, but not one still running: it exits with `Your most recent conversation is running in the background` and that session's ID.",
+        "A resume restores history, model, agent, active goal and scheduled tasks that haven't expired; from a terminal it also restores the permission mode, with exceptions such as `bypassPermissions` and `plan`.",
+        "Launch flags such as `--mcp-config`, `--settings`, `--plugin-dir`, `--fallback-model` and `--add-dir` are not restored; `settings.json` and `settings.local.json` are re-read at launch."
+      ],
+      "gotchas": [
+        "\"Most recent\" is per directory: run it from another project and you get that project's last conversation.",
+        "Background Bash and monitor tasks are not restored, and a tool that was cut off by a crash does not run again.",
+        "`claude --continue` writes into the same session; add `--fork-session` if you want a copy with a new session ID."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claude --resume",
+          "difference": "Lets you choose a specific session (picker, name, ID, transcript path); `--continue` always takes the latest here."
+        },
+        {
+          "concept": "/branch",
+          "difference": "Copies the current conversation into a new session; `--continue` reopens an existing one."
+        }
+      ],
+      "examCues": [
+        "pick up where I left off",
+        "the last conversation in this directory",
+        "without choosing from a list",
+        "after closing the terminal",
+        "follow up on the latest claude -p run"
+      ]
+    },
+    "es": {
+      "tldr": "`claude --continue` (`-c`) reabre la conversación más reciente del directorio actual, sin picker. Úsalo cuando solo quieres seguir donde quedaste aquí; si necesitas una sesión concreta o más antigua, usa `--resume`.",
+      "whenToUse": [
+        "Cerraste la terminal o hubo un crash y quieres recuperar la última conversación de este proyecto",
+        "Hiciste `/clear`, saliste y quieres volver a la conversación más reciente",
+        "Un script debe mandar un seguimiento a la última corrida de `claude -p`: `claude -p --continue`"
+      ],
+      "keyFacts": [
+        "Omite sesiones creadas con `claude -p` o el Agent SDK, y sesiones cuyo primer prompt fue `/loop`; `claude -p --continue` sí las incluye.",
+        "Incluye sesiones que agregaron este directorio con `/add-dir`.",
+        "Abre una sesión en segundo plano que ya terminó, pero no una que sigue corriendo: sale con `Your most recent conversation is running in the background` y el ID de esa sesión.",
+        "Al reanudar vuelven el historial, el modelo, el agente, el goal activo y las tareas programadas no vencidas; desde la terminal también el permission mode, con excepciones como `bypassPermissions` y `plan`.",
+        "Flags de arranque como `--mcp-config`, `--settings`, `--plugin-dir`, `--fallback-model` y `--add-dir` no se restauran; `settings.json` y `settings.local.json` se releen al iniciar."
+      ],
+      "gotchas": [
+        "\"Más reciente\" es por directorio: si lo corres en otro proyecto obtienes la última conversación de ese proyecto.",
+        "Las tareas de Bash y monitor en segundo plano no se restauran, y una herramienta cortada por un crash no se vuelve a ejecutar.",
+        "`claude --continue` escribe en la misma sesión; agrega `--fork-session` si quieres una copia con un session ID nuevo."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claude --resume",
+          "difference": "Te deja elegir una sesión concreta (picker, nombre, ID, ruta del transcript); `--continue` siempre toma la última de aquí."
+        },
+        {
+          "concept": "/branch",
+          "difference": "Copia la conversación actual en una sesión nueva; `--continue` reabre una existente."
+        }
+      ],
+      "examCues": [
+        "pick up where I left off",
+        "the last conversation in this directory",
+        "without choosing from a list",
+        "after closing the terminal",
+        "follow up on the latest claude -p run"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sessions.md",
+      "https://code.claude.com/docs/en/cli-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "session-continue--ac05ece5",
+      "conceptId": "session-continue",
+      "secondaryConcepts": [
+        "session-resume",
+        "session-branch"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Yesterday a developer worked on a bug with Claude Code in `~/api`, then closed the terminal. Today, from the same directory, they want to keep writing into that same conversation. It was the last one they had in this project. What should they run, with the fewest steps?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --resume`, then select the session in the picker",
+          "correct": false,
+          "why": "It works, but it adds a picker step; the requirement is the fewest steps for the latest conversation."
+        },
+        {
+          "id": "B",
+          "text": "`claude --continue`",
+          "correct": true,
+          "why": "It reopens the most recent conversation in the current directory directly, with no choice to make."
+        },
+        {
+          "id": "C",
+          "text": "`claude --continue --fork-session`",
+          "correct": false,
+          "why": "It creates a new session ID, so they would not be writing into the same conversation."
+        },
+        {
+          "id": "D",
+          "text": "`claude`, then run `/branch`",
+          "correct": false,
+          "why": "`/branch` copies the conversation you are in; a fresh `claude` session has no history to copy."
+        }
+      ],
+      "explanation": "The requirement is to get back into the latest conversation in this directory and keep adding to it with the fewest steps. `claude --continue` does exactly that, with no picker. `claude --resume` reaches the same session but needs a selection in the picker. Adding `--fork-session` would branch into a new session ID instead of continuing the original.",
+      "keywordCues": [
+        "from the same directory",
+        "keep writing into that same conversation",
+        "the last one",
+        "fewest steps"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Ayer un desarrollador trabajó en un bug con Claude Code en `~/api` y cerró la terminal. Hoy, desde el mismo directorio, quiere seguir escribiendo en esa misma conversación. Fue la última que tuvo en este proyecto. ¿Qué debe correr, con la menor cantidad de pasos?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --resume` y elegir la sesión en el picker",
+            "why": "Funciona, pero agrega el paso del picker; el requisito es la menor cantidad de pasos para la última conversación."
+          },
+          {
+            "id": "B",
+            "text": "`claude --continue`",
+            "why": "Reabre directamente la conversación más reciente del directorio actual, sin elegir nada."
+          },
+          {
+            "id": "C",
+            "text": "`claude --continue --fork-session`",
+            "why": "Crea un session ID nuevo, así que no seguiría escribiendo en la misma conversación."
+          },
+          {
+            "id": "D",
+            "text": "`claude` y luego `/branch`",
+            "why": "`/branch` copia la conversación en la que estás; una sesión nueva de `claude` no tiene historial que copiar."
+          }
+        ],
+        "explanation": "El requisito es volver a la última conversación de este directorio y seguir agregándole mensajes con la menor cantidad de pasos. `claude --continue` hace justo eso, sin picker. `claude --resume` llega a la misma sesión pero exige elegirla en el picker. Agregar `--fork-session` bifurcaría a un session ID nuevo en vez de continuar la original."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-continue--2c147ce6",
+      "conceptId": "session-continue",
+      "secondaryConcepts": [
+        "session-resume"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer started a session with `claude --mcp-config ./ci-mcp.json --add-dir ../shared`. After a reboot they run `claude --continue` from the same directory. The conversation is back, but the MCP tools from that file are missing and Claude cannot reach `../shared`. How do they restore the setup for this conversation?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `claude --resume` and pick the session from the picker instead",
+          "correct": false,
+          "why": "Resuming through the picker has the same limitation: launch flags are not restored."
+        },
+        {
+          "id": "B",
+          "text": "Run `claude -p --continue` so the original launch state is included",
+          "correct": false,
+          "why": "`-p` only changes which sessions `--continue` considers and runs non-interactively; it does not restore launch flags."
+        },
+        {
+          "id": "C",
+          "text": "Exit and run `claude --continue --mcp-config ./ci-mcp.json --add-dir ../shared`",
+          "correct": true,
+          "why": "Flags like `--mcp-config` and `--add-dir` are not restored on resume, so they must be passed again."
+        },
+        {
+          "id": "D",
+          "text": "Run `/branch` so the copy reloads the original launch flags",
+          "correct": false,
+          "why": "`/branch` copies the conversation in the same process; it does not reapply launch flags."
+        }
+      ],
+      "explanation": "A resumed session restores the conversation and saved state, but not every launch flag. `--mcp-config`, `--settings`, `--plugin-dir`, `--fallback-model` and `--add-dir` must be passed again when you resume. The picker route resumes the same way, so it has the same gap. Only configuration that lives in the standard settings files is re-read automatically.",
+      "keywordCues": [
+        "--mcp-config ./ci-mcp.json --add-dir ../shared",
+        "MCP tools from that file are missing",
+        "cannot reach ../shared"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador inició una sesión con `claude --mcp-config ./ci-mcp.json --add-dir ../shared`. Tras reiniciar, corre `claude --continue` desde el mismo directorio. La conversación vuelve, pero faltan las herramientas MCP de ese archivo y Claude no llega a `../shared`. ¿Cómo restaura la configuración para esta conversación?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `claude --resume` y elegir la sesión en el picker",
+            "why": "Reanudar desde el picker tiene la misma limitación: los flags de arranque no se restauran."
+          },
+          {
+            "id": "B",
+            "text": "Correr `claude -p --continue` para incluir el estado de arranque original",
+            "why": "`-p` solo cambia qué sesiones considera `--continue` y corre sin interacción; no restaura flags de arranque."
+          },
+          {
+            "id": "C",
+            "text": "Salir y correr `claude --continue --mcp-config ./ci-mcp.json --add-dir ../shared`",
+            "why": "Flags como `--mcp-config` y `--add-dir` no se restauran al reanudar, así que hay que pasarlos otra vez."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/branch` para que la copia recargue los flags originales",
+            "why": "`/branch` copia la conversación en el mismo proceso; no vuelve a aplicar flags de arranque."
+          }
+        ],
+        "explanation": "Una sesión reanudada restaura la conversación y el estado guardado, pero no todos los flags de arranque. `--mcp-config`, `--settings`, `--plugin-dir`, `--fallback-model` y `--add-dir` se pasan de nuevo al reanudar. Reanudar desde el picker funciona igual, así que tiene el mismo hueco. Solo la configuración de los archivos de settings estándar se relee sola."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-continue--0a5b06f4",
+      "conceptId": "session-continue",
+      "secondaryConcepts": [
+        "session-resume"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A nightly job runs `claude -p \"triage new issues\"` in a repository, and that run is the most recent conversation there. In the morning, a follow-up script must send one more prompt to that same run and capture the answer, without looking up its session ID. What should the script run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --continue \"now label them\"`",
+          "correct": false,
+          "why": "Interactive `--continue` skips sessions created with `claude -p`, so it would reopen a different conversation."
+        },
+        {
+          "id": "B",
+          "text": "`claude -p --continue \"now label them\"`",
+          "correct": true,
+          "why": "`claude -p --continue` includes `-p` sessions, so it picks up the nightly run."
+        },
+        {
+          "id": "C",
+          "text": "`claude --resume`, then pick the nightly run",
+          "correct": false,
+          "why": "The picker leaves out `-p` sessions, and a script cannot drive an interactive picker."
+        },
+        {
+          "id": "D",
+          "text": "`claude -p --from-pr` with the repository's latest PR",
+          "correct": false,
+          "why": "`--from-pr` opens the picker filtered by pull request; it is not a way to continue a `-p` run."
+        }
+      ],
+      "explanation": "The requirement is to continue a `claude -p` session non-interactively without knowing its ID. Interactive `claude --continue` and the picker both leave out `-p` and Agent SDK sessions. `claude -p --continue` is the documented exception: it includes `-p`, SDK and `/loop` sessions. Without that, the only route back into a `-p` session is `claude --resume <session-id>`.",
+      "keywordCues": [
+        "claude -p",
+        "most recent conversation",
+        "script",
+        "without looking up its session ID"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un job nocturno corre `claude -p \"triage new issues\"` en un repositorio, y esa corrida es la conversación más reciente ahí. En la mañana, un script de seguimiento debe mandar un prompt más a esa misma corrida y capturar la respuesta, sin buscar su session ID. ¿Qué debe correr el script?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --continue \"now label them\"`",
+            "why": "`--continue` interactivo omite las sesiones creadas con `claude -p`, así que reabriría otra conversación."
+          },
+          {
+            "id": "B",
+            "text": "`claude -p --continue \"now label them\"`",
+            "why": "`claude -p --continue` incluye las sesiones de `-p`, así que toma la corrida nocturna."
+          },
+          {
+            "id": "C",
+            "text": "`claude --resume` y elegir la corrida nocturna",
+            "why": "El picker excluye las sesiones de `-p`, y un script no puede manejar un picker interactivo."
+          },
+          {
+            "id": "D",
+            "text": "`claude -p --from-pr` con el último PR del repositorio",
+            "why": "`--from-pr` abre el picker filtrado por pull request; no sirve para continuar una corrida de `-p`."
+          }
+        ],
+        "explanation": "El requisito es continuar una sesión de `claude -p` sin interacción y sin conocer su ID. `claude --continue` interactivo y el picker excluyen las sesiones de `-p` y del Agent SDK. `claude -p --continue` es la excepción documentada: incluye sesiones de `-p`, del SDK y de `/loop`. Fuera de eso, la única vía para volver a una sesión de `-p` es `claude --resume <session-id>`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-continue--87a562c4",
+      "conceptId": "session-continue",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer launched `claude --agent reviewer --plugin-dir ./my-plugin`, set an active goal, added `../docs` with `/add-dir`, and started a background Bash command. They exit and later run `claude --continue` in the same directory with no other flags. Which two carry over without any extra step? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The `reviewer` agent, with its tool restrictions",
+          "correct": true,
+          "why": "A session started with `--agent` continues as that agent, keeping its tool restrictions and model."
+        },
+        {
+          "id": "B",
+          "text": "The active goal",
+          "correct": true,
+          "why": "A goal still active when the session ended carries over; its turn count, timer and spend baseline reset."
+        },
+        {
+          "id": "C",
+          "text": "The plugin loaded with `--plugin-dir`",
+          "correct": false,
+          "why": "`--plugin-dir` is a launch flag that must be passed again on resume."
+        },
+        {
+          "id": "D",
+          "text": "Access to `../docs` added with `/add-dir`",
+          "correct": false,
+          "why": "Directories added mid-session with `/add-dir` are not restored."
+        },
+        {
+          "id": "E",
+          "text": "The background Bash command",
+          "correct": false,
+          "why": "Background Bash and monitor tasks are not restored."
+        }
+      ],
+      "explanation": "A resumed session restores the conversation plus state saved in it: model, agent, permission mode from the terminal, active goal and unexpired scheduled tasks. The agent and the goal therefore come back on their own. `--plugin-dir` is one of the launch flags you pass again, and `/add-dir` directories are not restored either. Background Bash tasks are explicitly excluded.",
+      "keywordCues": [
+        "--agent reviewer",
+        "--plugin-dir ./my-plugin",
+        "active goal",
+        "/add-dir",
+        "background Bash command",
+        "no other flags"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador lanzó `claude --agent reviewer --plugin-dir ./my-plugin`, fijó un goal activo, agregó `../docs` con `/add-dir` e inició un comando Bash en segundo plano. Sale y luego corre `claude --continue` en el mismo directorio sin otros flags. ¿Cuáles dos se mantienen sin ningún paso extra? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El agente `reviewer`, con sus restricciones de herramientas",
+            "why": "Una sesión iniciada con `--agent` continúa como ese agente, con sus restricciones de herramientas y su modelo."
+          },
+          {
+            "id": "B",
+            "text": "El goal activo",
+            "why": "Un goal que seguía activo al terminar la sesión se mantiene; su conteo de turnos, timer y base de gasto se reinician."
+          },
+          {
+            "id": "C",
+            "text": "El plugin cargado con `--plugin-dir`",
+            "why": "`--plugin-dir` es un flag de arranque que hay que pasar otra vez al reanudar."
+          },
+          {
+            "id": "D",
+            "text": "El acceso a `../docs` agregado con `/add-dir`",
+            "why": "Los directorios agregados a mitad de sesión con `/add-dir` no se restauran."
+          },
+          {
+            "id": "E",
+            "text": "El comando Bash en segundo plano",
+            "why": "Las tareas de Bash y monitor en segundo plano no se restauran."
+          }
+        ],
+        "explanation": "Una sesión reanudada restaura la conversación y el estado guardado en ella: modelo, agente, permission mode desde la terminal, goal activo y tareas programadas no vencidas. Por eso el agente y el goal vuelven solos. `--plugin-dir` es uno de los flags de arranque que se pasan de nuevo, y los directorios de `/add-dir` tampoco se restauran. Las tareas de Bash en segundo plano están excluidas explícitamente."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-continue--db5a1c81",
+      "conceptId": "session-continue",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which flag, passed to `claude`, loads the most recent conversation in the current directory?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--continue",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "-c",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--continue`, short form `-c`, loads the most recent conversation in the current directory. It skips `-p`, Agent SDK and `/loop`-first sessions unless combined with `-p`. To choose a specific session instead, use `--resume`.",
+      "keywordCues": [
+        "most recent conversation",
+        "current directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag, pasado a `claude`, carga la conversación más reciente del directorio actual?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--continue",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "-c",
+            "why": ""
+          }
+        ],
+        "explanation": "`--continue`, en forma corta `-c`, carga la conversación más reciente del directorio actual. Omite sesiones de `-p`, del Agent SDK y las que empiezan con `/loop`, salvo que lo combines con `-p`. Para elegir una sesión concreta, usa `--resume`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "session-continue--r0",
+      "conceptId": "session-continue",
+      "kind": "recall",
+      "prompt": "What does claude --continue reopen, which sessions does it skip, and what must you pass again when you use it?",
+      "promptEs": "¿Qué reabre claude --continue, qué sesiones omite y qué debes volver a pasar al usarlo?",
+      "idealAnswer": "It reopens the most recent conversation in the current directory with no picker. It skips sessions from claude -p, the Agent SDK and those whose first prompt was /loop, unless you run claude -p --continue. Launch flags like --mcp-config, --settings, --plugin-dir and --add-dir must be passed again; settings files are re-read.",
+      "rubric": [
+        "Most recent conversation in the current directory, no choice",
+        "Skips -p/SDK (and /loop-first) sessions; claude -p --continue includes them",
+        "Launch flags such as --mcp-config or --add-dir must be passed again",
+        "Settings files are re-read automatically"
+      ]
+    },
+    {
+      "id": "session-continue--r1",
+      "conceptId": "session-continue",
+      "kind": "why-not",
+      "prompt": "You need a session from last week, not the latest one in this directory. Why is claude --continue the wrong tool?",
+      "promptEs": "Necesitas una sesión de la semana pasada, no la última de este directorio. ¿Por qué claude --continue no sirve?",
+      "idealAnswer": "claude --continue always takes the most recent conversation in the current directory and offers no choice. To reach an older session you need claude --resume, with the picker, a name, a session ID or a transcript path, or /resume from inside a session.",
+      "rubric": [
+        "--continue only takes the most recent conversation here",
+        "It gives no way to choose",
+        "Use claude --resume (picker, name, ID, path) or /resume"
+      ]
+    }
+  ]
+}

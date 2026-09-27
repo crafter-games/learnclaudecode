@@ -1,0 +1,549 @@
+{
+  "conceptId": "large-reduce-reads",
+  "card": {
+    "en": {
+      "tldr": "File reads grow with the codebase. Searches already respect `.gitignore`; for checked-in generated or vendored code add `Read` deny rules in `permissions.deny`, use a code intelligence plugin so Claude finds definitions through a language server, and use `worktree.sparsePaths` so new worktrees check out only what a task needs.",
+      "whenToUse": [
+        "Claude keeps opening committed generated code or a vendored SDK",
+        "Claude burns many greps and reads to find where a symbol is defined or used",
+        "Worktrees in a huge repository are slow to create or take too much disk",
+        "Subagents run in worktrees and each needs only a few directories"
+      ],
+      "keyFacts": [
+        "Claude's content searches respect `.gitignore` by default, so ignored paths like `node_modules/` or `dist/` need no extra config.",
+        "`Read(./**/dist/**/*)` in `permissions.deny` blocks files inside `dist/` but not the directory itself, so Claude can still `ls dist` or `cd` into it.",
+        "Code intelligence plugins, such as `typescript-lsp@claude-plugins-official`, need the language server binary on each developer's machine; enable one for the repo via the `enabledPlugins` project setting.",
+        "`worktree.sparsePaths` lists directories relative to the repository root; root-level files are always checked out, root-level directories are not, so include `.claude`.",
+        "`worktree.symlinkDirectories: [\"node_modules\"]` symlinks each worktree's `node_modules/` to the main copy instead of duplicating it.",
+        "`sparsePaths` lists merge across scopes: a local file can add paths but not remove committed ones."
+      ],
+      "gotchas": [
+        "Deny rules don't cover subprocesses that open files themselves, and a Bash `grep -r` or `find` over a directory still includes denied files in its output.",
+        "Relative deny patterns anchor at the session's working directory, not the repository root.",
+        "Inside a worktree the working directory is the worktree root, so permission rules and hooks must be in the root `.claude/settings.json`.",
+        "List directories in `sparsePaths`, not individual files; all worktrees in a session share the same list."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claudeMdExcludes",
+          "difference": "Skips instruction files; it does not stop Claude opening generated or vendored code."
+        },
+        {
+          "concept": "--add-dir / additionalDirectories",
+          "difference": "They widen access to more directories; these settings narrow what Claude reads or checks out."
+        }
+      ],
+      "examCues": [
+        "checked-in generated code",
+        "vendored SDK",
+        "find where a symbol is defined",
+        "worktrees are slow and use too much disk",
+        "still able to list the directory"
+      ]
+    },
+    "es": {
+      "tldr": "Las lecturas de archivos crecen con la base de código. Las búsquedas ya respetan `.gitignore`; para código generado o vendorizado commiteado agrega reglas `Read` en `permissions.deny`, usa un plugin de code intelligence para que Claude encuentre definiciones vía un language server, y usa `worktree.sparsePaths` para que los worktrees nuevos hagan checkout solo de lo que la tarea necesita.",
+      "whenToUse": [
+        "Claude abre una y otra vez código generado commiteado o un SDK vendorizado",
+        "Claude gasta muchos greps y lecturas para encontrar dónde se define o usa un símbolo",
+        "En un repo enorme los worktrees tardan en crearse u ocupan demasiado disco",
+        "Subagentes corren en worktrees y cada uno necesita solo unos pocos directorios"
+      ],
+      "keyFacts": [
+        "Las búsquedas de contenido de Claude respetan `.gitignore` por defecto, así que rutas ignoradas como `node_modules/` o `dist/` no necesitan configuración extra.",
+        "`Read(./**/dist/**/*)` en `permissions.deny` bloquea los archivos dentro de `dist/` pero no el directorio, así Claude aún puede hacer `ls dist` o `cd`.",
+        "Los plugins de code intelligence, como `typescript-lsp@claude-plugins-official`, necesitan el binario del language server en cada máquina; se habilitan para el repo con el setting de proyecto `enabledPlugins`.",
+        "`worktree.sparsePaths` lista directorios relativos a la raíz del repositorio; los archivos de la raíz siempre se incluyen, los directorios de la raíz no, así que incluye `.claude`.",
+        "`worktree.symlinkDirectories: [\"node_modules\"]` crea un symlink del `node_modules/` de cada worktree a la copia principal en vez de duplicarlo.",
+        "Las listas de `sparsePaths` se combinan entre scopes: un archivo local puede agregar rutas pero no quitar las commiteadas."
+      ],
+      "gotchas": [
+        "Las reglas deny no cubren subprocesos que abren archivos por su cuenta, y un `grep -r` o `find` en Bash sobre un directorio sigue incluyendo archivos denegados en su salida.",
+        "Los patrones deny relativos se anclan en el directorio de trabajo de la sesión, no en la raíz del repositorio.",
+        "Dentro de un worktree el directorio de trabajo es la raíz del worktree, así que reglas de permisos y hooks deben ir en el `.claude/settings.json` raíz.",
+        "Pon directorios en `sparsePaths`, no archivos sueltos; todos los worktrees de una sesión comparten la misma lista."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claudeMdExcludes",
+          "difference": "Salta archivos de instrucciones; no impide que Claude abra código generado o vendorizado."
+        },
+        {
+          "concept": "--add-dir / additionalDirectories",
+          "difference": "Amplían el acceso a más directorios; estos settings reducen lo que Claude lee o hace checkout."
+        }
+      ],
+      "examCues": [
+        "checked-in generated code",
+        "vendored SDK",
+        "find where a symbol is defined",
+        "worktrees are slow and use too much disk",
+        "still able to list the directory"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/large-codebases.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "large-reduce-reads--c8f3a528",
+      "conceptId": "large-reduce-reads",
+      "secondaryConcepts": [
+        "large-scope-instructions"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team starts Claude from the repository root. A vendored SDK is committed under `vendor/` in several packages, and Claude keeps opening its files. The team wants this blocked for everyone who works in the repository, while Claude can still list those directories with `ls`. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"Read(./**/vendor/**)\"` in `permissions.deny` in the committed `.claude/settings.json`",
+          "correct": false,
+          "why": "Ending in `/**` also covers the directory itself, so listing it would be blocked."
+        },
+        {
+          "id": "B",
+          "text": "`\"Read(./**/vendor/**/*)\"` in `permissions.deny` in the committed `.claude/settings.json`",
+          "correct": true,
+          "why": "Covers everything inside each `vendor/` but not the directory, and the committed file reaches the team."
+        },
+        {
+          "id": "C",
+          "text": "`\"Read(./**/vendor/**/*)\"` in `permissions.deny` in `.claude/settings.local.json`",
+          "correct": false,
+          "why": "The local file applies only to the person who created it."
+        },
+        {
+          "id": "D",
+          "text": "`\"**/vendor/**\"` in `claudeMdExcludes` in the committed `.claude/settings.json`",
+          "correct": false,
+          "why": "That skips instruction files under `vendor/`, not the SDK's source files."
+        }
+      ],
+      "explanation": "Three requirements: block reads of checked-in files, apply to the whole team, and keep the directory listable. A `Read` deny rule ending in `/**/*` covers everything inside the directory but not the directory itself, and committing it to `.claude/settings.json` at the root where sessions start shares it. The `/**` variant also blocks the directory, and `claudeMdExcludes` only targets CLAUDE.md and rules files.",
+      "keywordCues": [
+        "committed",
+        "for everyone who works in the repository",
+        "can still list those directories"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Un equipo lanza Claude desde la raíz del repositorio. Un SDK vendorizado está commiteado en `vendor/` dentro de varios paquetes y Claude sigue abriendo sus archivos. El equipo quiere bloquearlo para todos los que trabajan en el repositorio, pero que Claude aún pueda listar esos directorios con `ls`. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"Read(./**/vendor/**)\"` en `permissions.deny` del `.claude/settings.json` commiteado",
+            "why": "Terminar en `/**` cubre también el directorio, así que listarlo quedaría bloqueado."
+          },
+          {
+            "id": "B",
+            "text": "`\"Read(./**/vendor/**/*)\"` en `permissions.deny` del `.claude/settings.json` commiteado",
+            "why": "Cubre todo lo que hay dentro de cada `vendor/` pero no el directorio, y el archivo commiteado llega al equipo."
+          },
+          {
+            "id": "C",
+            "text": "`\"Read(./**/vendor/**/*)\"` en `permissions.deny` de `.claude/settings.local.json`",
+            "why": "El archivo local aplica solo a quien lo creó."
+          },
+          {
+            "id": "D",
+            "text": "`\"**/vendor/**\"` en `claudeMdExcludes` del `.claude/settings.json` commiteado",
+            "why": "Eso salta archivos de instrucciones bajo `vendor/`, no el código fuente del SDK."
+          }
+        ],
+        "explanation": "Tres requisitos: bloquear lecturas de archivos commiteados, aplicar a todo el equipo y que el directorio siga listable. Una regla `Read` deny que termina en `/**/*` cubre todo dentro del directorio pero no el directorio, y commitearla en el `.claude/settings.json` de la raíz donde empiezan las sesiones la comparte. La variante `/**` bloquea también el directorio, y `claudeMdExcludes` solo apunta a CLAUDE.md y reglas."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-reduce-reads--19598beb",
+      "conceptId": "large-reduce-reads",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a large TypeScript codebase, Claude spends dozens of grep calls and file reads every time it needs to find where a function is defined and which modules call it. The developer wants Claude to locate definitions and references without scanning the tree. What should they set up?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`Read` deny rules for every directory except `src/`",
+          "correct": false,
+          "why": "Fewer files to scan, but Claude would still grep and read to find symbols."
+        },
+        {
+          "id": "B",
+          "text": "`worktree.sparsePaths` listing only the packages in use",
+          "correct": false,
+          "why": "It only affects what new worktrees check out, not how Claude finds symbols."
+        },
+        {
+          "id": "C",
+          "text": "A code intelligence plugin such as `typescript-lsp`",
+          "correct": true,
+          "why": "It connects Claude to a language server to jump to definitions and find references."
+        },
+        {
+          "id": "D",
+          "text": "A per-package CLAUDE.md describing where each module lives",
+          "correct": false,
+          "why": "It costs context on every session and still leaves Claude reading files to find callers."
+        }
+      ],
+      "explanation": "The requirement is finding definitions and references without exhaustive file scans. A code intelligence plugin connects Claude to a language server, so it can jump to definitions, find references and surface type errors directly. Deny rules and sparse checkouts reduce what is available to read, but they don't change how Claude locates a symbol in what remains.",
+      "keywordCues": [
+        "where a function is defined and which modules call it",
+        "without scanning the tree"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "En una base de código TypeScript grande, Claude gasta decenas de greps y lecturas cada vez que necesita encontrar dónde se define una función y qué módulos la llaman. El desarrollador quiere que Claude ubique definiciones y referencias sin recorrer el árbol. ¿Qué debe configurar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Reglas `Read` deny para todo directorio salvo `src/`",
+            "why": "Menos archivos que recorrer, pero Claude seguiría haciendo grep y leyendo para encontrar símbolos."
+          },
+          {
+            "id": "B",
+            "text": "`worktree.sparsePaths` con solo los paquetes en uso",
+            "why": "Solo afecta qué se hace checkout en worktrees nuevos, no cómo Claude encuentra símbolos."
+          },
+          {
+            "id": "C",
+            "text": "Un plugin de code intelligence como `typescript-lsp`",
+            "why": "Conecta Claude a un language server para ir a definiciones y encontrar referencias."
+          },
+          {
+            "id": "D",
+            "text": "Un CLAUDE.md por paquete que describa dónde vive cada módulo",
+            "why": "Gasta contexto en cada sesión y Claude igual lee archivos para encontrar llamadores."
+          }
+        ],
+        "explanation": "El requisito es encontrar definiciones y referencias sin recorrer archivos exhaustivamente. Un plugin de code intelligence conecta Claude a un language server para ir a definiciones, encontrar referencias y mostrar errores de tipos directamente. Las reglas deny y los checkouts dispersos reducen lo que hay para leer, pero no cambian cómo Claude ubica un símbolo en lo que queda."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-reduce-reads--e07aa38c",
+      "conceptId": "large-reduce-reads",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A huge monorepo runs subagents in worktrees, and each full checkout is slow and duplicates a large `node_modules`. Tasks only touch `packages/api` and `packages/shared`, and the root `.claude/rules/` must be available inside each worktree. What should the committed `worktree` settings contain? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`\"sparsePaths\": [\".claude\", \"packages/api\", \"packages/shared\"]`",
+          "correct": true,
+          "why": "Checks out those directories plus root-level files, including the root `.claude/` directory."
+        },
+        {
+          "id": "B",
+          "text": "`\"sparsePaths\": [\"packages/api\", \"packages/shared\"]`",
+          "correct": false,
+          "why": "Root-level directories are not checked out automatically, so `.claude/rules/` would be missing."
+        },
+        {
+          "id": "C",
+          "text": "`\"symlinkDirectories\": [\"node_modules\"]`",
+          "correct": true,
+          "why": "Each worktree's `node_modules/` becomes a symlink to the main copy instead of a duplicate."
+        },
+        {
+          "id": "D",
+          "text": "`\"sparsePaths\": [\"../api\", \"../shared\"]`",
+          "correct": false,
+          "why": "`sparsePaths` entries are relative to the repository root, not to the launch directory."
+        },
+        {
+          "id": "E",
+          "text": "`\"sparsePaths\": [\".claude\", \"packages/api/src/index.ts\", \"packages/shared\"]`",
+          "correct": false,
+          "why": "`sparsePaths` should list directories, not individual files."
+        }
+      ],
+      "explanation": "Two needs: a lightweight checkout that keeps the root `.claude/` directory, and no duplicated `node_modules`. `sparsePaths` takes directories relative to the repository root and always adds root-level files but not root-level directories, so `.claude` must be listed. `symlinkDirectories` links `node_modules` back to the main repository's copy. Omitting `.claude`, using launch-relative paths or listing files misses a requirement.",
+      "keywordCues": [
+        "each full checkout is slow",
+        "duplicates a large `node_modules`",
+        "root `.claude/rules/` must be available inside each worktree"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Un monorepo enorme corre subagentes en worktrees, y cada checkout completo es lento y duplica un `node_modules` grande. Las tareas solo tocan `packages/api` y `packages/shared`, y el `.claude/rules/` raíz debe estar disponible dentro de cada worktree. ¿Qué debe tener el setting `worktree` commiteado? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`\"sparsePaths\": [\".claude\", \"packages/api\", \"packages/shared\"]`",
+            "why": "Hace checkout de esos directorios más los archivos de la raíz, incluido el directorio `.claude/` raíz."
+          },
+          {
+            "id": "B",
+            "text": "`\"sparsePaths\": [\"packages/api\", \"packages/shared\"]`",
+            "why": "Los directorios de la raíz no se incluyen solos, así que faltaría `.claude/rules/`."
+          },
+          {
+            "id": "C",
+            "text": "`\"symlinkDirectories\": [\"node_modules\"]`",
+            "why": "El `node_modules/` de cada worktree pasa a ser un symlink a la copia principal en vez de un duplicado."
+          },
+          {
+            "id": "D",
+            "text": "`\"sparsePaths\": [\"../api\", \"../shared\"]`",
+            "why": "Las entradas de `sparsePaths` son relativas a la raíz del repositorio, no al directorio de lanzamiento."
+          },
+          {
+            "id": "E",
+            "text": "`\"sparsePaths\": [\".claude\", \"packages/api/src/index.ts\", \"packages/shared\"]`",
+            "why": "`sparsePaths` debe listar directorios, no archivos sueltos."
+          }
+        ],
+        "explanation": "Dos necesidades: un checkout liviano que conserve el directorio `.claude/` raíz y no duplicar `node_modules`. `sparsePaths` recibe directorios relativos a la raíz del repositorio y siempre agrega los archivos de la raíz pero no sus directorios, así que hay que listar `.claude`. `symlinkDirectories` enlaza `node_modules` a la copia del repositorio principal. Omitir `.claude`, usar rutas relativas al lanzamiento o listar archivos incumple un requisito."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-reduce-reads--d0f78bb9",
+      "conceptId": "large-reduce-reads",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which dotted settings key makes worktrees Claude creates check out only the listed directories plus root-level files?",
+      "options": [
+        {
+          "id": "A",
+          "text": "worktree.sparsePaths",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`worktree.sparsePaths` uses git sparse-checkout to write only the listed directories plus root-level files to disk, so worktrees start faster and use less space. Paths are relative to the repository root.",
+      "keywordCues": [
+        "check out only the listed directories",
+        "root-level files"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de settings con punto hace que los worktrees que crea Claude hagan checkout solo de los directorios listados más los archivos de la raíz?",
+        "options": [
+          {
+            "id": "A",
+            "text": "worktree.sparsePaths",
+            "why": ""
+          }
+        ],
+        "explanation": "`worktree.sparsePaths` usa git sparse-checkout para escribir en disco solo los directorios listados más los archivos de la raíz, así los worktrees arrancan más rápido y ocupan menos espacio. Las rutas son relativas a la raíz del repositorio."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-reduce-reads--55620b9e",
+      "conceptId": "large-reduce-reads",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete the committed `.claude/settings.json` so Claude can't open any file inside a `dist/` directory but can still run `ls dist`, and new worktrees reuse the main `node_modules` instead of copying it.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "allow",
+          "correct": false,
+          "why": "Allow rules pre-approve tools; they don't block reads."
+        },
+        {
+          "id": "1b",
+          "text": "additionalDirectories",
+          "correct": false,
+          "why": "Grants access to more directories, the opposite of blocking."
+        },
+        {
+          "id": "1c",
+          "text": "deny",
+          "correct": true,
+          "why": "Deny rules block Claude from opening the matching files."
+        },
+        {
+          "id": "2a",
+          "text": "Read(./**/dist/**/*)",
+          "correct": true,
+          "why": "Covers everything inside each `dist/` but not the directory, so `ls dist` still works."
+        },
+        {
+          "id": "2b",
+          "text": "Read(./**/dist/**)",
+          "correct": false,
+          "why": "Also covers the directory itself, which would block listing it."
+        },
+        {
+          "id": "2c",
+          "text": "Edit(./**/dist/**/*)",
+          "correct": false,
+          "why": "Blocks edits, not reads; Claude could still open the files."
+        },
+        {
+          "id": "3a",
+          "text": "sparsePaths",
+          "correct": false,
+          "why": "Chooses which directories are checked out; it doesn't avoid duplicating `node_modules`."
+        },
+        {
+          "id": "3b",
+          "text": "symlinkDirectories",
+          "correct": true,
+          "why": "Symlinks each worktree's `node_modules/` to the main repository's copy."
+        }
+      ],
+      "explanation": "Blocking reads needs a `Read` rule in `permissions.deny`. Ending the pattern with `/**/*` covers the directory's contents but not the directory, so Claude can still list it or `cd` into it. `worktree.symlinkDirectories` links `node_modules` back to the main copy rather than duplicating it on disk.",
+      "keywordCues": [
+        "can't open any file inside a `dist/` directory",
+        "can still run `ls dist`",
+        "reuse the main `node_modules`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md"
+      ],
+      "es": {
+        "stem": "Completa el `.claude/settings.json` commiteado para que Claude no pueda abrir ningún archivo dentro de un directorio `dist/` pero sí correr `ls dist`, y para que los worktrees nuevos reutilicen el `node_modules` principal en vez de copiarlo.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "allow",
+            "why": "Las reglas allow preaprueban herramientas; no bloquean lecturas."
+          },
+          {
+            "id": "1b",
+            "text": "additionalDirectories",
+            "why": "Da acceso a más directorios, lo contrario de bloquear."
+          },
+          {
+            "id": "1c",
+            "text": "deny",
+            "why": "Las reglas deny impiden que Claude abra los archivos que calzan."
+          },
+          {
+            "id": "2a",
+            "text": "Read(./**/dist/**/*)",
+            "why": "Cubre todo dentro de cada `dist/` pero no el directorio, así `ls dist` sigue funcionando."
+          },
+          {
+            "id": "2b",
+            "text": "Read(./**/dist/**)",
+            "why": "Cubre también el directorio, lo que bloquearía listarlo."
+          },
+          {
+            "id": "2c",
+            "text": "Edit(./**/dist/**/*)",
+            "why": "Bloquea ediciones, no lecturas; Claude aún podría abrir los archivos."
+          },
+          {
+            "id": "3a",
+            "text": "sparsePaths",
+            "why": "Elige qué directorios se hacen checkout; no evita duplicar `node_modules`."
+          },
+          {
+            "id": "3b",
+            "text": "symlinkDirectories",
+            "why": "Crea un symlink del `node_modules/` de cada worktree a la copia del repositorio principal."
+          }
+        ],
+        "explanation": "Bloquear lecturas requiere una regla `Read` en `permissions.deny`. Terminar el patrón en `/**/*` cubre el contenido del directorio pero no el directorio, así Claude aún puede listarlo o hacer `cd`. `worktree.symlinkDirectories` enlaza `node_modules` a la copia principal en vez de duplicarlo en disco."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": [\n      \"{{2}}\"\n    ]\n  },\n  \"worktree\": {\n    \"{{3}}\": [\"node_modules\"]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "large-reduce-reads--r0",
+      "conceptId": "large-reduce-reads",
+      "kind": "recall",
+      "prompt": "Name three ways to cut what Claude reads or checks out in a large codebase, and the problem each one solves.",
+      "promptEs": "Nombra tres formas de reducir lo que Claude lee o hace checkout en una base de código grande, y el problema que resuelve cada una.",
+      "idealAnswer": "`Read` deny rules in `permissions.deny`, such as `Read(./**/dist/**/*)`, block checked-in generated or vendored code, since searches already respect `.gitignore`. A code intelligence plugin lets Claude find definitions and references through a language server instead of grepping and reading files. `worktree.sparsePaths` makes new worktrees check out only the listed directories plus root-level files, and `symlinkDirectories` avoids duplicating `node_modules`.",
+      "rubric": [
+        "Read deny rules for checked-in generated or vendored code",
+        "Code intelligence plugin replaces grep-and-read symbol search",
+        "worktree.sparsePaths for lightweight worktree checkouts",
+        "Searches already respect .gitignore"
+      ]
+    },
+    {
+      "id": "large-reduce-reads--r1",
+      "conceptId": "large-reduce-reads",
+      "kind": "why-not",
+      "prompt": "Committed generated code keeps getting opened. Why not just rely on .gitignore, or use claudeMdExcludes for it?",
+      "promptEs": "Claude sigue abriendo código generado que está commiteado. ¿Por qué no confiar en .gitignore o usar claudeMdExcludes para eso?",
+      "idealAnswer": "Searches respect `.gitignore`, but checked-in files are not listed there, so they stay visible. `claudeMdExcludes` only skips CLAUDE.md and rules files, not source files. A `Read` deny rule in `permissions.deny` is what blocks Claude from opening those files.",
+      "rubric": [
+        "Checked-in files aren't covered by .gitignore",
+        "claudeMdExcludes only affects instruction files",
+        "Read deny rules in permissions.deny block opening them"
+      ]
+    }
+  ]
+}

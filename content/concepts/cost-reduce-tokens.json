@@ -1,0 +1,655 @@
+{
+  "conceptId": "cost-reduce-tokens",
+  "card": {
+    "en": {
+      "tldr": "Every request resends the whole conversation, so usage grows with context size and with anything that sends requests on its own: cache misses after breaks, scheduled tasks, subagents, teammates and compaction. The highest-impact habits are clearing between unrelated tasks and matching the model to the job; then trim thinking, MCP, CLAUDE.md and verbose output.",
+      "whenToUse": [
+        "Spend or plan usage is higher than your activity suggests.",
+        "You are switching to unrelated work in a long session.",
+        "Routine or simple tasks are running on your most capable model.",
+        "Tests, logs or research are flooding the main conversation."
+      ],
+      "keyFacts": [
+        "/clear starts a fresh conversation and costs nothing; /compact reads the conversation it summarizes, so compacting a large context is itself a large request.",
+        "Sonnet handles most coding tasks and costs less than Opus; reserve Opus for complex reasoning, switch with /model, and set model: haiku for simple subagents.",
+        "Thinking tokens are billed as output tokens: lower effort with /effort or in /model, or on fixed-budget models set MAX_THINKING_TOKENS. Adaptive-reasoning models ignore nonzero budgets.",
+        "Disable unused MCP servers in /mcp, and prefer CLI tools such as gh, aws or gcloud, which add no per-tool listing.",
+        "CLAUDE.md loads at session start; move workflow-specific instructions into skills, which load on demand.",
+        "Delegate verbose operations to subagents so only a summary returns, and use hooks to preprocess output, such as filtering test results to failures."
+      ],
+      "gotchas": [
+        "A switch to Opus with /model also applies to subagents that inherit your session's model.",
+        "A subagent's own requests still draw on your usage; choose a smaller model for it to spend less.",
+        "Scheduled tasks fire even while the session is idle, and each active agent teammate keeps consuming tokens until it exits.",
+        "Vague requests like 'improve this codebase' trigger broad scanning; specific prompts need fewer file reads."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/compact vs /clear",
+          "difference": "/compact keeps continuity but is a large request; /clear drops history and costs nothing."
+        },
+        {
+          "concept": "Skills vs subagents for savings",
+          "difference": "Skills shrink the always-loaded base context; subagents keep verbose output out of the main conversation."
+        }
+      ],
+      "examCues": [
+        "switching to an unrelated task",
+        "spend is higher than expected",
+        "simple subagent task",
+        "keep verbose test output out of the conversation",
+        "instructions only needed for one workflow"
+      ]
+    },
+    "es": {
+      "tldr": "Cada request reenvía toda la conversación, así que el uso crece con el tamaño del contexto y con todo lo que envía requests por su cuenta: cache misses tras pausas, tareas programadas, subagentes, teammates y compactación. Los hábitos de mayor impacto son limpiar entre tareas no relacionadas y elegir el modelo según el trabajo; después, recorta thinking, MCP, CLAUDE.md y salidas verbosas.",
+      "whenToUse": [
+        "El gasto o el uso del plan es mayor de lo que tu actividad sugiere.",
+        "Cambias a un trabajo no relacionado en una sesión larga.",
+        "Tareas rutinarias o simples corren en tu modelo más capaz.",
+        "Tests, logs o investigación inundan la conversación principal."
+      ],
+      "keyFacts": [
+        "/clear empieza una conversación nueva y no cuesta nada; /compact lee la conversación que resume, así que compactar un contexto grande es en sí un request grande.",
+        "Sonnet resuelve la mayoría de tareas de código y cuesta menos que Opus; reserva Opus para razonamiento complejo, cambia con /model y usa model: haiku en subagentes simples.",
+        "Los tokens de thinking se cobran como tokens de salida: baja el esfuerzo con /effort o en /model, o en modelos de presupuesto fijo define MAX_THINKING_TOKENS. Los modelos de razonamiento adaptativo ignoran presupuestos distintos de cero.",
+        "Desactiva los servidores MCP que no usas en /mcp, y prefiere CLIs como gh, aws o gcloud, que no agregan un listado por tool.",
+        "CLAUDE.md carga al inicio de la sesión; mueve las instrucciones de flujos específicos a skills, que cargan bajo demanda.",
+        "Delega operaciones verbosas a subagentes para que solo vuelva un resumen, y usa hooks para preprocesar la salida, por ejemplo filtrar los resultados de tests a los fallos."
+      ],
+      "gotchas": [
+        "Cambiar a Opus con /model también aplica a los subagentes que heredan el modelo de tu sesión.",
+        "Los requests propios de un subagente igual consumen tu uso; elige un modelo más pequeño para gastar menos.",
+        "Las tareas programadas se disparan aunque la sesión esté inactiva, y cada teammate activo sigue consumiendo tokens hasta que termina.",
+        "Pedidos vagos como 'mejora este codebase' provocan un escaneo amplio; los prompts específicos requieren menos lecturas de archivos."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/compact vs /clear",
+          "difference": "/compact mantiene la continuidad pero es un request grande; /clear descarta el historial y no cuesta nada."
+        },
+        {
+          "concept": "Skills vs subagentes para ahorrar",
+          "difference": "Las skills achican el contexto base siempre cargado; los subagentes mantienen la salida verbosa fuera de la conversación principal."
+        }
+      ],
+      "examCues": [
+        "switching to an unrelated task",
+        "spend is higher than expected",
+        "simple subagent task",
+        "keep verbose test output out of the conversation",
+        "instructions only needed for one workflow"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/costs.md",
+      "https://code.claude.com/docs/en/best-practices.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cost-reduce-tokens--472765e7",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "A developer just finished a long debugging session on the payments service. Next she will build an unrelated settings page and doesn't need any of the earlier history, though she may want to find the old session later. She wants the next task to use as few tokens as possible. What should she do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /compact, then start the new task",
+          "correct": false,
+          "why": "It keeps a summary she doesn't need, and compacting a large context is itself a large request."
+        },
+        {
+          "id": "B",
+          "text": "Run /clear, then start the new task",
+          "correct": true,
+          "why": "It starts a fresh conversation at no cost, and the old one stays available through /resume."
+        },
+        {
+          "id": "C",
+          "text": "Continue in the same session with a very specific prompt",
+          "correct": false,
+          "why": "Every request still resends the whole debugging history, so stale context is paid on each message."
+        },
+        {
+          "id": "D",
+          "text": "Run /rewind to an earlier checkpoint",
+          "correct": false,
+          "why": "It restores conversation and code to a previous point in the same task; the earlier history still comes along."
+        }
+      ],
+      "explanation": "The requirement is unrelated work with no need for prior history, at minimum token cost. /clear starts a fresh conversation and costs nothing, and she can still return to the old one with /resume. /compact is tempting because it frees space, but it reads the whole conversation to summarize it and keeps continuity she doesn't need. Staying in the session pays for stale context on every request.",
+      "keywordCues": [
+        "unrelated",
+        "doesn't need any of the earlier history",
+        "as few tokens as possible"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora acaba de terminar una sesión larga de debugging en el servicio de pagos. Ahora construirá una página de configuración no relacionada y no necesita nada del historial anterior, aunque quizá quiera encontrar la sesión vieja más tarde. Quiere que la siguiente tarea use la menor cantidad de tokens posible. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr /compact y luego empezar la tarea nueva",
+            "why": "Conserva un resumen que no necesita, y compactar un contexto grande es en sí un request grande."
+          },
+          {
+            "id": "B",
+            "text": "Correr /clear y luego empezar la tarea nueva",
+            "why": "Empieza una conversación nueva sin costo, y la anterior sigue disponible con /resume."
+          },
+          {
+            "id": "C",
+            "text": "Seguir en la misma sesión con un prompt muy específico",
+            "why": "Cada request sigue reenviando todo el historial de debugging, así que el contexto viejo se paga en cada mensaje."
+          },
+          {
+            "id": "D",
+            "text": "Correr /rewind a un checkpoint anterior",
+            "why": "Restaura conversación y código a un punto anterior de la misma tarea; el historial previo sigue viniendo."
+          }
+        ],
+        "explanation": "El requisito es un trabajo no relacionado, sin necesidad del historial, al mínimo costo de tokens. /clear empieza una conversación nueva y no cuesta nada, y aún puede volver a la anterior con /resume. /compact tienta porque libera espacio, pero lee toda la conversación para resumirla y mantiene una continuidad que no necesita. Quedarse en la sesión paga el contexto viejo en cada request."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--0db48313",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team's CLAUDE.md has grown to include long step-by-step instructions for database migrations, which they run about once a month. They want to shrink the context every session starts with, without losing those instructions when a migration does come up. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the migration steps into CLAUDE.local.md",
+          "correct": false,
+          "why": "It is still a memory file loaded at session start, so the base context doesn't shrink."
+        },
+        {
+          "id": "B",
+          "text": "Inject the steps with a SessionStart hook",
+          "correct": false,
+          "why": "It adds the same text to every session at startup, so nothing is saved."
+        },
+        {
+          "id": "C",
+          "text": "Move the migration steps into a skill",
+          "correct": true,
+          "why": "Skills load on demand only when invoked, so the steps stay out of context until a migration needs them."
+        },
+        {
+          "id": "D",
+          "text": "Keep them in CLAUDE.md and run /compact more often",
+          "correct": false,
+          "why": "CLAUDE.md is part of the base context, so compacting the conversation doesn't remove those tokens."
+        }
+      ],
+      "explanation": "The requirement is a smaller starting context while keeping specialized instructions available. CLAUDE.md loads at session start, so workflow-specific steps cost tokens even during unrelated work. Skills load on demand only when invoked, which is exactly the documented fix. CLAUDE.local.md and a SessionStart hook both look like alternatives but still load the text into every session.",
+      "keywordCues": [
+        "about once a month",
+        "shrink the context every session starts with",
+        "without losing those instructions"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "El CLAUDE.md de un equipo creció hasta incluir largas instrucciones paso a paso para migraciones de base de datos, que corren más o menos una vez al mes. Quieren achicar el contexto con el que empieza cada sesión, sin perder esas instrucciones cuando toque una migración. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover los pasos de migración a CLAUDE.local.md",
+            "why": "Sigue siendo un memory file que carga al inicio de la sesión, así que el contexto base no se achica."
+          },
+          {
+            "id": "B",
+            "text": "Inyectar los pasos con un hook SessionStart",
+            "why": "Agrega el mismo texto a cada sesión al iniciar, así que no se ahorra nada."
+          },
+          {
+            "id": "C",
+            "text": "Mover los pasos de migración a una skill",
+            "why": "Las skills cargan bajo demanda solo cuando se invocan, así que los pasos quedan fuera del contexto hasta que haga falta una migración."
+          },
+          {
+            "id": "D",
+            "text": "Dejarlos en CLAUDE.md y correr /compact más seguido",
+            "why": "CLAUDE.md es parte del contexto base, así que compactar la conversación no elimina esos tokens."
+          }
+        ],
+        "explanation": "El requisito es un contexto inicial más chico sin perder instrucciones especializadas. CLAUDE.md carga al inicio de la sesión, así que los pasos de un flujo específico cuestan tokens incluso en trabajo no relacionado. Las skills cargan bajo demanda solo al invocarse, que es justo el arreglo documentado. CLAUDE.local.md y un hook SessionStart parecen alternativas, pero igual cargan el texto en cada sesión."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--fbf346b3",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Whenever Claude runs the team's test suite, thousands of lines of passing-test output flood the conversation. The team wants only the failures to reach Claude's context, deterministically, every time the tests run, without relying on Claude to remember an instruction. What should they add?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A CLAUDE.md rule telling Claude to pipe test output through grep",
+          "correct": false,
+          "why": "It is guidance Claude may not follow every time, so it fails 'deterministically'."
+        },
+        {
+          "id": "B",
+          "text": "A PreToolUse hook on Bash that rewrites test commands to filter failures",
+          "correct": true,
+          "why": "A hook runs every time and can rewrite the command so only failures come back to Claude."
+        },
+        {
+          "id": "C",
+          "text": "A /compact run after each test execution",
+          "correct": false,
+          "why": "The full output has already entered context and been paid for; compacting also costs a large request."
+        },
+        {
+          "id": "D",
+          "text": "A skill describing how to read test output",
+          "correct": false,
+          "why": "It gives Claude knowledge on demand but doesn't change what the test command outputs."
+        }
+      ],
+      "explanation": "The requirement is deterministic preprocessing before output reaches Claude. Hooks run code every time; the documented example is a PreToolUse hook matching Bash that rewrites test commands to show only failures. A CLAUDE.md rule is tempting but is guidance, not enforcement. /compact acts after the tokens were already spent, and a skill adds knowledge without filtering anything.",
+      "keywordCues": [
+        "only the failures",
+        "deterministically, every time",
+        "without relying on Claude to remember"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Cada vez que Claude corre la suite de tests del equipo, miles de líneas de tests que pasan inundan la conversación. El equipo quiere que solo los fallos lleguen al contexto de Claude, de forma determinista, cada vez que corren los tests, sin depender de que Claude recuerde una instrucción. ¿Qué deben agregar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Una regla en CLAUDE.md que le pida a Claude pasar la salida por grep",
+            "why": "Es una guía que Claude puede no seguir siempre, así que no cumple 'de forma determinista'."
+          },
+          {
+            "id": "B",
+            "text": "Un hook PreToolUse sobre Bash que reescriba los comandos de test para filtrar fallos",
+            "why": "Un hook corre siempre y puede reescribir el comando para que solo los fallos vuelvan a Claude."
+          },
+          {
+            "id": "C",
+            "text": "Correr /compact después de cada ejecución de tests",
+            "why": "La salida completa ya entró al contexto y ya se pagó; además compactar cuesta un request grande."
+          },
+          {
+            "id": "D",
+            "text": "Una skill que describa cómo leer la salida de tests",
+            "why": "Le da conocimiento a Claude bajo demanda, pero no cambia lo que imprime el comando de test."
+          }
+        ],
+        "explanation": "El requisito es un preprocesamiento determinista antes de que la salida llegue a Claude. Los hooks ejecutan código siempre; el ejemplo documentado es un hook PreToolUse con matcher Bash que reescribe los comandos de test para mostrar solo los fallos. Una regla en CLAUDE.md tienta, pero es guía, no garantía. /compact actúa cuando los tokens ya se gastaron, y una skill agrega conocimiento sin filtrar nada."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--83bee6ff",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "An engineer on an API key sees his monthly spend far above his teammates'. He keeps one session open all week for many unrelated small tasks, and he set Opus as his default model long ago. Which two changes address the most likely causes? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run /clear when switching between unrelated tasks",
+          "correct": true,
+          "why": "A never-cleared session resends its whole history with every request; clearing removes that stale context."
+        },
+        {
+          "id": "B",
+          "text": "Use Sonnet for routine work and reserve Opus for hard reasoning",
+          "correct": true,
+          "why": "Opus left as the default is a documented top cause of high spend; Sonnet handles most coding tasks for less."
+        },
+        {
+          "id": "C",
+          "text": "Use /compact instead of /clear between unrelated tasks",
+          "correct": false,
+          "why": "Compaction is itself a large request and keeps continuity he doesn't need for unrelated tasks."
+        },
+        {
+          "id": "D",
+          "text": "Raise MAX_THINKING_TOKENS so tasks finish in fewer turns",
+          "correct": false,
+          "why": "Thinking tokens are billed as output tokens; a larger budget tends to raise cost, not lower it."
+        },
+        {
+          "id": "E",
+          "text": "Keep the session open so the prompt cache stays warm",
+          "correct": false,
+          "why": "Even cached, the whole conversation is re-read on every request, so a long session keeps drawing usage."
+        }
+      ],
+      "explanation": "The docs trace unexpectedly high API spend mostly to long sessions that were never cleared and to Opus left as the default model. So the two fixes are /clear between unrelated tasks and matching the model to the job. Keeping the cache warm sounds efficient, but cached history is still re-read on every request. /compact and a larger thinking budget both add cost instead of removing it.",
+      "keywordCues": [
+        "one session open all week",
+        "many unrelated small tasks",
+        "Opus as his default model",
+        "(Choose two.)"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Un ingeniero que usa API key ve su gasto mensual muy por encima del de sus compañeros. Mantiene una sesión abierta toda la semana para muchas tareas pequeñas no relacionadas, y hace tiempo puso Opus como modelo por defecto. ¿Qué dos cambios atacan las causas más probables? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr /clear al cambiar entre tareas no relacionadas",
+            "why": "Una sesión nunca limpiada reenvía todo su historial en cada request; limpiar elimina ese contexto viejo."
+          },
+          {
+            "id": "B",
+            "text": "Usar Sonnet para el trabajo rutinario y reservar Opus para razonamiento difícil",
+            "why": "Dejar Opus por defecto es una causa documentada de gasto alto; Sonnet resuelve la mayoría de tareas de código por menos."
+          },
+          {
+            "id": "C",
+            "text": "Usar /compact en vez de /clear entre tareas no relacionadas",
+            "why": "La compactación es en sí un request grande y mantiene una continuidad que no necesita para tareas no relacionadas."
+          },
+          {
+            "id": "D",
+            "text": "Subir MAX_THINKING_TOKENS para que las tareas terminen en menos turnos",
+            "why": "Los tokens de thinking se cobran como salida; un presupuesto mayor tiende a subir el costo, no a bajarlo."
+          },
+          {
+            "id": "E",
+            "text": "Mantener la sesión abierta para que la caché de prompts siga warm",
+            "why": "Aun con caché, toda la conversación se relee en cada request, así que una sesión larga sigue consumiendo uso."
+          }
+        ],
+        "explanation": "La documentación atribuye el gasto de API inesperadamente alto sobre todo a sesiones largas nunca limpiadas y a Opus dejado como modelo por defecto. Así que los dos arreglos son /clear entre tareas no relacionadas y elegir el modelo según el trabajo. Mantener la caché warm suena eficiente, pero el historial en caché igual se relee en cada request. /compact y un presupuesto de thinking mayor agregan costo en vez de quitarlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--08bf8012",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable lowers the extended thinking budget on a model that uses a fixed thinking budget?",
+      "options": [
+        {
+          "id": "A",
+          "text": "MAX_THINKING_TOKENS",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "MAX_THINKING_TOKENS sets a fixed token budget for extended thinking, for example MAX_THINKING_TOKENS=8000. Thinking tokens are billed as output tokens, so a lower budget cuts cost on simpler tasks. Adaptive-reasoning models ignore nonzero budgets; lower the effort level there instead.",
+      "keywordCues": [
+        "lowers the extended thinking budget",
+        "fixed thinking budget"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno baja el presupuesto de extended thinking en un modelo que usa un presupuesto de thinking fijo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "MAX_THINKING_TOKENS",
+            "why": ""
+          }
+        ],
+        "explanation": "MAX_THINKING_TOKENS define un presupuesto fijo de tokens para extended thinking, por ejemplo MAX_THINKING_TOKENS=8000. Los tokens de thinking se cobran como tokens de salida, así que un presupuesto menor reduce el costo en tareas simples. Los modelos de razonamiento adaptativo ignoran presupuestos distintos de cero; ahí baja el nivel de esfuerzo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--f917cb98",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command starts a new conversation with empty context when you switch to unrelated work?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/clear",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "/reset",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "/new",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "/clear starts a new conversation with empty context; /reset and /new are aliases. Stale context wastes tokens on every later message, and unlike /compact, clearing costs nothing. You can return to the previous conversation with /resume.",
+      "keywordCues": [
+        "new conversation with empty context",
+        "unrelated work"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "¿Qué comando slash empieza una conversación nueva con contexto vacío cuando cambias a un trabajo no relacionado?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/clear",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "/reset",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "/new",
+            "why": ""
+          }
+        ],
+        "explanation": "/clear empieza una conversación nueva con contexto vacío; /reset y /new son alias. El contexto viejo desperdicia tokens en cada mensaje siguiente y, a diferencia de /compact, limpiar no cuesta nada. Puedes volver a la conversación anterior con /resume."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-reduce-tokens--35eb2518",
+      "conceptId": "cost-reduce-tokens",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make this hook rewrite test commands before they run, so only failing-test output reaches Claude's context.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "PostToolUse",
+          "correct": false,
+          "why": "It fires after the command already ran, too late to rewrite what the command is."
+        },
+        {
+          "id": "1b",
+          "text": "PreToolUse",
+          "correct": true,
+          "why": "It fires before the tool runs, so the script can return updatedInput with a filtered command."
+        },
+        {
+          "id": "1c",
+          "text": "UserPromptSubmit",
+          "correct": false,
+          "why": "It fires when you submit a prompt, not when Claude calls a tool."
+        },
+        {
+          "id": "2a",
+          "text": "Read",
+          "correct": false,
+          "why": "Tests run through shell commands, not the Read tool."
+        },
+        {
+          "id": "2b",
+          "text": "Edit|Write",
+          "correct": false,
+          "why": "These tools change files; they never run the test suite."
+        },
+        {
+          "id": "2c",
+          "text": "Bash",
+          "correct": true,
+          "why": "Test commands such as npm test or pytest run through the Bash tool."
+        }
+      ],
+      "explanation": "The goal is to change the test command before it runs, which only PreToolUse can do: the script returns updatedInput with a command that pipes output through a failure filter. Test runners execute through the Bash tool, so the matcher is Bash. PostToolUse fires after execution, when the full output already exists, and Read or Edit|Write never run tests.",
+      "keywordCues": [
+        "rewrite test commands before they run",
+        "only failing-test output"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/costs.md",
+        "https://code.claude.com/docs/en/best-practices.md"
+      ],
+      "es": {
+        "stem": "Haz que este hook reescriba los comandos de test antes de que corran, para que solo la salida de los tests que fallan llegue al contexto de Claude.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "PostToolUse",
+            "why": "Se dispara después de que el comando ya corrió, demasiado tarde para reescribirlo."
+          },
+          {
+            "id": "1b",
+            "text": "PreToolUse",
+            "why": "Se dispara antes de que corra la tool, así que el script puede devolver updatedInput con un comando filtrado."
+          },
+          {
+            "id": "1c",
+            "text": "UserPromptSubmit",
+            "why": "Se dispara cuando envías un prompt, no cuando Claude llama a una tool."
+          },
+          {
+            "id": "2a",
+            "text": "Read",
+            "why": "Los tests corren con comandos de shell, no con la tool Read."
+          },
+          {
+            "id": "2b",
+            "text": "Edit|Write",
+            "why": "Estas tools modifican archivos; nunca corren la suite de tests."
+          },
+          {
+            "id": "2c",
+            "text": "Bash",
+            "why": "Comandos de test como npm test o pytest corren a través de la tool Bash."
+          }
+        ],
+        "explanation": "El objetivo es cambiar el comando de test antes de que corra, y eso solo lo puede hacer PreToolUse: el script devuelve updatedInput con un comando que pasa la salida por un filtro de fallos. Los test runners se ejecutan con la tool Bash, así que el matcher es Bash. PostToolUse se dispara tras la ejecución, cuando la salida completa ya existe, y Read o Edit|Write nunca corren tests."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"hooks\": {\n    \"{{1}}\": [\n      {\n        \"matcher\": \"{{2}}\",\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \"~/.claude/hooks/filter-test-output.sh\" }\n        ]\n      }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cost-reduce-tokens--r0",
+      "conceptId": "cost-reduce-tokens",
+      "kind": "recall",
+      "prompt": "Why does usage climb in a long session, and which habits cut token usage the most?",
+      "promptEs": "¿Por qué sube el uso en una sesión larga y qué hábitos reducen más el uso de tokens?",
+      "idealAnswer": "Every request resends the whole conversation, and cache misses after breaks, scheduled tasks, subagents, teammates and compaction add more requests. The biggest levers are /clear between unrelated tasks and using Sonnet by default with Opus for hard reasoning. Then lower effort or MAX_THINKING_TOKENS, disable unused MCP servers, move workflow instructions from CLAUDE.md to skills, and delegate verbose work to subagents or filter it with hooks.",
+      "rubric": [
+        "Each request resends the full conversation (long context)",
+        "/clear between unrelated tasks",
+        "Match the model to the job: Sonnet by default, Opus for hard reasoning, haiku for simple subagents",
+        "At least one more lever: effort/MAX_THINKING_TOKENS, MCP, skills, subagents or hooks"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,554 @@
+{
+  "conceptId": "ctx-what-survives-compaction",
+  "card": {
+    "en": {
+      "tldr": "Compaction summarizes the message history, but content loaded from outside it comes back. What survives depends on how it was loaded, so put must-keep instructions where they are reloaded from disk, or re-inject them with a hook.",
+      "whenToUse": [
+        "An instruction disappeared after `/compact` or auto-compaction",
+        "Deciding where to put a rule that must hold for the whole session",
+        "Re-adding dynamic context (sprint, recent commits) after every compaction"
+      ],
+      "keyFacts": [
+        "System prompt and output style still apply",
+        "Project-root CLAUDE.md, unscoped rules, auto memory and the plan-mode plan are re-injected from disk",
+        "Rules with `paths:` frontmatter and nested CLAUDE.md reload only when Claude reads a matching file again",
+        "Up to five recently modified files are re-read; a large file comes back as a path reference (`Referenced file`)",
+        "Invoked skill bodies are re-injected with per-skill and total caps, oldest dropped first; truncation keeps the start of SKILL.md; the skill description listing is not re-injected",
+        "`SessionStart` hooks matching `compact` run and their output is added to the compacted context"
+      ],
+      "gotchas": [
+        "Instructions given only in chat are summarized and can be lost",
+        "Context that hooks added earlier is summarized with the rest of the conversation",
+        "`PostCompact` cannot change the compacted context; use `SessionStart` with matcher `compact` to add context"
+      ],
+      "confusedWith": [],
+      "examCues": [
+        "instructions seem lost after compaction",
+        "must persist across compaction",
+        "re-inject context after compaction",
+        "path-scoped rule disappeared",
+        "skill instructions truncated"
+      ]
+    },
+    "es": {
+      "tldr": "La compactación resume el historial de mensajes, pero lo que se cargó fuera de él vuelve. Qué sobrevive depende de cómo se cargó, así que pon las instrucciones imprescindibles donde se recargan desde disco, o reinyéctalas con un hook.",
+      "whenToUse": [
+        "Una instrucción desapareció tras `/compact` o la autocompactación",
+        "Al decidir dónde poner una regla que debe valer toda la sesión",
+        "Para volver a añadir contexto dinámico (sprint, commits recientes) tras cada compactación"
+      ],
+      "keyFacts": [
+        "El system prompt y el output style siguen aplicando",
+        "El CLAUDE.md de la raíz, las reglas sin `paths:`, la memoria automática y el plan del plan mode se reinyectan desde disco",
+        "Las reglas con frontmatter `paths:` y los CLAUDE.md anidados solo se recargan cuando Claude vuelve a leer un archivo que coincide",
+        "Se releen hasta cinco archivos modificados recientemente; uno grande vuelve como referencia de ruta (`Referenced file`)",
+        "Los cuerpos de skills invocadas se reinyectan con topes por skill y en total, y se descartan primero las más antiguas; el truncado conserva el inicio de SKILL.md; la lista de descripciones de skills no se reinyecta",
+        "Los hooks `SessionStart` que coinciden con `compact` se ejecutan y su salida se añade al contexto compactado"
+      ],
+      "gotchas": [
+        "Las instrucciones dadas solo en el chat se resumen y pueden perderse",
+        "El contexto que hooks añadieron antes se resume con el resto de la conversación",
+        "`PostCompact` no puede cambiar el contexto compactado; usa `SessionStart` con matcher `compact` para añadir contexto"
+      ],
+      "confusedWith": [],
+      "examCues": [
+        "instructions seem lost after compaction",
+        "must persist across compaction",
+        "re-inject context after compaction",
+        "path-scoped rule disappeared",
+        "skill instructions truncated"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/context-window.md",
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "ctx-what-survives-compaction--2af47d19",
+      "conceptId": "ctx-what-survives-compaction",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Early in a session, a developer told Claude in chat: \"always use pnpm, never npm\". After auto-compaction, Claude ran npm install. The rule must hold after every future compaction, for the whole team, with the least setup. Where should it go?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `.claude/rules/` file with `paths:` frontmatter matching `package.json`",
+          "correct": false,
+          "why": "Path-scoped rules reload only when Claude reads a matching file again, so they can be missing after compaction."
+        },
+        {
+          "id": "B",
+          "text": "The project-root CLAUDE.md",
+          "correct": true,
+          "why": "Project-root CLAUDE.md is re-read from disk and re-injected after every compaction, and it is shared via the repo."
+        },
+        {
+          "id": "C",
+          "text": "A nested CLAUDE.md in `packages/api/`",
+          "correct": false,
+          "why": "Nested CLAUDE.md files reload only when Claude reads files in that subdirectory."
+        },
+        {
+          "id": "D",
+          "text": "Repeat it in chat after each compaction",
+          "correct": false,
+          "why": "Chat-only instructions get summarized again at the next compaction, and it relies on someone remembering."
+        }
+      ],
+      "explanation": "The instruction was lost because it lived only in conversation, which compaction summarizes. Project-root CLAUDE.md is re-injected from disk after every compaction and applies to everyone who clones the repo. A path-scoped rule is tempting but only reloads when a matching file is read again. Nested CLAUDE.md has the same limit, and repeating it in chat does not persist.",
+      "keywordCues": [
+        "told Claude in chat",
+        "after every future compaction",
+        "whole team",
+        "least setup"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Al inicio de una sesión, un desarrollador le dijo a Claude en el chat: \"usa siempre pnpm, nunca npm\". Tras la autocompactación, Claude ejecutó npm install. La regla debe mantenerse tras cada compactación futura, para todo el equipo y con la menor configuración. ¿Dónde debe ir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un archivo en `.claude/rules/` con frontmatter `paths:` que coincide con `package.json`",
+            "why": "Las reglas con paths solo se recargan cuando Claude vuelve a leer un archivo que coincide, así que pueden faltar tras compactar."
+          },
+          {
+            "id": "B",
+            "text": "El CLAUDE.md de la raíz del proyecto",
+            "why": "El CLAUDE.md de la raíz se relee de disco y se reinyecta tras cada compactación, y se comparte por el repo."
+          },
+          {
+            "id": "C",
+            "text": "Un CLAUDE.md anidado en `packages/api/`",
+            "why": "Los CLAUDE.md anidados solo se recargan cuando Claude lee archivos de ese subdirectorio."
+          },
+          {
+            "id": "D",
+            "text": "Repetirla en el chat tras cada compactación",
+            "why": "Las instrucciones solo de chat se vuelven a resumir en la siguiente compactación, y depende de que alguien se acuerde."
+          }
+        ],
+        "explanation": "La instrucción se perdió porque solo vivía en la conversación, que la compactación resume. El CLAUDE.md de la raíz se reinyecta desde disco tras cada compactación y aplica a todos los que clonan el repo. Una regla con paths tienta, pero solo se recarga al leer de nuevo un archivo que coincide. El CLAUDE.md anidado tiene el mismo límite, y repetirla en el chat no persiste."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-what-survives-compaction--d08e0376",
+      "conceptId": "ctx-what-survives-compaction",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A rule in `.claude/rules/api.md` has `paths:` frontmatter for `src/api/**`. After compaction, Claude keeps working on API code from memory of the summary, without re-reading those files, and ignores the rule. The rule must apply right after every compaction, regardless of which files Claude reads next. What should the team change?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the rule into a nested CLAUDE.md in `src/api/`",
+          "correct": false,
+          "why": "Nested CLAUDE.md files also reload only when Claude reads files in that subdirectory."
+        },
+        {
+          "id": "B",
+          "text": "Add a `# Compact instructions` section asking to preserve the rule",
+          "correct": false,
+          "why": "It influences the summary, but the rule still depends on what the summarizer keeps, not a reload from disk."
+        },
+        {
+          "id": "C",
+          "text": "Print the rule from a `PostCompact` hook",
+          "correct": false,
+          "why": "`PostCompact` has no decision control and cannot affect the compacted context."
+        },
+        {
+          "id": "D",
+          "text": "Remove the `paths:` frontmatter so the rule is unscoped",
+          "correct": true,
+          "why": "Unscoped rules are re-injected from disk after compaction, independent of file reads."
+        }
+      ],
+      "explanation": "Path-scoped rules load into message history when a matching file is read, so compaction summarizes them away until a matching file is read again. Dropping the `paths:` frontmatter (or moving the rule to project-root CLAUDE.md) makes it re-injected from disk after every compaction. A nested CLAUDE.md is tempting but has the same read-triggered reload. `PostCompact` cannot add context, and compact instructions only steer the summary.",
+      "keywordCues": [
+        "paths: frontmatter",
+        "without re-reading those files",
+        "regardless of which files Claude reads next"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Una regla en `.claude/rules/api.md` tiene frontmatter `paths:` para `src/api/**`. Tras compactar, Claude sigue trabajando en código de la API según el resumen, sin volver a leer esos archivos, e ignora la regla. La regla debe aplicar justo después de cada compactación, sin importar qué archivos lea Claude después. ¿Qué debe cambiar el equipo?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover la regla a un CLAUDE.md anidado en `src/api/`",
+            "why": "Los CLAUDE.md anidados también se recargan solo cuando Claude lee archivos de ese subdirectorio."
+          },
+          {
+            "id": "B",
+            "text": "Añadir una sección `# Compact instructions` que pida conservar la regla",
+            "why": "Influye en el resumen, pero la regla sigue dependiendo de lo que conserve el resumidor, no de una recarga de disco."
+          },
+          {
+            "id": "C",
+            "text": "Imprimir la regla desde un hook `PostCompact`",
+            "why": "`PostCompact` no tiene control de decisión y no puede afectar el contexto compactado."
+          },
+          {
+            "id": "D",
+            "text": "Quitar el frontmatter `paths:` para que la regla no tenga alcance",
+            "why": "Las reglas sin alcance se reinyectan desde disco tras compactar, sin depender de lecturas de archivos."
+          }
+        ],
+        "explanation": "Las reglas con paths entran al historial cuando se lee un archivo que coincide, así que la compactación las resume hasta que se vuelva a leer uno. Quitar el frontmatter `paths:` (o mover la regla al CLAUDE.md de la raíz) hace que se reinyecte desde disco tras cada compactación. El CLAUDE.md anidado tienta, pero tiene la misma recarga por lectura. `PostCompact` no añade contexto y las compact instructions solo guían el resumen."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-what-survives-compaction--54a1b82d",
+      "conceptId": "ctx-what-survives-compaction",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team wants Claude to see the output of `git log --oneline -5` again after each compaction, whether it was triggered manually or automatically. The content changes constantly, so it must be generated fresh by a command, deterministically, every time. What should they configure?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `PostCompact` hook that runs the command",
+          "correct": false,
+          "why": "`PostCompact` runs after compaction but cannot affect the compacted context."
+        },
+        {
+          "id": "B",
+          "text": "A `SessionStart` hook with matcher `compact` that runs the command",
+          "correct": true,
+          "why": "Claude Code runs SessionStart hooks matching `compact` and adds their output to the compacted context."
+        },
+        {
+          "id": "C",
+          "text": "A `PreCompact` hook that runs the command",
+          "correct": false,
+          "why": "`PreCompact` runs before compaction and can only allow or block it; the docs don't describe it adding anything to the compacted context."
+        },
+        {
+          "id": "D",
+          "text": "Paste the git log into the project-root CLAUDE.md",
+          "correct": false,
+          "why": "CLAUDE.md is re-injected, but it is static text and would go stale."
+        }
+      ],
+      "explanation": "The requirement is fresh, command-generated context added after every compaction. A `SessionStart` hook with matcher `compact` fires after both manual and automatic compaction, and its stdout is added to Claude's context. `PostCompact` is the tempting look-alike, but it has no decision control and cannot affect the compaction result. CLAUDE.md survives but is static.",
+      "keywordCues": [
+        "after each compaction",
+        "manually or automatically",
+        "generated fresh by a command"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un equipo quiere que Claude vuelva a ver la salida de `git log --oneline -5` tras cada compactación, sea manual o automática. El contenido cambia todo el tiempo, así que debe generarlo un comando, de forma determinista, cada vez. ¿Qué deben configurar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un hook `PostCompact` que ejecute el comando",
+            "why": "`PostCompact` corre después de compactar pero no puede afectar el contexto compactado."
+          },
+          {
+            "id": "B",
+            "text": "Un hook `SessionStart` con matcher `compact` que ejecute el comando",
+            "why": "Claude Code ejecuta los hooks SessionStart que coinciden con `compact` y añade su salida al contexto compactado."
+          },
+          {
+            "id": "C",
+            "text": "Un hook `PreCompact` que ejecute el comando",
+            "why": "`PreCompact` corre antes de compactar y solo puede permitirla o bloquearla; la documentación no describe que añada nada al contexto compactado."
+          },
+          {
+            "id": "D",
+            "text": "Pegar el git log en el CLAUDE.md de la raíz del proyecto",
+            "why": "CLAUDE.md se reinyecta, pero es texto estático y quedaría desactualizado."
+          }
+        ],
+        "explanation": "El requisito es contexto nuevo, generado por un comando, añadido tras cada compactación. Un hook `SessionStart` con matcher `compact` se dispara tras la compactación manual y la automática, y su stdout se añade al contexto de Claude. `PostCompact` es el parecido tentador, pero no tiene control de decisión ni afecta el resultado. CLAUDE.md sobrevive, pero es estático."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-what-survives-compaction--b6e4d0b3",
+      "conceptId": "ctx-what-survives-compaction",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Right after `/compact` in a long session, and before Claude reads any file, a developer wonders what content is back in context in full. The session used a nested `packages/web/CLAUDE.md`, invoked a small skill, and recently edited a very large generated file. Which two are present? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The project-root CLAUDE.md",
+          "correct": true,
+          "why": "It is re-read from disk and re-injected after compaction."
+        },
+        {
+          "id": "B",
+          "text": "The skill description listing",
+          "correct": false,
+          "why": "Unlike the rest of the startup content, the skill listing is not re-injected after compaction."
+        },
+        {
+          "id": "C",
+          "text": "Auto memory",
+          "correct": true,
+          "why": "Auto memory is re-injected from disk after compaction."
+        },
+        {
+          "id": "D",
+          "text": "The nested `packages/web/CLAUDE.md`",
+          "correct": false,
+          "why": "It reloads only when Claude reads a file in that subdirectory again."
+        },
+        {
+          "id": "E",
+          "text": "The full content of the large generated file",
+          "correct": false,
+          "why": "A recently modified file too large to re-read comes back only as a path reference, without its content."
+        }
+      ],
+      "explanation": "What survives depends on how content was loaded. Project-root CLAUDE.md and auto memory are re-injected from disk. The skill description listing is the tempting trap: it loads at startup but is not re-injected; only invoked skill bodies return. The nested CLAUDE.md waits for a matching file read, and an oversized file comes back as a `Referenced file` path only.",
+      "keywordCues": [
+        "before Claude reads any file",
+        "nested packages/web/CLAUDE.md",
+        "very large generated file",
+        "in full"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Justo después de `/compact` en una sesión larga, y antes de que Claude lea ningún archivo, un desarrollador se pregunta qué contenido volvió completo al contexto. La sesión usó un `packages/web/CLAUDE.md` anidado, invocó una skill pequeña y editó hace poco un archivo generado muy grande. ¿Cuáles dos están presentes? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "El CLAUDE.md de la raíz del proyecto",
+            "why": "Se relee de disco y se reinyecta tras compactar."
+          },
+          {
+            "id": "B",
+            "text": "La lista de descripciones de skills",
+            "why": "A diferencia del resto del contenido de arranque, la lista de skills no se reinyecta tras compactar."
+          },
+          {
+            "id": "C",
+            "text": "La memoria automática",
+            "why": "La memoria automática se reinyecta desde disco tras compactar."
+          },
+          {
+            "id": "D",
+            "text": "El `packages/web/CLAUDE.md` anidado",
+            "why": "Solo se recarga cuando Claude vuelve a leer un archivo de ese subdirectorio."
+          },
+          {
+            "id": "E",
+            "text": "El contenido completo del archivo generado grande",
+            "why": "Un archivo reciente demasiado grande para releer vuelve solo como referencia de ruta, sin su contenido."
+          }
+        ],
+        "explanation": "Qué sobrevive depende de cómo se cargó el contenido. El CLAUDE.md de la raíz y la memoria automática se reinyectan desde disco. La lista de descripciones de skills es la trampa: se carga al arrancar pero no se reinyecta; solo vuelven los cuerpos de skills invocadas. El CLAUDE.md anidado espera a que se lea un archivo que coincida, y un archivo demasiado grande vuelve solo como ruta `Referenced file`."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-what-survives-compaction--aab6841a",
+      "conceptId": "ctx-what-survives-compaction",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete `.claude/settings.json` so the sprint notes are added to Claude's context again after every compaction, manual or automatic.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "PostCompact",
+          "correct": false,
+          "why": "PostCompact cannot affect the compacted context."
+        },
+        {
+          "id": "1b",
+          "text": "SessionStart",
+          "correct": true,
+          "why": "SessionStart hooks matching the compact source run after compaction and their output is added to the context."
+        },
+        {
+          "id": "1c",
+          "text": "PreCompact",
+          "correct": false,
+          "why": "PreCompact runs before compaction and can only allow or block it; it doesn't add context after compaction."
+        },
+        {
+          "id": "2a",
+          "text": "auto",
+          "correct": false,
+          "why": "`auto` is a PreCompact/PostCompact matcher, not a SessionStart source, and would miss manual compaction anyway."
+        },
+        {
+          "id": "2b",
+          "text": "startup",
+          "correct": false,
+          "why": "`startup` fires for new sessions, not after compaction."
+        },
+        {
+          "id": "2c",
+          "text": "compact",
+          "correct": true,
+          "why": "The `compact` source covers both auto and manual compaction."
+        },
+        {
+          "id": "3a",
+          "text": "command",
+          "correct": true,
+          "why": "A command hook's stdout is added to Claude's context."
+        },
+        {
+          "id": "3b",
+          "text": "compact",
+          "correct": false,
+          "why": "`compact` is not a hook type; the hook runs a shell command."
+        }
+      ],
+      "explanation": "To re-inject context after compaction, use a `SessionStart` hook with matcher `compact`, which fires after both automatic and manual compaction. A `command` hook's stdout is added to Claude's context. `PostCompact` is the tempting choice, but it cannot affect the compaction result, and `auto` is a matcher for the compact events and covers only automatic compaction.",
+      "keywordCues": [
+        "added to Claude's context again",
+        "after every compaction",
+        "manual or automatic"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Completa `.claude/settings.json` para que las notas del sprint se vuelvan a añadir al contexto de Claude tras cada compactación, manual o automática.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "PostCompact",
+            "why": "PostCompact no puede afectar el contexto compactado."
+          },
+          {
+            "id": "1b",
+            "text": "SessionStart",
+            "why": "Los hooks SessionStart que coinciden con el source compact corren tras compactar y su salida se añade al contexto."
+          },
+          {
+            "id": "1c",
+            "text": "PreCompact",
+            "why": "PreCompact corre antes de compactar y solo puede permitirla o bloquearla; no añade contexto después de compactar."
+          },
+          {
+            "id": "2a",
+            "text": "auto",
+            "why": "`auto` es un matcher de PreCompact/PostCompact, no un source de SessionStart, y además omitiría la compactación manual."
+          },
+          {
+            "id": "2b",
+            "text": "startup",
+            "why": "`startup` se dispara en sesiones nuevas, no tras compactar."
+          },
+          {
+            "id": "2c",
+            "text": "compact",
+            "why": "El source `compact` cubre la compactación automática y la manual."
+          },
+          {
+            "id": "3a",
+            "text": "command",
+            "why": "La stdout de un hook de tipo command se añade al contexto de Claude."
+          },
+          {
+            "id": "3b",
+            "text": "compact",
+            "why": "`compact` no es un tipo de hook; el hook ejecuta un comando de shell."
+          }
+        ],
+        "explanation": "Para reinyectar contexto tras compactar, usa un hook `SessionStart` con matcher `compact`, que se dispara tras la compactación automática y la manual. La stdout de un hook `command` se añade al contexto de Claude. `PostCompact` tienta, pero no puede afectar el resultado, y `auto` es un matcher de los eventos de compactación y solo cubre la automática."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"hooks\": {\n    \"{{1}}\": [\n      {\n        \"matcher\": \"{{2}}\",\n        \"hooks\": [\n          { \"type\": \"{{3}}\", \"command\": \"cat .claude/sprint.md\" }\n        ]\n      }\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "ctx-what-survives-compaction--r0",
+      "conceptId": "ctx-what-survives-compaction",
+      "kind": "recall",
+      "prompt": "After compaction, what is reloaded from disk, what only returns on a matching file read, and how do you keep a must-have instruction?",
+      "promptEs": "Tras compactar, ¿qué se recarga de disco, qué vuelve solo al leer un archivo que coincide y cómo conservas una instrucción imprescindible?",
+      "idealAnswer": "Project-root CLAUDE.md, unscoped rules, auto memory and the plan-mode plan are re-injected from disk, and invoked skill bodies return with caps. Path-scoped rules and nested CLAUDE.md come back only when Claude reads a matching file, and chat-only instructions are summarized away. Put must-keep rules in project-root CLAUDE.md or re-inject them with a SessionStart hook matching compact.",
+      "rubric": [
+        "Project-root CLAUDE.md, unscoped rules and auto memory are re-injected from disk",
+        "Path-scoped rules and nested CLAUDE.md reload only on a matching file read",
+        "Chat-only instructions can be lost",
+        "Fix: project-root CLAUDE.md or SessionStart hook with matcher compact"
+      ]
+    }
+  ]
+}

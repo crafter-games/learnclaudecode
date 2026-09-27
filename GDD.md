@@ -134,3 +134,4 @@ Multijugador, rankings, grupos de estudio cooperativos (candidato v2), música a
 
 - 2026-09-27: GDD de learnclaudecode a partir del de learnaws (grilling en 3 rondas; decisiones en PLAN.md).
 - 2026-09-27: M0 listo (repo, Dokploy, Postgres, Blaze dev, Clerk prod solo email+contraseña, paleta terracota).
+- 2026-09-27: M1 contenido de las islas 1–3: 26 unidades, 70 conceptos, 367 preguntas (232 escenario, 88 comando, 16 ordena, 31 config) y 234 relámpago; generado por subagentes de Claude desde la documentación oficial y verificado a ciegas por otro subagente (5 ítems descartados, 31 corregidos). Diagramas limitados a 3 nodos por fila para el teléfono.

@@ -1,0 +1,392 @@
+{
+  "unitId": "u-sessions",
+  "audited": true,
+  "overview": {
+    "title": "Sesiones: continuar, reanudar y bifurcar",
+    "hook": "Volver a una conversación anterior, o probar otra idea sin perderla.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "store",
+          "label": "Transcripts .jsonl",
+          "kind": "data",
+          "x": 30,
+          "y": 50
+        },
+        {
+          "id": "cont",
+          "label": "--continue",
+          "kind": "service",
+          "x": 56,
+          "y": 14
+        },
+        {
+          "id": "res",
+          "label": "--resume / /resume",
+          "kind": "service",
+          "x": 56,
+          "y": 50
+        },
+        {
+          "id": "branch",
+          "label": "/branch",
+          "kind": "service",
+          "x": 56,
+          "y": 86
+        },
+        {
+          "id": "orig",
+          "label": "Sesión original",
+          "kind": "data",
+          "x": 88,
+          "y": 86
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "store",
+          "label": "cada sesión se guarda"
+        },
+        {
+          "from": "store",
+          "to": "cont",
+          "label": "la más reciente aquí"
+        },
+        {
+          "from": "store",
+          "to": "res",
+          "label": "nombre, ID o picker"
+        },
+        {
+          "from": "store",
+          "to": "branch",
+          "label": "copia hasta ahora"
+        },
+        {
+          "from": "branch",
+          "to": "orig",
+          "label": "queda intacta"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cerraste la terminal a mitad de una tarea, o hiciste /clear, y mañana quieres seguir donde quedaste. O quieres probar otro enfoque sin perder el camino que llevabas.",
+        "show": [
+          "you"
+        ],
+        "focus": "you"
+      },
+      {
+        "narration": "Claude Code guarda cada sesión de forma continua como un transcript local, ligado al directorio del proyecto. Por eso puedes volver a una conversación aunque hayas salido.",
+        "show": [
+          "you",
+          "store"
+        ],
+        "focus": "store"
+      },
+      {
+        "narration": "claude --continue reabre la conversación más reciente del directorio actual, sin preguntar nada. Omite las sesiones creadas con claude -p o el Agent SDK, salvo que corras claude -p --continue.",
+        "show": [
+          "you",
+          "store",
+          "cont"
+        ],
+        "focus": "cont"
+      },
+      {
+        "narration": "Para una sesión concreta, claude --resume abre el picker o recibe un nombre, un ID o la ruta del transcript. Dentro de una sesión, /resume cambia a otra. Las sesiones de claude -p no salen en el picker: se reanudan con su ID.",
+        "show": [
+          "you",
+          "store",
+          "cont",
+          "res"
+        ],
+        "focus": "res"
+      },
+      {
+        "narration": "Al reanudar vuelven el historial, el modelo y las tareas programadas vigentes, pero flags de arranque como --mcp-config, --settings o --add-dir hay que pasarlos otra vez. Los archivos de settings se releen solos.",
+        "show": [
+          "you",
+          "store",
+          "cont",
+          "res"
+        ],
+        "focus": "store"
+      },
+      {
+        "narration": "Para probar otra dirección, /branch copia la conversación hasta ahora en una sesión nueva y te cambia a ella. Desde la terminal, combina --continue o --resume con --fork-session.",
+        "show": [
+          "you",
+          "store",
+          "cont",
+          "res",
+          "branch"
+        ],
+        "focus": "branch"
+      },
+      {
+        "narration": "La original queda intacta y vuelves con /resume. No confundas esto con /rewind, que retrocede dentro de la misma sesión, ni con /fork, que lanza la copia como sesión en segundo plano.",
+        "show": [
+          "you",
+          "store",
+          "cont",
+          "res",
+          "branch",
+          "orig"
+        ],
+        "focus": "orig"
+      }
+    ],
+    "keyPoints": [
+      "--continue: la conversación más reciente de este directorio",
+      "--resume: picker, nombre, ID o ruta del transcript",
+      "Sesiones de -p: fuera del picker, reanuda con su ID",
+      "Flags de arranque como --mcp-config se repiten al reanudar",
+      "/branch o --fork-session: copia nueva, original intacta"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/rewind",
+        "difference": "Retrocede código o conversación dentro de la misma sesión; /branch crea una sesión nueva y conserva la original."
+      },
+      {
+        "unitOrService": "/fork",
+        "difference": "Copia la conversación en una sesión en segundo plano y tú sigues aquí; /branch te cambia a la copia."
+      },
+      {
+        "unitOrService": "/clear",
+        "difference": "Empieza una conversación vacía; la anterior queda guardada y vuelves a ella con /resume."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-sessions--l1",
+      "conceptId": "session-continue",
+      "format": "lightning",
+      "prompt": "Reopen the latest conversation in this directory, no choosing → ?",
+      "promptEs": "Reabrir la última conversación de este directorio, sin elegir → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --resume"
+        },
+        {
+          "id": "B",
+          "text": "claude --continue"
+        },
+        {
+          "id": "C",
+          "text": "/branch"
+        },
+        {
+          "id": "D",
+          "text": "claude --fork-session"
+        }
+      ],
+      "answer": "B",
+      "why": "claude --continue reabre directamente la conversación más reciente del directorio actual. claude --resume sin argumentos abre el picker y te obliga a elegir."
+    },
+    {
+      "id": "u-sessions--l2",
+      "conceptId": "session-continue",
+      "format": "thisorthat",
+      "prompt": "Continue the latest session, including runs started with claude -p → ?",
+      "promptEs": "Continuar la última sesión, incluyendo las corridas con claude -p → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude -p --continue"
+        },
+        {
+          "id": "B",
+          "text": "claude --continue"
+        }
+      ],
+      "answer": "A",
+      "why": "claude -p --continue incluye sesiones de -p, del Agent SDK y de /loop. claude --continue interactivo las omite y abriría otra conversación."
+    },
+    {
+      "id": "u-sessions--l3",
+      "conceptId": "session-continue",
+      "format": "lightning",
+      "prompt": "After claude --continue, what must you pass again yourself?",
+      "promptEs": "Después de claude --continue, ¿qué debes volver a pasar tú?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The conversation history"
+        },
+        {
+          "id": "B",
+          "text": "Keys in settings.local.json"
+        },
+        {
+          "id": "C",
+          "text": "The --mcp-config flag"
+        },
+        {
+          "id": "D",
+          "text": "The active goal"
+        }
+      ],
+      "answer": "C",
+      "why": "Flags de arranque como --mcp-config, --settings, --plugin-dir o --add-dir no se restauran. Los archivos de settings se releen al iniciar, y el historial y el goal activo sí vuelven."
+    },
+    {
+      "id": "u-sessions--l5",
+      "conceptId": "session-resume",
+      "format": "lightning",
+      "prompt": "Get back into a claude -p session you have the ID of → ?",
+      "promptEs": "Volver a una sesión de claude -p de la que tienes el ID → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --resume <session-id>"
+        },
+        {
+          "id": "B",
+          "text": "claude --continue"
+        },
+        {
+          "id": "C",
+          "text": "claude --resume, then pick it"
+        },
+        {
+          "id": "D",
+          "text": "claude -n <session-id>"
+        }
+      ],
+      "answer": "A",
+      "why": "Las sesiones de -p y del Agent SDK no aparecen en el picker ni en claude --continue. Pasar su ID a claude --resume es la forma de reanudarlas."
+    },
+    {
+      "id": "u-sessions--l6",
+      "conceptId": "session-resume",
+      "format": "thisorthat",
+      "prompt": "Find the session that created pull request 812 → ?",
+      "promptEs": "Encontrar la sesión que creó el pull request 812 → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --continue"
+        },
+        {
+          "id": "B",
+          "text": "claude --from-pr 812"
+        }
+      ],
+      "answer": "B",
+      "why": "--from-pr abre el picker filtrado a las sesiones vinculadas a ese PR. claude --continue solo toma la más reciente del directorio, sea cual sea."
+    },
+    {
+      "id": "u-sessions--l7",
+      "conceptId": "session-resume",
+      "format": "lightning",
+      "prompt": "Name the current session so you can resume it by name → ?",
+      "promptEs": "Nombrar la sesión actual para reanudarla por nombre → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/branch auth-refactor"
+        },
+        {
+          "id": "B",
+          "text": "/clear auth-refactor"
+        },
+        {
+          "id": "C",
+          "text": "/rename auth-refactor"
+        },
+        {
+          "id": "D",
+          "text": "/export auth-refactor"
+        }
+      ],
+      "answer": "C",
+      "why": "/rename cambia el nombre de la sesión actual. /clear con nombre etiqueta la conversación que dejas y empieza otra vacía; /branch nombra una copia nueva."
+    },
+    {
+      "id": "u-sessions--l8",
+      "conceptId": "session-resume",
+      "format": "lightning",
+      "prompt": "Switch to an older conversation from inside the current session → ?",
+      "promptEs": "Cambiar a una conversación anterior desde dentro de la sesión actual → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/branch"
+        },
+        {
+          "id": "B",
+          "text": "/fork"
+        },
+        {
+          "id": "C",
+          "text": "/clear"
+        },
+        {
+          "id": "D",
+          "text": "/resume"
+        }
+      ],
+      "answer": "D",
+      "why": "/resume abre el picker o recibe un nombre o ID para cambiar de conversación sin salir. /branch y /fork copian la conversación actual; no te llevan a una anterior."
+    },
+    {
+      "id": "u-sessions--l9",
+      "conceptId": "session-branch",
+      "format": "lightning",
+      "prompt": "Try another approach in a copy, keeping the original conversation intact → ?",
+      "promptEs": "Probar otro enfoque en una copia, con la conversación original intacta → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/rewind"
+        },
+        {
+          "id": "B",
+          "text": "/branch"
+        },
+        {
+          "id": "C",
+          "text": "/compact"
+        },
+        {
+          "id": "D",
+          "text": "/clear"
+        }
+      ],
+      "answer": "B",
+      "why": "/branch copia la conversación hasta ahora a una sesión nueva y te cambia a ella; la original queda igual. /rewind retrocede dentro de la misma sesión."
+    },
+    {
+      "id": "u-sessions--l10",
+      "conceptId": "session-branch",
+      "format": "thisorthat",
+      "prompt": "Branch and keep your 'allow for this session' grants → ?",
+      "promptEs": "Bifurcar y conservar tus permisos de 'allow for this session' → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/branch"
+        },
+        {
+          "id": "B",
+          "text": "claude --continue --fork-session"
+        }
+      ],
+      "answer": "A",
+      "why": "/branch corre en el mismo proceso, así que los permisos concedidos siguen valiendo. --fork-session arranca un proceso nuevo donde vuelves a aprobar."
+    }
+  ]
+}

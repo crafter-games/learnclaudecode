@@ -1,0 +1,229 @@
+{
+  "conceptId": "security-data-usage",
+  "card": {
+    "en": {
+      "tldr": "Anthropic's training and retention policy depends on the account type: commercial accounts aren't used for training, while consumer accounts are only if the user allows it. Locally, Claude Code keeps session transcripts in plaintext, and environment variables switch off optional telemetry.",
+      "whenToUse": [
+        "Answering whether code sent through Claude Code is used for training",
+        "Controlling how long local transcripts stay on disk",
+        "Switching off metrics, error reports or all non-essential traffic",
+        "Knowing what /feedback sends to Anthropic"
+      ],
+      "keyFacts": [
+        "Commercial users (Team, Enterprise, API, third-party platforms) aren't used to train generative models unless the customer opts in, for example via the Development Partner Program.",
+        "Consumer users (Free, Pro, Max) are used for training only when their model-improvement setting is on, and retention is longer when it is.",
+        "Session transcripts are stored locally in plaintext under `~/.claude/projects/` to enable resumption; `cleanupPeriodDays` sets how long they're kept.",
+        "`DISABLE_TELEMETRY=1` turns off metrics, `DISABLE_ERROR_REPORTING=1` error reports, and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` all non-essential traffic at once.",
+        "`/feedback` sends a copy of the conversation, including code, to Anthropic; `DISABLE_FEEDBACK_COMMAND=1` opts out.",
+        "On Amazon Bedrock, Google Cloud's Agent Platform and Microsoft Foundry, telemetry, error reporting and bug reporting are off by default."
+      ],
+      "gotchas": [
+        "Local transcripts are plaintext on disk regardless of account type.",
+        "`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` doesn't stop the WebFetch domain safety check; that one needs `skipWebFetchPreflight` in settings.",
+        "Transcripts sent with `/feedback` are kept much longer than standard retention.",
+        "Metrics never include your code, prompts or file paths."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Zero Data Retention",
+          "difference": "An Enterprise org-level agreement where Anthropic stores no prompts or responses; standard policy retains them for a limited period."
+        }
+      ],
+      "examCues": [
+        "is our code used for training",
+        "turn off telemetry",
+        "disable all non-essential traffic",
+        "how long are local transcripts kept",
+        "what does /feedback send"
+      ]
+    },
+    "es": {
+      "tldr": "La política de entrenamiento y retención de Anthropic depende del tipo de cuenta: las cuentas comerciales no se usan para entrenar, y las de consumo solo si el usuario lo permite. En tu máquina, Claude Code guarda los transcripts en texto plano, y variables de entorno apagan la telemetría opcional.",
+      "whenToUse": [
+        "Responder si el código enviado por Claude Code se usa para entrenar",
+        "Controlar cuánto tiempo quedan los transcripts locales en disco",
+        "Apagar métricas, reportes de error o todo el tráfico no esencial",
+        "Saber qué envía /feedback a Anthropic"
+      ],
+      "keyFacts": [
+        "Los usuarios comerciales (Team, Enterprise, API, plataformas de terceros) no se usan para entrenar modelos generativos salvo que el cliente lo acepte, por ejemplo con el Development Partner Program.",
+        "Los usuarios de consumo (Free, Pro, Max) se usan para entrenar solo si su ajuste de mejora de modelos está activo, y en ese caso la retención es más larga.",
+        "Los transcripts de sesión se guardan localmente en texto plano en `~/.claude/projects/` para poder reanudar; `cleanupPeriodDays` define cuánto se conservan.",
+        "`DISABLE_TELEMETRY=1` apaga las métricas, `DISABLE_ERROR_REPORTING=1` los reportes de error y `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` todo el tráfico no esencial de una vez.",
+        "`/feedback` envía una copia de la conversación, con código incluido, a Anthropic; `DISABLE_FEEDBACK_COMMAND=1` lo desactiva.",
+        "En Amazon Bedrock, Google Cloud's Agent Platform y Microsoft Foundry, la telemetría, los reportes de error y los de bugs vienen apagados por defecto."
+      ],
+      "gotchas": [
+        "Los transcripts locales quedan en texto plano en disco, sea cual sea el tipo de cuenta.",
+        "`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` no detiene el chequeo de seguridad de dominios de WebFetch; para eso está `skipWebFetchPreflight` en settings.",
+        "Los transcripts enviados con `/feedback` se guardan mucho más tiempo que la retención estándar.",
+        "Las métricas nunca incluyen tu código, tus prompts ni rutas de archivos."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Zero Data Retention",
+          "difference": "Un acuerdo Enterprise por organización en el que Anthropic no guarda prompts ni respuestas; la política estándar los retiene un tiempo limitado."
+        }
+      ],
+      "examCues": [
+        "is our code used for training",
+        "turn off telemetry",
+        "disable all non-essential traffic",
+        "how long are local transcripts kept",
+        "what does /feedback send"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/data-usage.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "security-data-usage--3d1f8d31",
+      "conceptId": "security-data-usage",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer signed in with a Pro subscription and connecting directly to the Claude API wants Claude Code to stop sending usage metrics, error reports and session quality surveys. They want to do it with a single environment variable in the env block of their user settings. Which variable should they set?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DISABLE_TELEMETRY=1",
+          "correct": false,
+          "why": "Stops metrics and surveys, but error reports have their own opt-out."
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1",
+          "correct": true,
+          "why": "Disables all non-essential traffic at once, including metrics, error reports and surveys."
+        },
+        {
+          "id": "C",
+          "text": "DISABLE_ERROR_REPORTING=1",
+          "correct": false,
+          "why": "Stops only error reports; metrics and surveys keep running."
+        },
+        {
+          "id": "D",
+          "text": "skipWebFetchPreflight set to true",
+          "correct": false,
+          "why": "A settings key for the WebFetch domain check, not a telemetry opt-out."
+        }
+      ],
+      "explanation": "The requirement is to stop three kinds of optional traffic with one variable. CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC turns off all non-essential traffic at once, surveys included, and any environment variable can go in the env block of settings.json. DISABLE_TELEMETRY is tempting because it also disables surveys, but error reports are controlled separately by DISABLE_ERROR_REPORTING. skipWebFetchPreflight concerns the WebFetch safety check, which the non-essential flag doesn't touch.",
+      "keywordCues": [
+        "usage metrics, error reports and session quality surveys",
+        "a single environment variable"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/data-usage.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador con suscripción Pro, conectado directo a la Claude API, quiere que Claude Code deje de enviar métricas de uso, reportes de error y encuestas de calidad de sesión. Quiere hacerlo con una sola variable de entorno en el bloque env de su settings de usuario. ¿Qué variable debe definir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DISABLE_TELEMETRY=1",
+            "why": "Apaga métricas y encuestas, pero los reportes de error tienen su propia opción."
+          },
+          {
+            "id": "B",
+            "text": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1",
+            "why": "Apaga de una vez todo el tráfico no esencial, incluidas métricas, reportes de error y encuestas."
+          },
+          {
+            "id": "C",
+            "text": "DISABLE_ERROR_REPORTING=1",
+            "why": "Solo apaga los reportes de error; métricas y encuestas siguen."
+          },
+          {
+            "id": "D",
+            "text": "skipWebFetchPreflight en true",
+            "why": "Es una clave de settings para el chequeo de dominios de WebFetch, no para la telemetría."
+          }
+        ],
+        "explanation": "El requisito es cortar tres tipos de tráfico opcional con una sola variable. CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC apaga todo el tráfico no esencial de una vez, encuestas incluidas, y cualquier variable de entorno puede ir en el bloque env de settings.json. DISABLE_TELEMETRY tienta porque también apaga las encuestas, pero los reportes de error se controlan aparte con DISABLE_ERROR_REPORTING. skipWebFetchPreflight es del chequeo de seguridad de WebFetch, que la variable de tráfico no esencial no toca."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "security-data-usage--ffa4662d",
+      "conceptId": "security-data-usage",
+      "secondaryConcepts": [],
+      "domain": "d2",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which settings key changes how long Claude Code keeps local session transcripts before cleaning them up?",
+      "options": [
+        {
+          "id": "A",
+          "text": "cleanupPeriodDays",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Claude Code stores session transcripts in plaintext under ~/.claude/projects/ so you can resume them, and cleanupPeriodDays sets how long they are kept before automatic cleanup.",
+      "keywordCues": [
+        "how long",
+        "local session transcripts"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/data-usage.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de settings cambia cuánto tiempo guarda Claude Code los transcripts locales de sesión antes de limpiarlos?",
+        "options": [
+          {
+            "id": "A",
+            "text": "cleanupPeriodDays",
+            "why": ""
+          }
+        ],
+        "explanation": "Claude Code guarda los transcripts en texto plano en ~/.claude/projects/ para que puedas reanudar sesiones, y cleanupPeriodDays define cuánto se conservan antes de la limpieza automática."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "security-data-usage--r0",
+      "conceptId": "security-data-usage",
+      "kind": "recall",
+      "prompt": "Summarize how Claude Code data is handled: training by account type, where transcripts live locally, and how to turn off optional traffic.",
+      "promptEs": "Resume cómo se manejan los datos de Claude Code: entrenamiento según el tipo de cuenta, dónde quedan los transcripts locales y cómo apagar el tráfico opcional.",
+      "idealAnswer": "Commercial accounts aren't used for training unless the customer opts in, and consumer accounts only when the user allows it. Transcripts are stored locally in plaintext under ~/.claude/projects/, kept for the period set by cleanupPeriodDays. DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING or CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC switch off optional traffic.",
+      "rubric": [
+        "Commercial: no training by default; consumer: only if allowed",
+        "Local plaintext transcripts in ~/.claude/projects/",
+        "cleanupPeriodDays controls local retention",
+        "Names a telemetry opt-out variable"
+      ]
+    },
+    {
+      "id": "security-data-usage--r1",
+      "conceptId": "security-data-usage",
+      "kind": "why-not",
+      "prompt": "An Enterprise team without special agreements asks whether setting CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC gives them zero data retention. Why not?",
+      "promptEs": "Un equipo Enterprise sin acuerdos especiales pregunta si definir CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC les da zero data retention. ¿Por qué no?",
+      "idealAnswer": "That variable only turns off optional client traffic like metrics, error reports and surveys; prompts and responses still go to Anthropic under standard retention. Zero Data Retention is a separate agreement that Anthropic enables per qualified Enterprise organization.",
+      "rubric": [
+        "The variable only stops optional traffic",
+        "Prompts and responses still follow standard retention",
+        "ZDR is enabled by Anthropic per organization"
+      ]
+    }
+  ]
+}

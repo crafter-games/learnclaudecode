@@ -1,0 +1,374 @@
+{
+  "unitId": "u-auto-memory-rules",
+  "audited": true,
+  "overview": {
+    "title": "Auto memory y reglas",
+    "hook": "Que Claude recuerde lo aprendido y cargue cada convención solo cuando aplica.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 10,
+          "y": 20
+        },
+        {
+          "id": "claude",
+          "label": "Claude",
+          "kind": "actor",
+          "x": 10,
+          "y": 80
+        },
+        {
+          "id": "rules",
+          "label": ".claude/rules/",
+          "kind": "service",
+          "x": 40,
+          "y": 20
+        },
+        {
+          "id": "memdir",
+          "label": "Auto memory",
+          "kind": "service",
+          "x": 40,
+          "y": 80
+        },
+        {
+          "id": "matched",
+          "label": "Archivo con match",
+          "kind": "data",
+          "x": 70,
+          "y": 20
+        },
+        {
+          "id": "index",
+          "label": "MEMORY.md",
+          "kind": "data",
+          "x": 70,
+          "y": 80
+        },
+        {
+          "id": "context",
+          "label": "Contexto",
+          "kind": "zone",
+          "x": 92,
+          "y": 50
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "rules",
+          "label": "escribes"
+        },
+        {
+          "from": "claude",
+          "to": "memdir",
+          "label": "guarda notas"
+        },
+        {
+          "from": "memdir",
+          "to": "index",
+          "label": "índice"
+        },
+        {
+          "from": "index",
+          "to": "context",
+          "label": "cada sesión"
+        },
+        {
+          "from": "rules",
+          "to": "matched",
+          "label": "paths"
+        },
+        {
+          "from": "matched",
+          "to": "context",
+          "label": "al leerlo"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cada sesión empieza con el contexto vacío. Sin algo que persista, repites las mismas correcciones y cargas convenciones que no aplican a lo que estás tocando.",
+        "show": [
+          "you",
+          "claude",
+          "context"
+        ],
+        "focus": "context"
+      },
+      {
+        "narration": "Auto memory son notas que Claude escribe para sí mismo a partir de tus correcciones y preferencias. Viven en tu máquina, en una carpeta por repositorio compartida entre worktrees.",
+        "show": [
+          "you",
+          "claude",
+          "context",
+          "memdir"
+        ],
+        "focus": "memdir"
+      },
+      {
+        "narration": "MEMORY.md es el índice de esa carpeta. Sus primeras 200 líneas o 25KB se cargan en cada sesión; los archivos de tema se leen solo cuando Claude los necesita.",
+        "show": [
+          "you",
+          "claude",
+          "context",
+          "memdir",
+          "index"
+        ],
+        "focus": "index"
+      },
+      {
+        "narration": "Las reglas las escribes tú, un tema por archivo, en .claude/rules/. Una regla sin paths se carga al inicio con la misma prioridad que .claude/CLAUDE.md.",
+        "show": [
+          "you",
+          "claude",
+          "context",
+          "memdir",
+          "index",
+          "rules"
+        ],
+        "focus": "rules"
+      },
+      {
+        "narration": "Con paths en el frontmatter, la regla se carga solo cuando Claude lee un archivo que coincide con el glob. Así la convención de la API no ocupa contexto mientras editas el frontend.",
+        "show": [
+          "you",
+          "claude",
+          "context",
+          "memdir",
+          "index",
+          "rules",
+          "matched"
+        ],
+        "focus": "matched"
+      },
+      {
+        "narration": "Si dices recuerda esto, va a auto memory; si dices agrégalo a CLAUDE.md, va a CLAUDE.md. Un procedimiento de varios pasos va en un skill, y para bloquear una acción usa un hook PreToolUse.",
+        "show": [
+          "you",
+          "claude",
+          "context",
+          "memdir",
+          "index",
+          "rules",
+          "matched"
+        ],
+        "focus": "claude"
+      }
+    ],
+    "keyPoints": [
+      "Auto memory la escribe Claude; es local y por repositorio.",
+      "Solo el índice MEMORY.md se carga al iniciar cada sesión.",
+      "Reglas sin paths cargan al inicio, como .claude/CLAUDE.md.",
+      "Reglas con paths cargan al leer un archivo que coincide.",
+      "~/.claude/rules/ aplica a todos tus proyectos; no anula reglas del proyecto."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "CLAUDE.md",
+        "difference": "Lo escribes tú y se comparte por git; auto memory la escribe Claude y queda en tu máquina."
+      },
+      {
+        "unitOrService": "skills",
+        "difference": "Un skill carga al invocarlo o si es relevante; una regla carga al inicio o al leer archivos que coinciden."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-auto-memory-rules--l1",
+      "conceptId": "mem-auto-memory",
+      "format": "lightning",
+      "prompt": "You say \"remember that API tests need a local Redis\" → where is it saved?",
+      "promptEs": "Dices \"recuerda que los tests de la API necesitan un Redis local\" → ¿dónde se guarda?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Project CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE.local.md"
+        },
+        {
+          "id": "C",
+          "text": "Auto memory"
+        },
+        {
+          "id": "D",
+          "text": "A file in .claude/rules/"
+        }
+      ],
+      "answer": "C",
+      "why": "Pedirle a Claude que recuerde algo lo guarda en auto memory. Para que vaya a CLAUDE.md tienes que pedirlo explícito (\"agrégalo a CLAUDE.md\") o editarlo tú con /memory."
+    },
+    {
+      "id": "u-auto-memory-rules--l2",
+      "conceptId": "mem-auto-memory",
+      "format": "lightning",
+      "prompt": "Turn off auto memory for one project only → ?",
+      "promptEs": "Apagar auto memory solo para un proyecto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Toggle it off in /memory"
+        },
+        {
+          "id": "B",
+          "text": "`autoMemoryEnabled: false` in project settings"
+        },
+        {
+          "id": "C",
+          "text": "Set `autoMemoryDirectory` to an empty folder"
+        },
+        {
+          "id": "D",
+          "text": "Add the folder to `claudeMdExcludes`"
+        }
+      ],
+      "answer": "B",
+      "why": "`autoMemoryEnabled: false` en los settings del proyecto la apaga solo ahí. El toggle de /memory guarda la clave en tus user settings, así que afecta a todos tus proyectos."
+    },
+    {
+      "id": "u-auto-memory-rules--l3",
+      "conceptId": "mem-auto-memory",
+      "format": "thisorthat",
+      "prompt": "Auto memory file loaded at the start of every session → ?",
+      "promptEs": "Archivo de auto memory que se carga al inicio de cada sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A topic file like `feedback_testing.md`"
+        },
+        {
+          "id": "B",
+          "text": "The `MEMORY.md` index"
+        }
+      ],
+      "answer": "B",
+      "why": "Solo el índice MEMORY.md (sus primeras 200 líneas o 25KB) entra al inicio. Los archivos de tema no se cargan al arrancar; Claude los lee bajo demanda con sus herramientas de archivos."
+    },
+    {
+      "id": "u-auto-memory-rules--l4",
+      "conceptId": "mem-auto-memory",
+      "format": "lightning",
+      "prompt": "Where does auto memory for a git repository live → ?",
+      "promptEs": "¿Dónde vive la auto memory de un repositorio git → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`.claude/agent-memory/` in the repo"
+        },
+        {
+          "id": "B",
+          "text": "`.claude/memory/` in the repo"
+        },
+        {
+          "id": "C",
+          "text": "`~/.claude/rules/`"
+        },
+        {
+          "id": "D",
+          "text": "`~/.claude/projects/<project>/memory/`"
+        }
+      ],
+      "answer": "D",
+      "why": "Cada proyecto tiene su carpeta en ~/.claude/projects/<project>/memory/, fuera del repo. `.claude/agent-memory/` existe, pero es la memoria de un subagente con `memory: project`, no la tuya."
+    },
+    {
+      "id": "u-auto-memory-rules--l5",
+      "conceptId": "mem-rules-paths",
+      "format": "lightning",
+      "prompt": "Conventions that apply only when Claude works on `src/api/**/*.ts` → ?",
+      "promptEs": "Convenciones que aplican solo cuando Claude trabaja en `src/api/**/*.ts` → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rule with `paths` frontmatter"
+        },
+        {
+          "id": "B",
+          "text": "Root CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "CLAUDE.local.md"
+        },
+        {
+          "id": "D",
+          "text": "An auto memory note"
+        }
+      ],
+      "answer": "A",
+      "why": "Una regla en .claude/rules/ con `paths` se carga solo cuando Claude lee un archivo que coincide. El CLAUDE.md raíz se carga en cada sesión aunque no toques la API."
+    },
+    {
+      "id": "u-auto-memory-rules--l6",
+      "conceptId": "mem-rules-paths",
+      "format": "lightning",
+      "prompt": "A `.claude/rules/` file with no `paths` field loads → when?",
+      "promptEs": "Un archivo de `.claude/rules/` sin campo `paths` se carga → ¿cuándo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Only when you invoke it"
+        },
+        {
+          "id": "B",
+          "text": "When Claude reads any file"
+        },
+        {
+          "id": "C",
+          "text": "At launch, every session"
+        },
+        {
+          "id": "D",
+          "text": "Only after /compact"
+        }
+      ],
+      "answer": "C",
+      "why": "Sin `paths`, la regla carga al inicio con la misma prioridad que .claude/CLAUDE.md. Cargar al invocarla es comportamiento de un skill, no de una regla."
+    },
+    {
+      "id": "u-auto-memory-rules--l7",
+      "conceptId": "mem-rules-paths",
+      "format": "thisorthat",
+      "prompt": "Personal rules applied to every project on your machine → ?",
+      "promptEs": "Reglas personales que aplican a todos los proyectos de tu máquina → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`~/.claude/rules/`"
+        },
+        {
+          "id": "B",
+          "text": "`.claude/rules/`"
+        }
+      ],
+      "answer": "A",
+      "why": "~/.claude/rules/ aplica a todos tus proyectos. .claude/rules/ vive en el repo y aplica a ese proyecto, compartido con el equipo por control de versiones."
+    },
+    {
+      "id": "u-auto-memory-rules--l8",
+      "conceptId": "mem-rules-paths",
+      "format": "thisorthat",
+      "prompt": "Multi-step release procedure, loaded only when you invoke it → ?",
+      "promptEs": "Procedimiento de release de varios pasos, cargado solo al invocarlo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A path-scoped rule"
+        },
+        {
+          "id": "B",
+          "text": "A skill"
+        }
+      ],
+      "answer": "B",
+      "why": "Un skill carga al invocarlo o cuando Claude lo ve relevante. Una regla con `paths` carga al leer archivos que coinciden, no porque pidas el procedimiento."
+    }
+  ]
+}

@@ -1,0 +1,533 @@
+{
+  "conceptId": "large-add-dir",
+  "card": {
+    "en": {
+      "tldr": "Started from a package, Claude can only read and edit that subtree. To reach a sibling package or another repository, use `permissions.additionalDirectories` in settings or `--add-dir` / `/add-dir`. Both grant read and edit access; only the flag and command also load the directory's skills, and its CLAUDE.md and rules only with an environment variable.",
+      "whenToUse": [
+        "A change in `packages/api` also needs edits in `packages/shared`",
+        "Everyone working in one package always needs the same sibling: commit `additionalDirectories`",
+        "One-off access, or you also want the sibling's skills: `--add-dir` or `/add-dir`",
+        "A task spans a separately checked-out repository"
+      ],
+      "keyFacts": [
+        "`permissions.additionalDirectories` paths resolve against the directory you start Claude from, e.g. `\"../shared\"` from `packages/api/`.",
+        "`additionalDirectories` grants file access only: it never loads the directory's CLAUDE.md, rules or skills.",
+        "`--add-dir` and `/add-dir` load the directory's skills; its CLAUDE.md, `.claude/rules/` and CLAUDE.local.md load only with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`.",
+        "The environment variable has no effect on directories listed in `additionalDirectories`.",
+        "Commit `additionalDirectories` to `.claude/settings.json` for the team; use `.claude/settings.local.json` or `--add-dir` for personal or one-off access.",
+        "If you start from the repository root of a single tree, Claude already reaches every file and none of this is needed."
+      ],
+      "gotchas": [
+        "Directories added with `--add-dir` are not restored on resume: pass the flag again.",
+        "A root `.claude/settings.json` does not apply when you start from `packages/api/`, since project settings aren't inherited from parents.",
+        "Adding a directory doesn't make it a full configuration root: most of its `.claude/` configuration is not discovered."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Launching from the root",
+          "difference": "Gives access to every file without granting anything, but loads other packages' CLAUDE.md on demand."
+        },
+        {
+          "concept": "worktree.sparsePaths",
+          "difference": "Decides what a new worktree checks out on disk; it grants no extra access outside the working directory."
+        }
+      ],
+      "examCues": [
+        "sibling package",
+        "update a shared type used by api and web",
+        "separately checked-out repository",
+        "also load its skills",
+        "for everyone who works in this package"
+      ]
+    },
+    "es": {
+      "tldr": "Si lanzas desde un paquete, Claude solo puede leer y editar ese subárbol. Para llegar a un paquete hermano u otro repositorio usa `permissions.additionalDirectories` en settings o `--add-dir` / `/add-dir`. Ambos dan acceso de lectura y edición; solo el flag y el comando cargan además los skills del directorio, y su CLAUDE.md y reglas solo con una variable de entorno.",
+      "whenToUse": [
+        "Un cambio en `packages/api` también requiere editar `packages/shared`",
+        "Todos los que trabajan en un paquete necesitan siempre el mismo hermano: commitea `additionalDirectories`",
+        "Acceso puntual, o quieres también los skills del hermano: `--add-dir` o `/add-dir`",
+        "Una tarea abarca un repositorio clonado por separado"
+      ],
+      "keyFacts": [
+        "Las rutas de `permissions.additionalDirectories` se resuelven contra el directorio desde el que lanzas Claude, por ejemplo `\"../shared\"` desde `packages/api/`.",
+        "`additionalDirectories` da solo acceso a archivos: nunca carga el CLAUDE.md, las reglas ni los skills del directorio.",
+        "`--add-dir` y `/add-dir` cargan los skills del directorio; su CLAUDE.md, `.claude/rules/` y CLAUDE.local.md cargan solo con `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`.",
+        "La variable de entorno no tiene efecto sobre directorios listados en `additionalDirectories`.",
+        "Commitea `additionalDirectories` en `.claude/settings.json` para el equipo; usa `.claude/settings.local.json` o `--add-dir` para acceso personal o puntual.",
+        "Si lanzas desde la raíz de un solo árbol, Claude ya alcanza todos los archivos y nada de esto hace falta."
+      ],
+      "gotchas": [
+        "Los directorios agregados con `--add-dir` no se restauran al reanudar: vuelve a pasar el flag.",
+        "Un `.claude/settings.json` en la raíz no aplica cuando lanzas desde `packages/api/`, porque los settings de proyecto no se heredan de los padres.",
+        "Agregar un directorio no lo convierte en raíz de configuración completa: la mayor parte de su `.claude/` no se descubre."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Lanzar desde la raíz",
+          "difference": "Da acceso a todos los archivos sin conceder nada, pero carga a demanda los CLAUDE.md de otros paquetes."
+        },
+        {
+          "concept": "worktree.sparsePaths",
+          "difference": "Decide qué hay en disco en un worktree nuevo; no concede acceso fuera del directorio de trabajo."
+        }
+      ],
+      "examCues": [
+        "sibling package",
+        "update a shared type used by api and web",
+        "separately checked-out repository",
+        "also load its skills",
+        "for everyone who works in this package"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/large-codebases.md",
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "large-add-dir--e3b57cb5",
+      "conceptId": "large-add-dir",
+      "secondaryConcepts": [
+        "large-scope-instructions"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Everyone on the API team starts Claude from `packages/api/`, and most tasks also need edits in `packages/shared/`. The team wants that access for everyone who works in `packages/api/`, without anyone passing a flag at launch. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `\"../shared\"` to `permissions.additionalDirectories` in the repository root's `.claude/settings.json`",
+          "correct": false,
+          "why": "Project settings aren't inherited from parent directories, so a session started in `packages/api/` won't read it."
+        },
+        {
+          "id": "B",
+          "text": "Tell each developer to run `claude --add-dir ../shared`",
+          "correct": false,
+          "why": "It works per launch, but it is exactly the flag the team wants to avoid."
+        },
+        {
+          "id": "C",
+          "text": "Add `\"../shared\"` to `permissions.additionalDirectories` in `packages/api/.claude/settings.local.json`",
+          "correct": false,
+          "why": "The local file applies only to the person who created it."
+        },
+        {
+          "id": "D",
+          "text": "Commit `\"../shared\"` in `permissions.additionalDirectories` in `packages/api/.claude/settings.json`",
+          "correct": true,
+          "why": "The committed file in the launch directory reaches everyone, and the relative path resolves from `packages/api/`."
+        }
+      ],
+      "explanation": "The requirements are team-wide and flag-free access from `packages/api/`. Committing `additionalDirectories` to `packages/api/.claude/settings.json` does that, and `../shared` resolves against the launch directory. The root settings file is tempting, but project `.claude/settings.json` isn't inherited from parent directories, so a session started in the package never reads it.",
+      "keywordCues": [
+        "for everyone who works in `packages/api/`",
+        "without anyone passing a flag"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Todo el equipo de API lanza Claude desde `packages/api/`, y la mayoría de las tareas también requiere editar `packages/shared/`. El equipo quiere ese acceso para todos los que trabajan en `packages/api/`, sin que nadie pase un flag al lanzar. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `\"../shared\"` a `permissions.additionalDirectories` en el `.claude/settings.json` de la raíz del repositorio",
+            "why": "Los settings de proyecto no se heredan de directorios padre, así que una sesión iniciada en `packages/api/` no lo lee."
+          },
+          {
+            "id": "B",
+            "text": "Pedir a cada desarrollador que corra `claude --add-dir ../shared`",
+            "why": "Funciona por lanzamiento, pero es justo el flag que el equipo quiere evitar."
+          },
+          {
+            "id": "C",
+            "text": "Agregar `\"../shared\"` a `permissions.additionalDirectories` en `packages/api/.claude/settings.local.json`",
+            "why": "El archivo local aplica solo a quien lo creó."
+          },
+          {
+            "id": "D",
+            "text": "Commitear `\"../shared\"` en `permissions.additionalDirectories` de `packages/api/.claude/settings.json`",
+            "why": "El archivo commiteado en el directorio de lanzamiento llega a todos, y la ruta relativa se resuelve desde `packages/api/`."
+          }
+        ],
+        "explanation": "Los requisitos son acceso para todo el equipo y sin flags desde `packages/api/`. Commitear `additionalDirectories` en `packages/api/.claude/settings.json` lo logra, y `../shared` se resuelve contra el directorio de lanzamiento. El archivo de la raíz tienta, pero el `.claude/settings.json` del proyecto no se hereda de directorios padre, así que una sesión iniciada en el paquete nunca lo lee."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-add-dir--d279dc6f",
+      "conceptId": "large-add-dir",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer working from `packages/web/` needs, for one session only, to edit `packages/shared/` and to use the skills defined in `packages/shared/.claude/skills/`. They don't want to change any settings file. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Start with `claude --add-dir ../shared`",
+          "correct": true,
+          "why": "Grants read and edit access for this launch and loads the added directory's skills."
+        },
+        {
+          "id": "B",
+          "text": "Add `\"../shared\"` to `permissions.additionalDirectories` in `.claude/settings.local.json`",
+          "correct": false,
+          "why": "Edits a settings file, and `additionalDirectories` never loads skills."
+        },
+        {
+          "id": "C",
+          "text": "Set `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` and start `claude`",
+          "correct": false,
+          "why": "The variable only affects directories added with `--add-dir` or `/add-dir`; alone it grants nothing."
+        },
+        {
+          "id": "D",
+          "text": "Add `packages/shared` to `worktree.sparsePaths`",
+          "correct": false,
+          "why": "That changes what worktrees check out, grants no access outside the working directory and edits settings."
+        }
+      ],
+      "explanation": "The requirements are one-off access, the sibling's skills, and no settings edits. `--add-dir` grants read and edit access for that launch and loads the added directory's skills. `additionalDirectories` would need a settings change and never loads skills, and the environment variable only changes what loads from directories already added with the flag or command.",
+      "keywordCues": [
+        "for one session only",
+        "use the skills defined in `packages/shared/.claude/skills/`",
+        "don't want to change any settings file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Una desarrolladora que trabaja desde `packages/web/` necesita, solo por una sesión, editar `packages/shared/` y usar los skills definidos en `packages/shared/.claude/skills/`. No quiere cambiar ningún archivo de settings. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Lanzar con `claude --add-dir ../shared`",
+            "why": "Da acceso de lectura y edición en ese lanzamiento y carga los skills del directorio agregado."
+          },
+          {
+            "id": "B",
+            "text": "Agregar `\"../shared\"` a `permissions.additionalDirectories` en `.claude/settings.local.json`",
+            "why": "Edita un archivo de settings, y `additionalDirectories` nunca carga skills."
+          },
+          {
+            "id": "C",
+            "text": "Definir `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` y lanzar `claude`",
+            "why": "La variable solo afecta directorios agregados con `--add-dir` o `/add-dir`; sola no da acceso a nada."
+          },
+          {
+            "id": "D",
+            "text": "Agregar `packages/shared` a `worktree.sparsePaths`",
+            "why": "Cambia qué se hace checkout en worktrees, no da acceso fuera del directorio de trabajo y edita settings."
+          }
+        ],
+        "explanation": "Los requisitos son acceso puntual, los skills del hermano y no editar settings. `--add-dir` da acceso de lectura y edición en ese lanzamiento y carga los skills del directorio agregado. `additionalDirectories` requiere cambiar settings y nunca carga skills, y la variable de entorno solo cambia qué carga de directorios ya agregados con el flag o el comando."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-add-dir--847a4dca",
+      "conceptId": "large-add-dir",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "Working in `service-a`, a developer needs to edit a separately checked-out repository at `../platform-lib`, and that repository's CLAUDE.md and `.claude/rules/` must load so Claude follows its conventions. Which two steps achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add `\"../platform-lib\"` to `permissions.additionalDirectories`",
+          "correct": false,
+          "why": "It grants access, but CLAUDE.md and rules never load from `additionalDirectories`, even with the variable."
+        },
+        {
+          "id": "B",
+          "text": "Start Claude with `--add-dir ../platform-lib`",
+          "correct": true,
+          "why": "Grants access and makes the directory eligible to load its instruction files."
+        },
+        {
+          "id": "C",
+          "text": "Set `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` for the launch",
+          "correct": true,
+          "why": "Loads CLAUDE.md and `.claude/rules/` from directories added with `--add-dir`."
+        },
+        {
+          "id": "D",
+          "text": "Run `/context` after launching",
+          "correct": false,
+          "why": "It shows which memory files loaded; it doesn't load new ones."
+        },
+        {
+          "id": "E",
+          "text": "Add `\"**/platform-lib/**\"` to `claudeMdExcludes`",
+          "correct": false,
+          "why": "That skips the repository's instruction files, the opposite of the goal."
+        }
+      ],
+      "explanation": "Access alone is not enough: the repository's instruction files must load too. Only directories added with `--add-dir` or `/add-dir` can load CLAUDE.md and rules, and only when `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` is set. `additionalDirectories` grants access but never loads instructions, and the variable has no effect on it.",
+      "keywordCues": [
+        "separately checked-out repository",
+        "CLAUDE.md and `.claude/rules/` must load"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Trabajando en `service-a`, un desarrollador necesita editar un repositorio clonado por separado en `../platform-lib`, y el CLAUDE.md y `.claude/rules/` de ese repositorio deben cargar para que Claude siga sus convenciones. ¿Qué dos pasos lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar `\"../platform-lib\"` a `permissions.additionalDirectories`",
+            "why": "Da acceso, pero CLAUDE.md y reglas nunca cargan desde `additionalDirectories`, ni con la variable."
+          },
+          {
+            "id": "B",
+            "text": "Lanzar Claude con `--add-dir ../platform-lib`",
+            "why": "Da acceso y deja al directorio en condiciones de cargar sus archivos de instrucciones."
+          },
+          {
+            "id": "C",
+            "text": "Definir `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` para el lanzamiento",
+            "why": "Carga CLAUDE.md y `.claude/rules/` de los directorios agregados con `--add-dir`."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/context` después de lanzar",
+            "why": "Muestra qué archivos de memoria cargaron; no carga nuevos."
+          },
+          {
+            "id": "E",
+            "text": "Agregar `\"**/platform-lib/**\"` a `claudeMdExcludes`",
+            "why": "Eso salta los archivos de instrucciones del repositorio, lo contrario del objetivo."
+          }
+        ],
+        "explanation": "No basta con el acceso: también deben cargar los archivos de instrucciones del repositorio. Solo los directorios agregados con `--add-dir` o `/add-dir` pueden cargar CLAUDE.md y reglas, y solo cuando está definida `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`. `additionalDirectories` da acceso pero nunca carga instrucciones, y la variable no tiene efecto sobre él."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-add-dir--1e19cdee",
+      "conceptId": "large-add-dir",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "From `packages/api/`, what command starts Claude with read and edit access to the sibling `packages/shared/` for this launch only?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude --add-dir ../shared",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "claude --add-dir ../shared/",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claude --add-dir ../shared` grants access to the sibling for that launch and loads its skills. To make it permanent for the team, commit `permissions.additionalDirectories` instead; directories added with the flag must be passed again when you resume.",
+      "keywordCues": [
+        "for this launch only",
+        "sibling"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Desde `packages/api/`, ¿qué comando lanza Claude con acceso de lectura y edición al hermano `packages/shared/` solo para este lanzamiento?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claude --add-dir ../shared",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "claude --add-dir ../shared/",
+            "why": ""
+          }
+        ],
+        "explanation": "`claude --add-dir ../shared` da acceso al hermano en ese lanzamiento y carga sus skills. Para hacerlo permanente para el equipo, commitea `permissions.additionalDirectories`; los directorios agregados con el flag hay que volver a pasarlos al reanudar."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-add-dir--20a090f8",
+      "conceptId": "large-add-dir",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete the committed `packages/api/.claude/settings.json` so everyone who starts Claude from `packages/api/` can read and edit `packages/shared/`.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "additionalDirectories",
+          "correct": true,
+          "why": "Grants Claude access to directories outside the working directory."
+        },
+        {
+          "id": "1b",
+          "text": "deny",
+          "correct": false,
+          "why": "Deny rules block tools; they don't grant access to more directories."
+        },
+        {
+          "id": "1c",
+          "text": "claudeMdExcludes",
+          "correct": false,
+          "why": "A top-level key for skipping instruction files, not a permissions entry for access."
+        },
+        {
+          "id": "2a",
+          "text": "packages/shared",
+          "correct": false,
+          "why": "Relative paths resolve against the launch directory, so this points inside `packages/api/`."
+        },
+        {
+          "id": "2b",
+          "text": "../shared",
+          "correct": true,
+          "why": "Resolved from `packages/api/`, it reaches the sibling `packages/shared/`."
+        },
+        {
+          "id": "2c",
+          "text": "Read(../shared/**)",
+          "correct": false,
+          "why": "That is permission-rule syntax, not a directory path."
+        }
+      ],
+      "explanation": "`permissions.additionalDirectories` takes directory paths, and relative paths resolve against the directory you start Claude from. From `packages/api/`, `../shared` is the sibling package. Committing the file shares the access with everyone who starts there.",
+      "keywordCues": [
+        "everyone who starts Claude from `packages/api/`",
+        "read and edit `packages/shared/`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Completa el `packages/api/.claude/settings.json` commiteado para que todos los que lanzan Claude desde `packages/api/` puedan leer y editar `packages/shared/`.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "additionalDirectories",
+            "why": "Da a Claude acceso a directorios fuera del directorio de trabajo."
+          },
+          {
+            "id": "1b",
+            "text": "deny",
+            "why": "Las reglas deny bloquean herramientas; no dan acceso a más directorios."
+          },
+          {
+            "id": "1c",
+            "text": "claudeMdExcludes",
+            "why": "Es una clave de primer nivel para saltar archivos de instrucciones, no una entrada de permisos para acceso."
+          },
+          {
+            "id": "2a",
+            "text": "packages/shared",
+            "why": "Las rutas relativas se resuelven contra el directorio de lanzamiento, así que esto apunta dentro de `packages/api/`."
+          },
+          {
+            "id": "2b",
+            "text": "../shared",
+            "why": "Resuelta desde `packages/api/`, llega al hermano `packages/shared/`."
+          },
+          {
+            "id": "2c",
+            "text": "Read(../shared/**)",
+            "why": "Es sintaxis de regla de permisos, no una ruta de directorio."
+          }
+        ],
+        "explanation": "`permissions.additionalDirectories` recibe rutas de directorios, y las rutas relativas se resuelven contra el directorio desde el que lanzas Claude. Desde `packages/api/`, `../shared` es el paquete hermano. Commitear el archivo comparte el acceso con todos los que lanzan desde ahí."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"permissions\": {\n    \"{{1}}\": [\n      \"{{2}}\"\n    ]\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "large-add-dir--r0",
+      "conceptId": "large-add-dir",
+      "kind": "recall",
+      "prompt": "Compare additionalDirectories with --add-dir: what each grants, what each loads, and when to choose each.",
+      "promptEs": "Compara additionalDirectories con --add-dir: qué da cada uno, qué carga cada uno y cuándo elegir cada uno.",
+      "idealAnswer": "Both give Claude read and edit access outside the working directory. `permissions.additionalDirectories` is a setting, relative to the launch directory and committable for the team, and it never loads the directory's CLAUDE.md, rules or skills. `--add-dir` or `/add-dir` is per launch or session, loads the directory's skills, and loads its CLAUDE.md and rules only with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`.",
+      "rubric": [
+        "Both grant read/edit access outside the working directory",
+        "additionalDirectories: settings, committable, loads nothing",
+        "--add-dir: per launch, loads skills",
+        "CLAUDE.md and rules need the environment variable, only for --add-dir"
+      ]
+    },
+    {
+      "id": "large-add-dir--r1",
+      "conceptId": "large-add-dir",
+      "kind": "why-not",
+      "prompt": "You need a sibling package's skills in this session. Why not list it in permissions.additionalDirectories?",
+      "promptEs": "Necesitas los skills de un paquete hermano en esta sesión. ¿Por qué no listarlo en permissions.additionalDirectories?",
+      "idealAnswer": "`additionalDirectories` grants file access only and never loads the directory's skills, CLAUDE.md or rules. Adding the sibling with `--add-dir` at launch or `/add-dir` mid-session gives the same access and also loads its skills.",
+      "rubric": [
+        "additionalDirectories is access only",
+        "It never loads skills",
+        "--add-dir or /add-dir loads the sibling's skills"
+      ]
+    }
+  ]
+}

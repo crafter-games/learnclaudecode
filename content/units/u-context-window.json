@@ -1,0 +1,339 @@
+{
+  "unitId": "u-context-window",
+  "audited": true,
+  "overview": {
+    "title": "La ventana de contexto",
+    "hook": "Saber qué ocupa el contexto antes y durante tu sesión.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "sys",
+          "label": "System prompt",
+          "kind": "data",
+          "x": 10,
+          "y": 15
+        },
+        {
+          "id": "idx",
+          "label": "Tools y skills",
+          "kind": "data",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "mem",
+          "label": "CLAUDE.md, memoria",
+          "kind": "data",
+          "x": 10,
+          "y": 85
+        },
+        {
+          "id": "win",
+          "label": "Ventana contexto",
+          "kind": "zone",
+          "x": 50,
+          "y": 50
+        },
+        {
+          "id": "work",
+          "label": "Trabajo en curso",
+          "kind": "data",
+          "x": 88,
+          "y": 20
+        },
+        {
+          "id": "ctx",
+          "label": "/context",
+          "kind": "service",
+          "x": 88,
+          "y": 80
+        }
+      ],
+      "edges": [
+        {
+          "from": "sys",
+          "to": "win",
+          "label": "primero"
+        },
+        {
+          "from": "idx",
+          "to": "win",
+          "label": "solo nombres"
+        },
+        {
+          "from": "mem",
+          "to": "win",
+          "label": "al inicio"
+        },
+        {
+          "from": "work",
+          "to": "win",
+          "label": "se suma"
+        },
+        {
+          "from": "ctx",
+          "to": "win",
+          "label": "inspecciona"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Antes de que escribas tu primer prompt, la ventana de contexto ya tiene contenido. Si no sabes qué la llena, no sabrás por qué Claude ignora una instrucción o por qué la sesión se llena tan rápido.",
+        "show": [
+          "win"
+        ],
+        "focus": "win"
+      },
+      {
+        "narration": "Lo primero que entra es el system prompt, que nunca ves. También carga información del entorno: el directorio de trabajo, la plataforma y si estás en un repositorio git.",
+        "show": [
+          "win",
+          "sys"
+        ],
+        "focus": "sys"
+      },
+      {
+        "narration": "Luego entran listados livianos: los nombres de las tools MCP, con sus esquemas diferidos, y una línea de descripción por skill. Las skills con disable-model-invocation en true no aparecen en ese listado.",
+        "show": [
+          "win",
+          "sys",
+          "idx"
+        ],
+        "focus": "idx"
+      },
+      {
+        "narration": "Tus instrucciones también cargan al inicio: ~/.claude/CLAUDE.md y después el CLAUDE.md del proyecto. La auto memoria entra con las primeras 200 líneas o 25KB de MEMORY.md.",
+        "show": [
+          "win",
+          "sys",
+          "idx",
+          "mem"
+        ],
+        "focus": "mem"
+      },
+      {
+        "narration": "Mientras Claude trabaja se suman archivos leídos, reglas con paths y el additionalContext de los hooks. En la terminal ves una sola línea, pero el contenido completo ocupa contexto.",
+        "show": [
+          "win",
+          "sys",
+          "idx",
+          "mem",
+          "work"
+        ],
+        "focus": "work"
+      },
+      {
+        "narration": "Para ver qué ocupa la ventana ahora mismo, corre /context: una grilla por categoría con sugerencias y la lista Memory files. No lo confundas con /usage, que responde cuánto costó la sesión.",
+        "show": [
+          "win",
+          "sys",
+          "idx",
+          "mem",
+          "work",
+          "ctx"
+        ],
+        "focus": "ctx"
+      }
+    ],
+    "keyPoints": [
+      "Antes de tu prompt ya cargan instrucciones, memoria y listados.",
+      "MCP y skills: solo nombres y descripciones; el resto, bajo demanda.",
+      "Una línea en la terminal puede ocultar contenido completo.",
+      "/context muestra qué llena la ventana; /usage, cuánto cuesta."
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/usage",
+        "difference": "Muestra costo de la sesión y límites del plan, no qué ocupa la ventana."
+      },
+      {
+        "unitOrService": "/memory",
+        "difference": "Abre y edita CLAUDE.md y memoria; no confirma qué cargó en esta sesión."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-context-window--l1",
+      "conceptId": "ctx-startup-load",
+      "format": "lightning",
+      "prompt": "A CLAUDE.md inside a subdirectory of your working directory loads when → ?",
+      "promptEs": "Un CLAUDE.md en un subdirectorio de tu directorio de trabajo carga cuando → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "At launch, with the root one"
+        },
+        {
+          "id": "B",
+          "text": "Claude reads files in that subdirectory"
+        },
+        {
+          "id": "C",
+          "text": "You run /compact"
+        },
+        {
+          "id": "D",
+          "text": "You run /memory"
+        }
+      ],
+      "answer": "B",
+      "why": "Los CLAUDE.md de subdirectorios cargan bajo demanda, al leer archivos ahí. Al inicio solo cargan los del directorio de trabajo y los superiores."
+    },
+    {
+      "id": "u-context-window--l2",
+      "conceptId": "ctx-startup-load",
+      "format": "lightning",
+      "prompt": "Skill that costs zero context until you type /name → ?",
+      "promptEs": "Skill que no ocupa contexto hasta que escribes /name → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "user-invocable: false"
+        },
+        {
+          "id": "B",
+          "text": "context: fork"
+        },
+        {
+          "id": "C",
+          "text": "disable-model-invocation: true"
+        },
+        {
+          "id": "D",
+          "text": "A paths: pattern"
+        }
+      ],
+      "answer": "C",
+      "why": "Con disable-model-invocation: true la descripción no entra al listado de inicio. user-invocable: false hace lo contrario: la descripción sigue en contexto y solo Claude la invoca."
+    },
+    {
+      "id": "u-context-window--l4",
+      "conceptId": "ctx-startup-load",
+      "format": "lightning",
+      "prompt": "Loaded at startup as names only, full schemas fetched on demand → ?",
+      "promptEs": "Carga al inicio solo como nombres, con esquemas completos bajo demanda → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Skill descriptions"
+        },
+        {
+          "id": "B",
+          "text": "Path-scoped rules"
+        },
+        {
+          "id": "C",
+          "text": "Project CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "MCP tools"
+        }
+      ],
+      "answer": "D",
+      "why": "Las tools MCP cargan solo sus nombres; los esquemas se piden vía tool search cuando hacen falta. Las skills cargan una descripción de una línea, no nombres de esquemas."
+    },
+    {
+      "id": "u-context-window--l5",
+      "conceptId": "ctx-context-command",
+      "format": "lightning",
+      "prompt": "Confirm which CLAUDE.md and rules files loaded this session → ?",
+      "promptEs": "Confirmar qué archivos CLAUDE.md y de reglas cargaron en esta sesión → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory"
+        },
+        {
+          "id": "B",
+          "text": "/status"
+        },
+        {
+          "id": "C",
+          "text": "/context"
+        },
+        {
+          "id": "D",
+          "text": "/init"
+        }
+      ],
+      "answer": "C",
+      "why": "/context muestra la lista Memory files con lo que cargó. /memory lista ubicaciones, incluso de archivos que aún no existen, así que no confirma la carga."
+    },
+    {
+      "id": "u-context-window--l6",
+      "conceptId": "ctx-context-command",
+      "format": "thisorthat",
+      "prompt": "How much has this session cost so far → ?",
+      "promptEs": "Cuánto ha costado esta sesión hasta ahora → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context"
+        },
+        {
+          "id": "B",
+          "text": "/usage"
+        }
+      ],
+      "answer": "B",
+      "why": "/usage muestra el costo de la sesión y los límites del plan. /context responde qué ocupa la ventana, no cuánto costó."
+    },
+    {
+      "id": "u-context-window--l7",
+      "conceptId": "ctx-context-command",
+      "format": "lightning",
+      "prompt": "See how many tokens each loaded MCP tool uses → ?",
+      "promptEs": "Ver cuántos tokens usa cada tool MCP cargada → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/context all"
+        },
+        {
+          "id": "B",
+          "text": "/mcp"
+        },
+        {
+          "id": "C",
+          "text": "/usage"
+        },
+        {
+          "id": "D",
+          "text": "/doctor"
+        }
+      ],
+      "answer": "A",
+      "why": "/context all expande el desglose por elemento, incluidos los tokens de cada tool MCP. /mcp tienta, pero muestra el estado de conexión de cada servidor."
+    },
+    {
+      "id": "u-context-window--l8",
+      "conceptId": "ctx-context-command",
+      "format": "lightning",
+      "prompt": "Live colored grid of window usage with capacity warnings → ?",
+      "promptEs": "Grilla de colores en vivo del uso de la ventana con alertas de capacidad → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact"
+        },
+        {
+          "id": "B",
+          "text": "/usage"
+        },
+        {
+          "id": "C",
+          "text": "/insights"
+        },
+        {
+          "id": "D",
+          "text": "/context"
+        }
+      ],
+      "answer": "D",
+      "why": "/context dibuja la grilla por categoría con sugerencias y alertas de capacidad. /compact libera espacio, pero no te muestra qué lo ocupa."
+    }
+  ]
+}

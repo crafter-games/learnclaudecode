@@ -1,0 +1,665 @@
+{
+  "conceptId": "cache-ttl",
+  "card": {
+    "en": {
+      "tldr": "Cached prefixes expire after a period of inactivity, and each request that hits the cache resets the timer. The TTL is five minutes or one hour, chosen per request bucket: the main conversation, and everything else (subagents, workflows, compaction). The one-hour TTL helps when you leave sessions idle and come back, but it bills cache writes at a higher rate.",
+      "whenToUse": [
+        "The first turn after a break is slow even though nothing changed",
+        "You use an API key or cloud provider and often step away",
+        "Subagents keep missing their cache between long pauses",
+        "Debugging or comparing the two TTLs"
+      ],
+      "keyFacts": [
+        "Main conversation default: one hour on a Claude subscription within plan usage; five minutes on usage credits, an API key or a cloud provider.",
+        "Everything else (subagents, workflows, teammates, forks, compaction, session titles) defaults to five minutes, except a few server-controlled helper requests that get one hour on a subscription.",
+        "`promptCacheTtl` sets the main conversation and `subagentPromptCacheTtl` everything else; each accepts only `5m` or `1h`.",
+        "Env var equivalents: `CLAUDE_CODE_PROMPT_CACHE_TTL` and `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`.",
+        "Precedence: `FORCE_PROMPT_CACHING_5M=1` → bucket env var → bucket setting → subagent `experimental` `cacheTtl` → `ENABLE_PROMPT_CACHING_1H=1` → default.",
+        "`/usage` shows whether the cache is warm and which TTL is in effect."
+      ],
+      "gotchas": [
+        "Once you draw on usage credits, the main conversation drops to five minutes unless you set the TTL yourself.",
+        "The one-hour TTL costs more on short bursts of work that never idle past five minutes.",
+        "Setting `promptCacheTtl` alone leaves subagents on five minutes.",
+        "Any value other than `5m` or `1h` is ignored."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Cache invalidation",
+          "difference": "Invalidation comes from changing the prefix, even with no idle time at all."
+        }
+      ],
+      "examCues": [
+        "after stepping away for twenty minutes",
+        "signs in with an API key",
+        "subagents keep missing the cache",
+        "override a longer TTL set in managed settings",
+        "comparing the two TTLs"
+      ]
+    },
+    "es": {
+      "tldr": "Los prefijos cacheados expiran tras un periodo sin actividad, y cada solicitud que acierta reinicia el reloj. El TTL es de cinco minutos o una hora, y se decide por grupo de solicitudes: la conversación principal, y todo lo demás (subagentes, workflows, compactación). Una hora ayuda si dejas sesiones inactivas y vuelves, pero cobra las escrituras al caché a una tarifa mayor.",
+      "whenToUse": [
+        "El primer turno tras una pausa es lento aunque no cambiaste nada",
+        "Usas API key o un proveedor cloud y te alejas seguido",
+        "Los subagentes pierden su caché entre pausas largas",
+        "Depurar o comparar los dos TTL"
+      ],
+      "keyFacts": [
+        "Default de la conversación principal: una hora con suscripción de Claude dentro del uso del plan; cinco minutos con usage credits, API key o proveedor cloud.",
+        "Todo lo demás (subagentes, workflows, teammates, forks, compactación, títulos de sesión) usa cinco minutos por defecto, salvo algunas solicitudes auxiliares controladas por el servidor que reciben una hora con suscripción.",
+        "`promptCacheTtl` define la conversación principal y `subagentPromptCacheTtl` todo lo demás; cada uno acepta solo `5m` o `1h`.",
+        "Variables de entorno equivalentes: `CLAUDE_CODE_PROMPT_CACHE_TTL` y `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`.",
+        "Precedencia: `FORCE_PROMPT_CACHING_5M=1` → variable de entorno del grupo → setting del grupo → `cacheTtl` en `experimental` del subagente → `ENABLE_PROMPT_CACHING_1H=1` → default.",
+        "`/usage` muestra si el caché está caliente y qué TTL está vigente."
+      ],
+      "gotchas": [
+        "Cuando pasas a usar usage credits, la conversación principal baja a cinco minutos salvo que fijes el TTL tú mismo.",
+        "El TTL de una hora cuesta más en ráfagas cortas de trabajo que nunca pasan cinco minutos inactivas.",
+        "Fijar solo `promptCacheTtl` deja a los subagentes en cinco minutos.",
+        "Cualquier valor distinto de `5m` o `1h` se ignora."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Invalidación del caché",
+          "difference": "La invalidación viene de cambiar el prefijo, aunque no hayas estado inactivo."
+        }
+      ],
+      "examCues": [
+        "after stepping away for twenty minutes",
+        "signs in with an API key",
+        "subagents keep missing the cache",
+        "override a longer TTL set in managed settings",
+        "comparing the two TTLs"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/prompt-caching.md",
+      "https://code.claude.com/docs/en/costs.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cache-ttl--5dec52fe",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [
+        "cache-invalidators"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer signs in to Claude Code with an API key and often leaves a session idle for 15 to 20 minutes during meetings. They change nothing in between, yet the first turn back is slow and expensive. They want the main conversation's cache to survive these breaks with the least setup. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `promptCacheTtl` to `1h` in their settings",
+          "correct": true,
+          "why": "It gives the main conversation the one-hour TTL, which outlasts the breaks."
+        },
+        {
+          "id": "B",
+          "text": "Set `subagentPromptCacheTtl` to `1h` in their settings",
+          "correct": false,
+          "why": "It covers subagents, workflows and other side requests, not the main conversation."
+        },
+        {
+          "id": "C",
+          "text": "Set `FORCE_PROMPT_CACHING_5M=1`",
+          "correct": false,
+          "why": "It forces the five-minute TTL for both buckets, the opposite of what is needed."
+        },
+        {
+          "id": "D",
+          "text": "Pick the model and effort at session start and avoid switching them",
+          "correct": false,
+          "why": "That avoids invalidation, but nothing changed here; the cache expired from inactivity."
+        }
+      ],
+      "explanation": "Nothing changed during the gap, so this is expiry, not invalidation. With an API key the main conversation defaults to five minutes, and `promptCacheTtl` set to `1h` extends it past a 20-minute break. `subagentPromptCacheTtl` is tempting but targets the other bucket. Avoiding model or effort changes addresses a different cause of misses.",
+      "keywordCues": [
+        "API key",
+        "idle for 15 to 20 minutes",
+        "change nothing in between",
+        "main conversation's cache"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador entra a Claude Code con una API key y suele dejar la sesión inactiva de 15 a 20 minutos durante reuniones. No cambia nada entre medio, pero el primer turno al volver es lento y caro. Quiere que el caché de la conversación principal sobreviva a esas pausas con la menor configuración. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner `promptCacheTtl` en `1h` en sus settings",
+            "why": "Le da a la conversación principal el TTL de una hora, que dura más que las pausas."
+          },
+          {
+            "id": "B",
+            "text": "Poner `subagentPromptCacheTtl` en `1h` en sus settings",
+            "why": "Cubre subagentes, workflows y otras solicitudes laterales, no la conversación principal."
+          },
+          {
+            "id": "C",
+            "text": "Definir `FORCE_PROMPT_CACHING_5M=1`",
+            "why": "Fuerza el TTL de cinco minutos para ambos grupos, lo contrario de lo que necesita."
+          },
+          {
+            "id": "D",
+            "text": "Elegir modelo y esfuerzo al inicio y no cambiarlos",
+            "why": "Eso evita invalidaciones, pero aquí no cambió nada; el caché expiró por inactividad."
+          }
+        ],
+        "explanation": "Nada cambió durante la pausa, así que es expiración, no invalidación. Con API key la conversación principal usa cinco minutos por defecto, y `promptCacheTtl` en `1h` la extiende más allá de una pausa de 20 minutos. `subagentPromptCacheTtl` tienta, pero apunta al otro grupo. Evitar cambios de modelo o esfuerzo ataca otra causa de fallos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-ttl--8f7c28ce",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "An organization's managed settings set `promptCacheTtl` to `1h`. A developer debugging cache behavior wants every request on their machine, main conversation and subagents alike, to use the five-minute TTL, without editing the managed settings. What should they set?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`promptCacheTtl` to `5m` in their user settings",
+          "correct": false,
+          "why": "It only covers the main conversation, and a user setting doesn't win over managed settings."
+        },
+        {
+          "id": "B",
+          "text": "The environment variable `FORCE_PROMPT_CACHING_5M=1`",
+          "correct": true,
+          "why": "It is first in the TTL precedence and forces five minutes for both buckets."
+        },
+        {
+          "id": "C",
+          "text": "`subagentPromptCacheTtl` to `5m`",
+          "correct": false,
+          "why": "It only covers the everything-else bucket; the main conversation keeps the one-hour TTL."
+        },
+        {
+          "id": "D",
+          "text": "The environment variable `DISABLE_PROMPT_CACHING=1`",
+          "correct": false,
+          "why": "It turns caching off entirely, so there is no five-minute cache to observe."
+        }
+      ],
+      "explanation": "Two requirements decide it: five minutes for both buckets, and overriding a longer TTL from managed settings. `FORCE_PROMPT_CACHING_5M=1` is the first match in the precedence order and applies to both buckets; the docs name overriding a managed TTL as a use for it. A user-level `promptCacheTtl` is tempting but covers one bucket and ranks below the forcing variable. Disabling caching removes the behavior being debugged.",
+      "keywordCues": [
+        "managed settings set promptCacheTtl to 1h",
+        "main conversation and subagents alike",
+        "without editing the managed settings"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Los managed settings de una organización ponen `promptCacheTtl` en `1h`. Un desarrollador que depura el comportamiento del caché quiere que todas las solicitudes en su máquina, tanto de la conversación principal como de los subagentes, usen el TTL de cinco minutos, sin editar los managed settings. ¿Qué debe definir?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`promptCacheTtl` en `5m` en sus settings de usuario",
+            "why": "Solo cubre la conversación principal, y un setting de usuario no gana sobre los managed settings."
+          },
+          {
+            "id": "B",
+            "text": "La variable de entorno `FORCE_PROMPT_CACHING_5M=1`",
+            "why": "Es la primera en la precedencia del TTL y fuerza cinco minutos para ambos grupos."
+          },
+          {
+            "id": "C",
+            "text": "`subagentPromptCacheTtl` en `5m`",
+            "why": "Solo cubre el grupo de todo lo demás; la conversación principal sigue con una hora."
+          },
+          {
+            "id": "D",
+            "text": "La variable de entorno `DISABLE_PROMPT_CACHING=1`",
+            "why": "Apaga el caché por completo, así que no hay caché de cinco minutos que observar."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: cinco minutos para ambos grupos y superar un TTL más largo de managed settings. `FORCE_PROMPT_CACHING_5M=1` es la primera coincidencia en el orden de precedencia y aplica a ambos grupos; la documentación menciona justamente superar un TTL de managed settings como uso. Un `promptCacheTtl` de usuario tienta, pero cubre un solo grupo y queda por debajo de la variable que fuerza. Desactivar el caché elimina lo que se quiere depurar."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-ttl--797e71ca",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A developer on a Claude subscription, within plan usage, runs batches of subagents with 20-minute pauses between them. The main conversation keeps its cache, but each subagent's requests start cold after the pause. They want the everything-else bucket, which includes subagents, to use the one-hour TTL. Which two configurations achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set `promptCacheTtl` to `1h`",
+          "correct": false,
+          "why": "It sets the main conversation bucket, which already has one hour on a subscription within plan usage."
+        },
+        {
+          "id": "B",
+          "text": "Set `subagentPromptCacheTtl` to `1h`",
+          "correct": true,
+          "why": "This setting controls the everything-else bucket, which includes subagents."
+        },
+        {
+          "id": "C",
+          "text": "Set `FORCE_PROMPT_CACHING_5M=1`",
+          "correct": false,
+          "why": "It forces five minutes for both buckets."
+        },
+        {
+          "id": "D",
+          "text": "Set `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL=1h`",
+          "correct": true,
+          "why": "This environment variable is the equivalent control for the everything-else bucket."
+        },
+        {
+          "id": "E",
+          "text": "Nothing, because a subscription gives every request one hour",
+          "correct": false,
+          "why": "On a subscription only the main conversation (plus some server-controlled helpers) defaults to one hour; subagents get five minutes."
+        }
+      ],
+      "explanation": "Subagents fall outside the main-conversation bucket, so they default to five minutes even on a subscription. The everything-else bucket is set with `subagentPromptCacheTtl` or its environment variable `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, and either accepts `1h`. `promptCacheTtl` is the tempting look-alike, but it targets the main conversation. Assuming the subscription default covers subagents is the trap in option E.",
+      "keywordCues": [
+        "each subagent's requests start cold",
+        "everything-else bucket",
+        "one-hour TTL"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador con suscripción de Claude, dentro del uso de su plan, corre lotes de subagentes con pausas de 20 minutos entre ellos. La conversación principal conserva su caché, pero las solicitudes de cada subagente empiezan en frío tras la pausa. Quiere que el grupo de todo lo demás, que incluye a los subagentes, use el TTL de una hora. ¿Qué dos configuraciones lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner `promptCacheTtl` en `1h`",
+            "why": "Define el grupo de la conversación principal, que ya tiene una hora con suscripción dentro del uso del plan."
+          },
+          {
+            "id": "B",
+            "text": "Poner `subagentPromptCacheTtl` en `1h`",
+            "why": "Este setting controla el grupo de todo lo demás, que incluye a los subagentes."
+          },
+          {
+            "id": "C",
+            "text": "Definir `FORCE_PROMPT_CACHING_5M=1`",
+            "why": "Fuerza cinco minutos para ambos grupos."
+          },
+          {
+            "id": "D",
+            "text": "Definir `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL=1h`",
+            "why": "Esta variable de entorno es el control equivalente para el grupo de todo lo demás."
+          },
+          {
+            "id": "E",
+            "text": "Nada, porque la suscripción da una hora a todas las solicitudes",
+            "why": "Con suscripción solo la conversación principal (y algunos helpers controlados por el servidor) usa una hora por defecto; los subagentes reciben cinco minutos."
+          }
+        ],
+        "explanation": "Los subagentes caen fuera del grupo de la conversación principal, así que usan cinco minutos por defecto incluso con suscripción. El grupo de todo lo demás se define con `subagentPromptCacheTtl` o con su variable de entorno `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, y ambos aceptan `1h`. `promptCacheTtl` es el parecido que tienta, pero apunta a la conversación principal. Suponer que el default de la suscripción cubre a los subagentes es la trampa de la opción E."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-ttl--8d86d8a9",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this settings.json so the main conversation uses a one-hour cache while subagents and other side requests explicitly keep five minutes.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "subagentPromptCacheTtl",
+          "correct": false,
+          "why": "This key sets the everything-else bucket, not the main conversation."
+        },
+        {
+          "id": "1b",
+          "text": "promptCacheTtl",
+          "correct": true,
+          "why": "This key sets the main conversation's TTL."
+        },
+        {
+          "id": "1c",
+          "text": "cacheTtl",
+          "correct": false,
+          "why": "`cacheTtl` belongs in a subagent's `experimental` frontmatter field, not in settings.json."
+        },
+        {
+          "id": "2a",
+          "text": "60m",
+          "correct": false,
+          "why": "Only `5m` or `1h` are accepted; other values are ignored."
+        },
+        {
+          "id": "2b",
+          "text": "3600",
+          "correct": false,
+          "why": "Only `5m` or `1h` are accepted; other values are ignored."
+        },
+        {
+          "id": "2c",
+          "text": "1h",
+          "correct": true,
+          "why": "`1h` is the accepted value for the one-hour TTL."
+        },
+        {
+          "id": "3a",
+          "text": "subagentPromptCacheTtl",
+          "correct": true,
+          "why": "It sets the bucket for subagents and other requests outside the main conversation."
+        },
+        {
+          "id": "3b",
+          "text": "FORCE_PROMPT_CACHING_5M",
+          "correct": false,
+          "why": "This is an environment variable, and it would force five minutes on the main conversation too."
+        },
+        {
+          "id": "3c",
+          "text": "promptCacheTtl",
+          "correct": false,
+          "why": "It would set the main conversation, which the first key already controls."
+        }
+      ],
+      "explanation": "Each bucket has its own setting: `promptCacheTtl` for the main conversation and `subagentPromptCacheTtl` for everything else. Both accept only `5m` or `1h`, so `60m` or `3600` would be ignored. `FORCE_PROMPT_CACHING_5M` is an environment variable that forces five minutes on both buckets, which would defeat the one-hour main cache.",
+      "keywordCues": [
+        "main conversation uses a one-hour cache",
+        "subagents and other side requests explicitly keep five minutes"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Completa este settings.json para que la conversación principal use un caché de una hora mientras los subagentes y otras solicitudes laterales mantienen explícitamente cinco minutos.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "subagentPromptCacheTtl",
+            "why": "Esta clave define el grupo de todo lo demás, no la conversación principal."
+          },
+          {
+            "id": "1b",
+            "text": "promptCacheTtl",
+            "why": "Esta clave define el TTL de la conversación principal."
+          },
+          {
+            "id": "1c",
+            "text": "cacheTtl",
+            "why": "`cacheTtl` va en el campo `experimental` del frontmatter de un subagente, no en settings.json."
+          },
+          {
+            "id": "2a",
+            "text": "60m",
+            "why": "Solo se aceptan `5m` o `1h`; otros valores se ignoran."
+          },
+          {
+            "id": "2b",
+            "text": "3600",
+            "why": "Solo se aceptan `5m` o `1h`; otros valores se ignoran."
+          },
+          {
+            "id": "2c",
+            "text": "1h",
+            "why": "`1h` es el valor aceptado para el TTL de una hora."
+          },
+          {
+            "id": "3a",
+            "text": "subagentPromptCacheTtl",
+            "why": "Define el grupo de los subagentes y demás solicitudes fuera de la conversación principal."
+          },
+          {
+            "id": "3b",
+            "text": "FORCE_PROMPT_CACHING_5M",
+            "why": "Es una variable de entorno, y forzaría cinco minutos también en la conversación principal."
+          },
+          {
+            "id": "3c",
+            "text": "promptCacheTtl",
+            "why": "Definiría la conversación principal, que ya controla la primera clave."
+          }
+        ],
+        "explanation": "Cada grupo tiene su propio setting: `promptCacheTtl` para la conversación principal y `subagentPromptCacheTtl` para todo lo demás. Ambos aceptan solo `5m` o `1h`, así que `60m` o `3600` se ignorarían. `FORCE_PROMPT_CACHING_5M` es una variable de entorno que fuerza cinco minutos en ambos grupos, lo que anularía el caché de una hora de la conversación principal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": \"{{2}}\",\n  \"{{3}}\": \"5m\"\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-ttl--759f441d",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "When several TTL controls apply to a subagent's requests, order them from highest precedence (checked first) to lowest.",
+      "options": [
+        {
+          "id": "A",
+          "text": "`subagentPromptCacheTtl` setting",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "`ENABLE_PROMPT_CACHING_1H=1`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "`FORCE_PROMPT_CACHING_5M=1`",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "`cacheTtl` in the subagent's `experimental` frontmatter",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "E",
+          "text": "`CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL` environment variable",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Claude Code takes the first match: `FORCE_PROMPT_CACHING_5M=1`, then the bucket's environment variable, then the bucket's setting, then the subagent's `experimental` `cacheTtl`, then `ENABLE_PROMPT_CACHING_1H=1`. If none applies, the bucket's default is used. The forcing variable comes first so it can override longer TTLs, including ones from managed settings.",
+      "keywordCues": [
+        "from highest precedence",
+        "subagent's requests"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "Cuando varios controles de TTL aplican a las solicitudes de un subagente, ordénalos desde la mayor precedencia (se revisa primero) hasta la menor.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Setting `subagentPromptCacheTtl`",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "`ENABLE_PROMPT_CACHING_1H=1`",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "`FORCE_PROMPT_CACHING_5M=1`",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "`cacheTtl` en el frontmatter `experimental` del subagente",
+            "why": ""
+          },
+          {
+            "id": "E",
+            "text": "Variable de entorno `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`",
+            "why": ""
+          }
+        ],
+        "explanation": "Claude Code toma la primera coincidencia: `FORCE_PROMPT_CACHING_5M=1`, luego la variable de entorno del grupo, luego el setting del grupo, luego el `cacheTtl` en `experimental` del subagente, y luego `ENABLE_PROMPT_CACHING_1H=1`. Si ninguno aplica, se usa el default del grupo. La variable que fuerza va primero para poder superar TTL más largos, incluidos los de managed settings."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "C",
+        "E",
+        "A",
+        "D",
+        "B"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cache-ttl--5c1f6599",
+      "conceptId": "cache-ttl",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable, set to 1, forces the five-minute TTL for both request buckets ahead of every other TTL control?",
+      "options": [
+        {
+          "id": "A",
+          "text": "FORCE_PROMPT_CACHING_5M",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "FORCE_PROMPT_CACHING_5M=1",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`FORCE_PROMPT_CACHING_5M=1` is first in the TTL precedence and forces five minutes for the main conversation and everything else. It is useful when debugging cache behavior, comparing the two TTLs, or overriding a longer TTL set in managed settings.",
+      "keywordCues": [
+        "forces the five-minute TTL for both request buckets"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/prompt-caching.md",
+        "https://code.claude.com/docs/en/costs.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno, puesta en 1, fuerza el TTL de cinco minutos para ambos grupos de solicitudes por encima de cualquier otro control de TTL?",
+        "options": [
+          {
+            "id": "A",
+            "text": "FORCE_PROMPT_CACHING_5M",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "FORCE_PROMPT_CACHING_5M=1",
+            "why": ""
+          }
+        ],
+        "explanation": "`FORCE_PROMPT_CACHING_5M=1` es la primera en la precedencia del TTL y fuerza cinco minutos para la conversación principal y para todo lo demás. Sirve para depurar el comportamiento del caché, comparar los dos TTL o superar un TTL más largo fijado en managed settings."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cache-ttl--r0",
+      "conceptId": "cache-ttl",
+      "kind": "recall",
+      "prompt": "Explain how the prompt cache TTL works, its defaults for each request bucket, and how you change it.",
+      "promptEs": "Explica cómo funciona el TTL del caché de prompts, sus valores por defecto en cada grupo de solicitudes y cómo lo cambias.",
+      "idealAnswer": "Cached prefixes expire after inactivity, and each cache hit resets the timer. The main conversation gets one hour on a subscription within plan usage and five minutes otherwise, while subagents, workflows and compaction get five minutes. You set `promptCacheTtl` or `subagentPromptCacheTtl` to `5m` or `1h`, and `FORCE_PROMPT_CACHING_5M=1` overrides everything.",
+      "rubric": [
+        "Expires after inactivity; hits reset the timer",
+        "Main conversation default depends on billing; everything else is five minutes",
+        "promptCacheTtl vs subagentPromptCacheTtl, values 5m or 1h",
+        "FORCE_PROMPT_CACHING_5M=1 takes precedence"
+      ]
+    },
+    {
+      "id": "cache-ttl--r1",
+      "conceptId": "cache-ttl",
+      "kind": "why-not",
+      "prompt": "You changed nothing, but the first turn after a long lunch break was slow. Why isn't cache invalidation the right diagnosis?",
+      "promptEs": "No cambiaste nada, pero el primer turno después de un almuerzo largo fue lento. ¿Por qué la invalidación del caché no es el diagnóstico correcto?",
+      "idealAnswer": "Invalidation comes from changing something in the prefix or cache key, such as the model, effort or loaded tool definitions, and nothing changed. The cache simply expired because the idle gap was longer than the TTL, so the first request back recomputed the full input.",
+      "rubric": [
+        "Invalidation requires a change to the prefix or cache key",
+        "Nothing changed, so it is expiry",
+        "The gap exceeded the TTL, forcing a full recompute"
+      ]
+    }
+  ]
+}

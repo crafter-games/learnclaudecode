@@ -1,0 +1,524 @@
+{
+  "conceptId": "large-scope-instructions",
+  "card": {
+    "en": {
+      "tldr": "Where you launch `claude` decides file access, which CLAUDE.md files load and which project settings apply. From the repository root Claude can reach every file and loads the root CLAUDE.md, pulling in subdirectory files on demand; from a package it reaches that subtree only and loads its CLAUDE.md plus every ancestor's. Use `claudeMdExcludes` to skip instructions from areas you never work in.",
+      "whenToUse": [
+        "Work is scoped to one package: start Claude from that package's directory",
+        "Directory owners maintain their own conventions: per-directory CLAUDE.md",
+        "You want all conventions in one place or one rule for scattered paths: path-scoped rules in `.claude/rules/`",
+        "You start from the root but never touch another team's packages: `claudeMdExcludes`"
+      ],
+      "keyFacts": [
+        "From the root: every file; root CLAUDE.md at launch, subdirectory CLAUDE.md files load when Claude reads files there.",
+        "From a subdirectory: that subtree only until you grant more; its CLAUDE.md plus every ancestor's load at launch.",
+        "`claudeMdExcludes` patterns are globs matched against absolute paths, so start relative-style patterns with `**/`, e.g. `**/packages/web/**`.",
+        "`claudeMdExcludes` can be set at user, project, local or managed scope, and arrays merge across scopes; for yourself only use `.claude/settings.local.json`.",
+        "Managed policy CLAUDE.md files cannot be excluded.",
+        "Project `.claude/settings.json` is not inherited from parent directories the way CLAUDE.md files are."
+      ],
+      "gotchas": [
+        "`claudeMdExcludes` is a static list, not a per-task switch; to switch focus between packages, change where you start Claude.",
+        "`**/packages/web/**` skips CLAUDE.md and rules under that package; `**/packages/*/CLAUDE.md` skips only the CLAUDE.md files and keeps the root.",
+        "If you create `.claude/settings.local.json` by hand, add it to your gitignore yourself.",
+        "Run `/context` and check Memory files to confirm which instruction files loaded."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Read deny rules",
+          "difference": "Deny rules stop Claude opening code files; `claudeMdExcludes` stops instruction files from loading."
+        },
+        {
+          "concept": "Path-scoped rules",
+          "difference": "Rules live centrally in `.claude/rules/` and load for matching `paths:`; per-directory CLAUDE.md lives next to the code."
+        }
+      ],
+      "examCues": [
+        "other teams' CLAUDE.md files",
+        "work is scoped to one package",
+        "directory owners maintain their own conventions",
+        "all conventions in one place",
+        "only for me, when I start from the root"
+      ]
+    },
+    "es": {
+      "tldr": "Dónde lanzas `claude` decide el acceso a archivos, qué CLAUDE.md se cargan y qué settings de proyecto aplican. Desde la raíz Claude alcanza todos los archivos y carga el CLAUDE.md raíz, sumando los de subdirectorios a demanda; desde un paquete alcanza solo ese subárbol y carga su CLAUDE.md más el de cada ancestro. Usa `claudeMdExcludes` para saltar instrucciones de áreas donde nunca trabajas.",
+      "whenToUse": [
+        "El trabajo es de un solo paquete: lanza Claude desde el directorio de ese paquete",
+        "Los dueños de cada directorio mantienen sus convenciones: CLAUDE.md por directorio",
+        "Quieres todas las convenciones en un lugar o una regla para rutas dispersas: reglas con paths en `.claude/rules/`",
+        "Lanzas desde la raíz pero nunca tocas paquetes de otro equipo: `claudeMdExcludes`"
+      ],
+      "keyFacts": [
+        "Desde la raíz: todos los archivos; CLAUDE.md raíz al inicio, los de subdirectorios cargan cuando Claude lee archivos ahí.",
+        "Desde un subdirectorio: solo ese subárbol hasta que des más acceso; su CLAUDE.md más el de cada ancestro cargan al inicio.",
+        "Los patrones de `claudeMdExcludes` son globs sobre rutas absolutas, así que empieza los relativos con `**/`, por ejemplo `**/packages/web/**`.",
+        "`claudeMdExcludes` se puede poner en scope user, project, local o managed, y los arrays se combinan entre scopes; solo para ti usa `.claude/settings.local.json`.",
+        "Los CLAUDE.md de managed policy no se pueden excluir.",
+        "El `.claude/settings.json` del proyecto no se hereda de directorios padre como sí ocurre con CLAUDE.md."
+      ],
+      "gotchas": [
+        "`claudeMdExcludes` es una lista estática, no un interruptor por tarea; para cambiar de paquete, cambia desde dónde lanzas Claude.",
+        "`**/packages/web/**` salta CLAUDE.md y reglas de ese paquete; `**/packages/*/CLAUDE.md` salta solo los CLAUDE.md y mantiene el raíz.",
+        "Si creas `.claude/settings.local.json` a mano, agrégalo tú mismo a tu gitignore.",
+        "Corre `/context` y revisa Memory files para confirmar qué archivos de instrucciones cargaron."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas Read deny",
+          "difference": "Las reglas deny impiden abrir archivos de código; `claudeMdExcludes` impide que carguen archivos de instrucciones."
+        },
+        {
+          "concept": "Reglas con paths",
+          "difference": "Las reglas viven centralizadas en `.claude/rules/` y cargan según `paths:`; el CLAUDE.md por directorio vive junto al código."
+        }
+      ],
+      "examCues": [
+        "other teams' CLAUDE.md files",
+        "work is scoped to one package",
+        "directory owners maintain their own conventions",
+        "all conventions in one place",
+        "only for me, when I start from the root"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/large-codebases.md",
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "large-scope-instructions--0fee05bf",
+      "conceptId": "large-scope-instructions",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a monorepo with a root CLAUDE.md and one CLAUDE.md per package, a developer works on packages/api today and packages/web tomorrow. Each day they want only the root instructions plus the current package's instructions in context, without editing any settings file between tasks. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Add the other package to `claudeMdExcludes` in `.claude/settings.local.json` each morning",
+          "correct": false,
+          "why": "It works, but it means editing a settings file per task; the exclusion list is meant to be static."
+        },
+        {
+          "id": "B",
+          "text": "Start from the root and run `/add-dir` on the package of the day",
+          "correct": false,
+          "why": "From the root, other packages' CLAUDE.md files still load on demand when Claude reads there."
+        },
+        {
+          "id": "C",
+          "text": "Start `claude` from `packages/api/` today and from `packages/web/` tomorrow",
+          "correct": true,
+          "why": "A subdirectory launch loads that directory's CLAUDE.md plus every ancestor's, with no sibling instructions."
+        },
+        {
+          "id": "D",
+          "text": "List the package of the day in `permissions.additionalDirectories`",
+          "correct": false,
+          "why": "That grants file access only and requires editing settings; it does not choose which CLAUDE.md files load."
+        }
+      ],
+      "explanation": "The requirement is per-task focus without touching settings files. Starting Claude from the package directory loads its CLAUDE.md plus every ancestor's, including the root, and no sibling package's instructions. `claudeMdExcludes` would also hide files, but the docs describe it as a static list, not a per-task switch, so it would have to be edited daily.",
+      "keywordCues": [
+        "packages/api today and packages/web tomorrow",
+        "without editing any settings file between tasks"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "En un monorepo con un CLAUDE.md raíz y uno por paquete, una desarrolladora trabaja hoy en packages/api y mañana en packages/web. Cada día quiere en contexto solo las instrucciones raíz más las del paquete actual, sin editar ningún archivo de settings entre tareas. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Agregar el otro paquete a `claudeMdExcludes` en `.claude/settings.local.json` cada mañana",
+            "why": "Funciona, pero obliga a editar settings por tarea; la lista de exclusión está pensada para ser estática."
+          },
+          {
+            "id": "B",
+            "text": "Lanzar desde la raíz y correr `/add-dir` con el paquete del día",
+            "why": "Desde la raíz, los CLAUDE.md de otros paquetes siguen cargando a demanda cuando Claude lee ahí."
+          },
+          {
+            "id": "C",
+            "text": "Lanzar `claude` desde `packages/api/` hoy y desde `packages/web/` mañana",
+            "why": "Lanzar desde un subdirectorio carga su CLAUDE.md más el de cada ancestro, sin instrucciones de hermanos."
+          },
+          {
+            "id": "D",
+            "text": "Poner el paquete del día en `permissions.additionalDirectories`",
+            "why": "Solo da acceso a archivos y exige editar settings; no decide qué CLAUDE.md cargan."
+          }
+        ],
+        "explanation": "El requisito es enfocarse por tarea sin tocar archivos de settings. Lanzar Claude desde el directorio del paquete carga su CLAUDE.md más el de cada ancestro, incluido el raíz, y nada de paquetes hermanos. `claudeMdExcludes` también ocultaría archivos, pero la documentación lo describe como una lista estática, no un interruptor por tarea, así que habría que editarlo cada día."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-scope-instructions--22234083",
+      "conceptId": "large-scope-instructions",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A platform team wants every React convention for the monorepo kept in one central place they review, and the same rule must apply to `*.tsx` files scattered across many packages. Package owners should not have to maintain anything. Where should the conventions go?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A `CLAUDE.md` inside each package that contains `.tsx` files",
+          "correct": false,
+          "why": "That spreads the rule across many files that package owners maintain, the opposite of central."
+        },
+        {
+          "id": "B",
+          "text": "A path-scoped rule in the root `.claude/rules/` with a `paths:` glob for `.tsx` files",
+          "correct": true,
+          "why": "Rules live centrally and load when Claude works with files matching the glob, wherever they appear."
+        },
+        {
+          "id": "C",
+          "text": "The root `CLAUDE.md`",
+          "correct": false,
+          "why": "It is central, but it loads in every session, costing context even when no `.tsx` file is involved."
+        },
+        {
+          "id": "D",
+          "text": "A `claudeMdExcludes` entry for packages without `.tsx` files",
+          "correct": false,
+          "why": "Exclusions skip instruction files; they don't add or target conventions."
+        }
+      ],
+      "explanation": "Two requirements decide it: one central location and one rule for many scattered paths. A path-scoped rule in the root `.claude/rules/` meets both, loading only when Claude works with a file matching its `paths:` glob. Per-directory CLAUDE.md files fit when directory owners maintain their own conventions, which is exactly what the team wants to avoid.",
+      "keywordCues": [
+        "one central place",
+        "scattered across many packages",
+        "Package owners should not have to maintain anything"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma quiere todas las convenciones de React del monorepo en un solo lugar central que ellos revisan, y la misma regla debe aplicar a archivos `*.tsx` dispersos en muchos paquetes. Los dueños de cada paquete no deben mantener nada. ¿Dónde deben ir las convenciones?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Un `CLAUDE.md` dentro de cada paquete que tenga archivos `.tsx`",
+            "why": "Reparte la regla en muchos archivos que mantienen los dueños de paquetes, lo contrario de central."
+          },
+          {
+            "id": "B",
+            "text": "Una regla con paths en el `.claude/rules/` raíz con un glob `paths:` para archivos `.tsx`",
+            "why": "Las reglas viven centralizadas y cargan cuando Claude trabaja con archivos que calzan con el glob, estén donde estén."
+          },
+          {
+            "id": "C",
+            "text": "El `CLAUDE.md` raíz",
+            "why": "Es central, pero carga en cada sesión y gasta contexto aunque no haya ningún `.tsx` involucrado."
+          },
+          {
+            "id": "D",
+            "text": "Una entrada de `claudeMdExcludes` para los paquetes sin archivos `.tsx`",
+            "why": "Las exclusiones saltan archivos de instrucciones; no agregan ni dirigen convenciones."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: un solo lugar central y una regla para muchas rutas dispersas. Una regla con paths en el `.claude/rules/` raíz cumple ambos y carga solo cuando Claude trabaja con un archivo que calza con su glob `paths:`. El CLAUDE.md por directorio sirve cuando los dueños mantienen sus propias convenciones, justo lo que el equipo quiere evitar."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-scope-instructions--1d6249e0",
+      "conceptId": "large-scope-instructions",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer always starts Claude from the monorepo root. Another team owns `packages/legacy-billing/` and `packages/legacy-auth/`, and their CLAUDE.md and `.claude/rules/` files keep loading into context. The developer wants those files never to load, only for themselves, without affecting teammates. (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Put the setting in `.claude/settings.local.json`",
+          "correct": true,
+          "why": "The local file applies only to this developer; teammates never get it."
+        },
+        {
+          "id": "B",
+          "text": "Use the pattern `\"**/packages/legacy-*/**\"`",
+          "correct": true,
+          "why": "Leading `**/` matches the absolute path, and `/**` covers both CLAUDE.md and rules files."
+        },
+        {
+          "id": "C",
+          "text": "Use the pattern `\"packages/legacy-*/**\"`",
+          "correct": false,
+          "why": "Patterns are matched against absolute paths, so a relative-style pattern needs a leading `**/`."
+        },
+        {
+          "id": "D",
+          "text": "Commit the setting to the root `.claude/settings.json`",
+          "correct": false,
+          "why": "The committed project file affects everyone who works in the repository."
+        },
+        {
+          "id": "E",
+          "text": "Use the pattern `\"**/packages/legacy-*/CLAUDE.md\"`",
+          "correct": false,
+          "why": "It skips only the CLAUDE.md files, so the packages' rules files still load."
+        }
+      ],
+      "explanation": "The requirements are: skip both CLAUDE.md and rules files, and keep the change personal. `claudeMdExcludes` in `.claude/settings.local.json` stays local to the developer, and `**/packages/legacy-*/**` matches every file under those packages because patterns are matched against absolute paths. A pattern ending in `CLAUDE.md` leaves the rules loading, and the committed project file would change behavior for the whole team.",
+      "keywordCues": [
+        "CLAUDE.md and `.claude/rules/` files",
+        "only for themselves",
+        "without affecting teammates"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador siempre lanza Claude desde la raíz del monorepo. Otro equipo es dueño de `packages/legacy-billing/` y `packages/legacy-auth/`, y sus CLAUDE.md y archivos de `.claude/rules/` siguen cargándose en contexto. Quiere que esos archivos no carguen nunca, solo para él, sin afectar a sus compañeros. (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner el setting en `.claude/settings.local.json`",
+            "why": "El archivo local aplica solo a este desarrollador; sus compañeros nunca lo reciben."
+          },
+          {
+            "id": "B",
+            "text": "Usar el patrón `\"**/packages/legacy-*/**\"`",
+            "why": "El `**/` inicial calza con la ruta absoluta y `/**` cubre tanto CLAUDE.md como reglas."
+          },
+          {
+            "id": "C",
+            "text": "Usar el patrón `\"packages/legacy-*/**\"`",
+            "why": "Los patrones se comparan con rutas absolutas, así que un patrón de estilo relativo necesita `**/` al inicio."
+          },
+          {
+            "id": "D",
+            "text": "Commitear el setting en el `.claude/settings.json` raíz",
+            "why": "El archivo de proyecto commiteado afecta a todos los que trabajan en el repositorio."
+          },
+          {
+            "id": "E",
+            "text": "Usar el patrón `\"**/packages/legacy-*/CLAUDE.md\"`",
+            "why": "Salta solo los CLAUDE.md, así que las reglas de esos paquetes siguen cargando."
+          }
+        ],
+        "explanation": "Los requisitos son: saltar tanto CLAUDE.md como reglas, y que el cambio sea personal. `claudeMdExcludes` en `.claude/settings.local.json` queda local al desarrollador, y `**/packages/legacy-*/**` calza con todo lo que hay bajo esos paquetes porque los patrones se comparan con rutas absolutas. Un patrón que termina en `CLAUDE.md` deja cargando las reglas, y el archivo de proyecto commiteado cambiaría el comportamiento de todo el equipo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-scope-instructions--b2b22289",
+      "conceptId": "large-scope-instructions",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which settings key takes glob patterns of CLAUDE.md and rules files that Claude Code should skip so they never load?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claudeMdExcludes",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`claudeMdExcludes` skips instruction files by path or glob pattern, matched against absolute paths. It can be set at any settings scope, arrays merge across scopes, and managed policy CLAUDE.md files can never be excluded.",
+      "keywordCues": [
+        "skip",
+        "never load",
+        "glob patterns of CLAUDE.md"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué clave de settings recibe patrones glob de CLAUDE.md y archivos de reglas que Claude Code debe saltar para que nunca carguen?",
+        "options": [
+          {
+            "id": "A",
+            "text": "claudeMdExcludes",
+            "why": ""
+          }
+        ],
+        "explanation": "`claudeMdExcludes` salta archivos de instrucciones por ruta o patrón glob, comparados con rutas absolutas. Se puede poner en cualquier scope de settings, los arrays se combinan entre scopes y los CLAUDE.md de managed policy nunca se pueden excluir."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "large-scope-instructions--8e424b18",
+      "conceptId": "large-scope-instructions",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "You start Claude from the monorepo root. Complete `.claude/settings.local.json` so that, for you only, every CLAUDE.md and rules file under `packages/web/` is skipped, while the root CLAUDE.md still loads.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "claudeMdExcludes",
+          "correct": true,
+          "why": "The top-level key that skips instruction files by path or glob."
+        },
+        {
+          "id": "1b",
+          "text": "additionalDirectories",
+          "correct": false,
+          "why": "It belongs under `permissions` and grants access to directories; it doesn't skip instructions."
+        },
+        {
+          "id": "1c",
+          "text": "sparsePaths",
+          "correct": false,
+          "why": "It belongs under `worktree` and controls what a new worktree checks out."
+        },
+        {
+          "id": "2a",
+          "text": "packages/web/**",
+          "correct": false,
+          "why": "Patterns match absolute paths, so this relative-style pattern needs a leading `**/`."
+        },
+        {
+          "id": "2b",
+          "text": "**/packages/web/CLAUDE.md",
+          "correct": false,
+          "why": "Skips only that CLAUDE.md; the package's rules files would still load."
+        },
+        {
+          "id": "2c",
+          "text": "**/packages/web/**",
+          "correct": true,
+          "why": "Matches every CLAUDE.md and rules file under the package, anywhere in the absolute path."
+        }
+      ],
+      "explanation": "`claudeMdExcludes` is a top-level settings key, and its patterns are globs matched against absolute file paths. `**/packages/web/**` skips every CLAUDE.md and rules file under that package while the root CLAUDE.md keeps loading. Putting it in `.claude/settings.local.json` keeps the exclusion personal.",
+      "keywordCues": [
+        "for you only",
+        "every CLAUDE.md and rules file under `packages/web/`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/large-codebases.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Lanzas Claude desde la raíz del monorepo. Completa `.claude/settings.local.json` para que, solo para ti, se salte todo CLAUDE.md y archivo de reglas bajo `packages/web/`, mientras el CLAUDE.md raíz sigue cargando.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "claudeMdExcludes",
+            "why": "La clave de primer nivel que salta archivos de instrucciones por ruta o glob."
+          },
+          {
+            "id": "1b",
+            "text": "additionalDirectories",
+            "why": "Va dentro de `permissions` y da acceso a directorios; no salta instrucciones."
+          },
+          {
+            "id": "1c",
+            "text": "sparsePaths",
+            "why": "Va dentro de `worktree` y controla qué se hace checkout en un worktree nuevo."
+          },
+          {
+            "id": "2a",
+            "text": "packages/web/**",
+            "why": "Los patrones se comparan con rutas absolutas, así que este patrón de estilo relativo necesita `**/` al inicio."
+          },
+          {
+            "id": "2b",
+            "text": "**/packages/web/CLAUDE.md",
+            "why": "Salta solo ese CLAUDE.md; las reglas del paquete seguirían cargando."
+          },
+          {
+            "id": "2c",
+            "text": "**/packages/web/**",
+            "why": "Calza con todo CLAUDE.md y archivo de reglas bajo el paquete, en cualquier parte de la ruta absoluta."
+          }
+        ],
+        "explanation": "`claudeMdExcludes` es una clave de settings de primer nivel, y sus patrones son globs comparados con rutas absolutas. `**/packages/web/**` salta todo CLAUDE.md y archivo de reglas bajo ese paquete mientras el CLAUDE.md raíz sigue cargando. Ponerlo en `.claude/settings.local.json` mantiene la exclusión personal."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": [\n    \"{{2}}\"\n  ]\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "large-scope-instructions--r0",
+      "conceptId": "large-scope-instructions",
+      "kind": "recall",
+      "prompt": "Compare starting Claude from the repository root versus from a package: file access, which CLAUDE.md files load, and when each fits.",
+      "promptEs": "Compara lanzar Claude desde la raíz del repositorio versus desde un paquete: acceso a archivos, qué CLAUDE.md cargan y cuándo conviene cada uno.",
+      "idealAnswer": "From the root Claude can access every file; the root CLAUDE.md loads at launch and subdirectory CLAUDE.md files load on demand when Claude reads there, which fits tasks spanning several packages. From a package Claude reaches only that subtree until you grant more, and loads that directory's CLAUDE.md plus every ancestor's, which fits work scoped to one package. Project `.claude/settings.json` is not inherited from parent directories.",
+      "rubric": [
+        "Root: every file, root CLAUDE.md at launch, others on demand",
+        "Package: that subtree only, its CLAUDE.md plus ancestors'",
+        "Root for cross-package tasks, package for scoped work",
+        "Project settings are not inherited from parents"
+      ]
+    },
+    {
+      "id": "large-scope-instructions--r1",
+      "conceptId": "large-scope-instructions",
+      "kind": "why-not",
+      "prompt": "You start from the root and never touch another team's package. Why not add Read deny rules for that package instead of claudeMdExcludes?",
+      "promptEs": "Lanzas desde la raíz y nunca tocas el paquete de otro equipo. ¿Por qué no agregar reglas Read deny para ese paquete en vez de claudeMdExcludes?",
+      "idealAnswer": "The problem is instruction files loading into context, and `claudeMdExcludes` is the setting that skips CLAUDE.md and rules files by glob. Read deny rules block Claude from opening code files; they are meant for generated or vendored code, and they would also stop Claude from reading that package's code when a task needs it.",
+      "rubric": [
+        "The goal is to stop instruction files loading",
+        "claudeMdExcludes skips CLAUDE.md and rules by glob",
+        "Read deny blocks opening files, meant for generated or vendored code"
+      ]
+    }
+  ]
+}

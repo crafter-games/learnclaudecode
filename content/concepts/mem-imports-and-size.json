@@ -1,0 +1,451 @@
+{
+  "conceptId": "mem-imports-and-size",
+  "card": {
+    "en": {
+      "tldr": "`@path/to/file` pulls another file into a CLAUDE.md, but imports expand at launch, so they organize content without saving context. Keep each CLAUDE.md short and concrete, and move instructions that only matter for some files into path-scoped rules.",
+      "whenToUse": [
+        "Reusing a README, `package.json` or a workflow guide inside CLAUDE.md",
+        "A CLAUDE.md that keeps growing and Claude follows less reliably",
+        "Leaving maintainer notes that shouldn't cost context tokens",
+        "Bootstrapping a new project's CLAUDE.md with `/init`"
+      ],
+      "keyFacts": [
+        "Relative import paths resolve relative to the file containing the import, not the working directory; absolute paths also work.",
+        "Imports can recurse up to four hops deep.",
+        "Import parsing skips code spans and fenced code blocks: `` `@README` `` stays literal text.",
+        "The first time a project file imports a path outside the working directory, Claude Code shows a one-time approval dialog; if you decline, those imports stay disabled.",
+        "Target under 200 lines per CLAUDE.md; block-level HTML comments are stripped before the content reaches Claude.",
+        "`/init` generates a starter CLAUDE.md or suggests improvements to an existing one; `CLAUDE_CODE_NEW_INIT=1` turns on an interactive multi-phase flow."
+      ],
+      "gotchas": [
+        "Splitting into imports doesn't reduce context: imported files load at launch.",
+        "HTML comments inside code blocks are preserved, not stripped.",
+        "Vague rules like \"format code properly\" are followed less reliably than verifiable ones like \"use 2-space indentation\".",
+        "Imports in user-scope files like `~/.claude/CLAUDE.md` load without the approval dialog, outside Cowork sessions."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Path-scoped rules",
+          "difference": "`.claude/rules/` files with `paths` load only for matching files, so they do save context."
+        },
+        {
+          "concept": "Skills",
+          "difference": "Multi-step procedures that load on demand instead of in every session."
+        }
+      ],
+      "examCues": [
+        "reduce the context CLAUDE.md uses at startup",
+        "mention a path without importing it",
+        "notes for maintainers only",
+        "relative to which directory?",
+        "generate a starter CLAUDE.md"
+      ]
+    },
+    "es": {
+      "tldr": "`@path/to/file` trae otro archivo a un CLAUDE.md, pero los imports se expanden al inicio, así que ordenan el contenido sin ahorrar contexto. Mantén cada CLAUDE.md corto y concreto, y pasa a reglas con paths lo que solo importa para algunos archivos.",
+      "whenToUse": [
+        "Reusar un README, `package.json` o una guía de workflow dentro de CLAUDE.md",
+        "Un CLAUDE.md que no para de crecer y que Claude sigue cada vez peor",
+        "Dejar notas para mantenedores que no gasten tokens de contexto",
+        "Arrancar el CLAUDE.md de un proyecto nuevo con `/init`"
+      ],
+      "keyFacts": [
+        "Las rutas relativas de un import se resuelven respecto al archivo que contiene el import, no al directorio de trabajo; las rutas absolutas también sirven.",
+        "Los imports pueden anidarse hasta cuatro saltos de profundidad.",
+        "El parser de imports ignora code spans y bloques de código: `` `@README` `` queda como texto literal.",
+        "La primera vez que un archivo del proyecto importa una ruta fuera del directorio de trabajo, Claude Code muestra un diálogo de aprobación único; si lo rechazas, esos imports quedan desactivados.",
+        "Apunta a menos de 200 líneas por CLAUDE.md; los comentarios HTML a nivel de bloque se eliminan antes de que el contenido llegue a Claude.",
+        "`/init` genera un CLAUDE.md inicial o sugiere mejoras si ya existe; `CLAUDE_CODE_NEW_INIT=1` activa un flujo interactivo en varias fases."
+      ],
+      "gotchas": [
+        "Dividir en imports no reduce el contexto: los archivos importados cargan al inicio.",
+        "Los comentarios HTML dentro de bloques de código se conservan, no se eliminan.",
+        "Reglas vagas como \"format code properly\" se siguen peor que reglas verificables como \"use 2-space indentation\".",
+        "Los imports en archivos de user como `~/.claude/CLAUDE.md` cargan sin el diálogo de aprobación, fuera de sesiones de Cowork."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas con paths",
+          "difference": "Los archivos de `.claude/rules/` con `paths` cargan solo con archivos que coinciden, así que sí ahorran contexto."
+        },
+        {
+          "concept": "Skills",
+          "difference": "Procedimientos de varios pasos que cargan bajo demanda en vez de en cada sesión."
+        }
+      ],
+      "examCues": [
+        "reduce the context CLAUDE.md uses at startup",
+        "mention a path without importing it",
+        "notes for maintainers only",
+        "relative to which directory?",
+        "generate a starter CLAUDE.md"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mem-imports-and-size--f7f6e034",
+      "conceptId": "mem-imports-and-size",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Diego's project CLAUDE.md has grown far past the recommended length, and Claude follows it less reliably. Most of it is React conventions that only matter when Claude works on files under `src/components/`. He wants to reduce what loads at every session start while Claude still gets those conventions when it edits components.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the React section to a separate file and `@import` it from CLAUDE.md",
+          "correct": false,
+          "why": "Imported files expand at launch, so startup context stays the same."
+        },
+        {
+          "id": "B",
+          "text": "Move the React section to `CLAUDE.local.md`",
+          "correct": false,
+          "why": "Local files load at launch alongside CLAUDE.md, and teammates would lose the conventions."
+        },
+        {
+          "id": "C",
+          "text": "Wrap the React section in a block-level HTML comment",
+          "correct": false,
+          "why": "Comments are stripped before injection, so Claude would never see the conventions."
+        },
+        {
+          "id": "D",
+          "text": "Move it to a `.claude/rules/` file with `paths` matching `src/components/`",
+          "correct": true,
+          "why": "Path-scoped rules load only when Claude works with matching files."
+        }
+      ],
+      "explanation": "The requirement has two halves: less context at startup, and the conventions still available for component files. Path-scoped rules satisfy both because they load only when Claude reads matching files. Imports are the tempting answer, but the docs are explicit that imported files still load at launch, so they only help organization.",
+      "keywordCues": [
+        "reduce what loads at every session start",
+        "only matter when Claude works on files under `src/components/`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "El CLAUDE.md del proyecto de Diego creció muy por encima del largo recomendado, y Claude lo sigue peor. La mayor parte son convenciones de React que solo importan cuando Claude trabaja en archivos bajo `src/components/`. Quiere reducir lo que carga al inicio de cada sesión y que Claude igual reciba esas convenciones al editar componentes.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover la sección de React a otro archivo e importarlo con `@` desde CLAUDE.md",
+            "why": "Los archivos importados se expanden al inicio, así que el contexto de arranque queda igual."
+          },
+          {
+            "id": "B",
+            "text": "Mover la sección de React a `CLAUDE.local.md`",
+            "why": "Los archivos locales cargan al inicio junto a CLAUDE.md, y el equipo perdería las convenciones."
+          },
+          {
+            "id": "C",
+            "text": "Envolver la sección de React en un comentario HTML a nivel de bloque",
+            "why": "Los comentarios se eliminan antes de inyectar el contenido, así que Claude nunca vería las convenciones."
+          },
+          {
+            "id": "D",
+            "text": "Moverla a un archivo de `.claude/rules/` con `paths` que coincida con `src/components/`",
+            "why": "Las reglas con paths cargan solo cuando Claude trabaja con archivos que coinciden."
+          }
+        ],
+        "explanation": "El requisito tiene dos mitades: menos contexto al inicio, y las convenciones disponibles para archivos de componentes. Las reglas con paths cumplen ambas porque cargan solo cuando Claude lee archivos que coinciden. Los imports son la respuesta tentadora, pero la documentación dice claramente que los archivos importados igual cargan al inicio, así que solo ayudan a ordenar."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-imports-and-size--ece6c020",
+      "conceptId": "mem-imports-and-size",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "In a monorepo, `packages/api/CLAUDE.md` contains the line `- API style: @docs/conventions.md`. Priya launches Claude Code from the repository root, and later Claude reads files in `packages/api/`. Which file does that import load?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`docs/conventions.md` at the repository root",
+          "correct": false,
+          "why": "That would resolve against the working directory, which relative imports don't use."
+        },
+        {
+          "id": "B",
+          "text": "`packages/api/docs/conventions.md`",
+          "correct": true,
+          "why": "Relative imports resolve relative to the file that contains the import."
+        },
+        {
+          "id": "C",
+          "text": "`~/.claude/docs/conventions.md`",
+          "correct": false,
+          "why": "Imports don't resolve against the user configuration directory."
+        },
+        {
+          "id": "D",
+          "text": "None: imports only work in the root CLAUDE.md",
+          "correct": false,
+          "why": "Any CLAUDE.md can import files; nested files and imported files can import too."
+        }
+      ],
+      "explanation": "The rule is that a relative `@path` resolves against the file containing it, not the directory where you launched Claude. Since the import lives in `packages/api/CLAUDE.md`, it points to `packages/api/docs/conventions.md`. The repository-root path is the tempting answer because Priya launched there, but the working directory doesn't matter for resolution.",
+      "keywordCues": [
+        "`packages/api/CLAUDE.md` contains",
+        "launches Claude Code from the repository root",
+        "Which file does that import load?"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "En un monorepo, `packages/api/CLAUDE.md` contiene la línea `- API style: @docs/conventions.md`. Priya lanza Claude Code desde la raíz del repositorio y luego Claude lee archivos en `packages/api/`. ¿Qué archivo carga ese import?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`docs/conventions.md` en la raíz del repositorio",
+            "why": "Eso sería resolver contra el directorio de trabajo, que los imports relativos no usan."
+          },
+          {
+            "id": "B",
+            "text": "`packages/api/docs/conventions.md`",
+            "why": "Los imports relativos se resuelven respecto al archivo que contiene el import."
+          },
+          {
+            "id": "C",
+            "text": "`~/.claude/docs/conventions.md`",
+            "why": "Los imports no se resuelven contra el directorio de configuración del usuario."
+          },
+          {
+            "id": "D",
+            "text": "Ninguno: los imports solo funcionan en el CLAUDE.md raíz",
+            "why": "Cualquier CLAUDE.md puede importar archivos; los anidados y los importados también."
+          }
+        ],
+        "explanation": "La regla es que un `@path` relativo se resuelve respecto al archivo que lo contiene, no al directorio donde lanzaste Claude. Como el import vive en `packages/api/CLAUDE.md`, apunta a `packages/api/docs/conventions.md`. La ruta en la raíz tienta porque Priya lanzó ahí, pero el directorio de trabajo no importa para resolverlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-imports-and-size--fd1e6102",
+      "conceptId": "mem-imports-and-size",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Ana maintains the team CLAUDE.md. She wants to leave a note for human maintainers that costs Claude no context tokens, and to show the literal text `@scripts/deploy.sh` as an example without importing that file. Which two techniques should she use? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Put the note in a block-level HTML comment",
+          "correct": true,
+          "why": "Block-level HTML comments are stripped before the content is injected into Claude's context."
+        },
+        {
+          "id": "B",
+          "text": "Wrap the path in backticks",
+          "correct": true,
+          "why": "Import parsing skips code spans, so the path stays literal text."
+        },
+        {
+          "id": "C",
+          "text": "Move the note to a file and `@import` it",
+          "correct": false,
+          "why": "Imported files load at launch, so the note would still cost context."
+        },
+        {
+          "id": "D",
+          "text": "Put the note in `CLAUDE.local.md`",
+          "correct": false,
+          "why": "Local files load into context too, and only for her."
+        },
+        {
+          "id": "E",
+          "text": "Add `scripts/deploy.sh` to `claudeMdExcludes`",
+          "correct": false,
+          "why": "`claudeMdExcludes` is documented for skipping CLAUDE.md and rules files; the documented way to keep an `@path` as literal text is a code span."
+        }
+      ],
+      "explanation": "Two different needs, two mechanisms. Block-level HTML comments are removed before injection, so humans see them when they open the file but Claude spends no tokens on them. Backticks keep an `@path` literal because import parsing skips code spans and fenced blocks. Importing the note is tempting as 'moving it out', but imports expand at launch.",
+      "keywordCues": [
+        "costs Claude no context tokens",
+        "without importing that file"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Ana mantiene el CLAUDE.md del equipo. Quiere dejar una nota para mantenedores humanos que no le cueste a Claude tokens de contexto, y mostrar el texto literal `@scripts/deploy.sh` como ejemplo sin importar ese archivo. ¿Qué dos técnicas debe usar? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner la nota en un comentario HTML a nivel de bloque",
+            "why": "Los comentarios HTML a nivel de bloque se eliminan antes de inyectar el contenido en el contexto de Claude."
+          },
+          {
+            "id": "B",
+            "text": "Envolver la ruta en backticks",
+            "why": "El parser de imports ignora los code spans, así que la ruta queda como texto literal."
+          },
+          {
+            "id": "C",
+            "text": "Mover la nota a un archivo e importarlo con `@`",
+            "why": "Los archivos importados cargan al inicio, así que la nota seguiría costando contexto."
+          },
+          {
+            "id": "D",
+            "text": "Poner la nota en `CLAUDE.local.md`",
+            "why": "Los archivos locales también cargan en contexto, y solo para ella."
+          },
+          {
+            "id": "E",
+            "text": "Agregar `scripts/deploy.sh` a `claudeMdExcludes`",
+            "why": "`claudeMdExcludes` está documentado para omitir archivos CLAUDE.md y de reglas; la forma documentada de dejar un `@path` como texto literal es un code span."
+          }
+        ],
+        "explanation": "Dos necesidades distintas, dos mecanismos. Los comentarios HTML a nivel de bloque se eliminan antes de la inyección, así que los humanos los ven al abrir el archivo pero Claude no gasta tokens en ellos. Los backticks mantienen literal un `@path` porque el parser de imports ignora code spans y bloques de código. Importar la nota tienta como forma de 'sacarla', pero los imports se expanden al inicio."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-imports-and-size--7598ae10",
+      "conceptId": "mem-imports-and-size",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which slash command has Claude analyze your codebase and create a starting CLAUDE.md with build commands and conventions?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/init",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`/init` analyzes the codebase and writes a starter CLAUDE.md; if one already exists, it suggests improvements instead of overwriting it.",
+      "keywordCues": [
+        "analyze your codebase",
+        "create a starting CLAUDE.md"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué slash command hace que Claude analice tu código y cree un CLAUDE.md inicial con comandos de build y convenciones?",
+        "options": [
+          {
+            "id": "A",
+            "text": "/init",
+            "why": ""
+          }
+        ],
+        "explanation": "`/init` analiza el código y escribe un CLAUDE.md inicial; si ya existe uno, sugiere mejoras en vez de sobreescribirlo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-imports-and-size--f6434a93",
+      "conceptId": "mem-imports-and-size",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which environment variable assignment makes `/init` run its interactive multi-phase flow, asking which CLAUDE.md files, skills and hooks to set up?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_NEW_INIT=1",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "export CLAUDE_CODE_NEW_INIT=1",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "CLAUDE_CODE_NEW_INIT=\"1\"",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "Setting `CLAUDE_CODE_NEW_INIT` to `1`, in your shell or in a settings `env` block, switches `/init` to the flow that explores the codebase with a subagent, asks follow-up questions and presents a proposal before writing files.",
+      "keywordCues": [
+        "interactive multi-phase flow",
+        "CLAUDE.md files, skills and hooks"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué asignación de variable de entorno hace que `/init` use su flujo interactivo en varias fases, preguntando qué archivos CLAUDE.md, skills y hooks configurar?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CODE_NEW_INIT=1",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "export CLAUDE_CODE_NEW_INIT=1",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "CLAUDE_CODE_NEW_INIT=\"1\"",
+            "why": ""
+          }
+        ],
+        "explanation": "Definir `CLAUDE_CODE_NEW_INIT` en `1`, en tu shell o en el bloque `env` de un settings, cambia `/init` al flujo que explora el código con un subagente, hace preguntas de seguimiento y presenta una propuesta antes de escribir archivos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mem-imports-and-size--r0",
+      "conceptId": "mem-imports-and-size",
+      "kind": "recall",
+      "prompt": "Explain how @path imports resolve and load, and what actually reduces the context a large CLAUDE.md uses.",
+      "promptEs": "Explica cómo se resuelven y cargan los imports @path, y qué reduce de verdad el contexto que usa un CLAUDE.md grande.",
+      "idealAnswer": "A relative `@path` resolves against the file containing it, can recurse up to four hops, and is ignored inside backticks or code blocks. Imports expand at launch, so they organize but don't save context. To shrink startup context, keep each file under about 200 lines and move file-specific instructions into path-scoped rules.",
+      "rubric": [
+        "Relative to the importing file",
+        "Imports load at launch, no context saved",
+        "Backticks or code blocks prevent importing",
+        "Path-scoped rules or trimming reduce context"
+      ]
+    }
+  ]
+}

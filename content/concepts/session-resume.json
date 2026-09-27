@@ -1,0 +1,542 @@
+{
+  "conceptId": "session-resume",
+  "card": {
+    "en": {
+      "tldr": "`claude --resume` (`-r`) opens the session picker, or resumes directly when you pass a name, a session ID or the absolute path to a `.jsonl` transcript. Inside a session, `/resume` switches conversations. Choose it whenever you need a specific session rather than the latest one.",
+      "whenToUse": [
+        "You work on several tasks and want one particular session back, ideally by name",
+        "You need to reopen a `claude -p` or Agent SDK session interactively: pass its ID",
+        "You want the session that created a pull request: `claude --from-pr <number>`",
+        "You are in one conversation and want to jump to another without exiting: `/resume`"
+      ],
+      "keyFacts": [
+        "`claude --resume <session-id>` works from any directory: it searches the current project and its worktrees, then every other project on the machine.",
+        "Name sessions with `claude -n <name>` (`--name`) at startup, `/rename <name>` during a session, or `Ctrl+R` in the picker.",
+        "`--from-pr` accepts a PR number or a GitHub, GitHub Enterprise, GitLab or Bitbucket URL; pasting such a URL into the picker search also finds the session.",
+        "Picker keys: `Ctrl+A` all projects, `Ctrl+W` all worktrees, `Ctrl+B` current git branch, `Space` preview.",
+        "Ambiguous name: `claude --resume <name>` opens the picker pre-filtered; `/resume <name>` reports an error."
+      ],
+      "gotchas": [
+        "The picker and `/resume` do not restore the stored permission mode; `claude --resume <session-id>` or a name matching one session from a terminal does, with some exceptions.",
+        "The default display name (like `my-app-3f`) is not a resume handle; a name you set or the generated title is.",
+        "`/clear <name>` labels the conversation you are leaving, not the new one.",
+        "Selecting a session from an unrelated project copies a `cd` and resume command to your clipboard instead of resuming it there."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claude --continue",
+          "difference": "Always takes the most recent conversation in this directory and skips `-p` sessions; `--resume` lets you choose."
+        },
+        {
+          "concept": "/branch",
+          "difference": "Copies the current conversation into a new session; `/resume` switches to an existing one."
+        }
+      ],
+      "examCues": [
+        "a specific earlier session",
+        "resume by name",
+        "only has the session ID",
+        "the session that opened this PR",
+        "switch to another conversation without exiting"
+      ]
+    },
+    "es": {
+      "tldr": "`claude --resume` (`-r`) abre el picker de sesiones, o reanuda directamente si le pasas un nombre, un session ID o la ruta absoluta de un transcript `.jsonl`. Dentro de una sesión, `/resume` cambia de conversación. Elígelo cuando necesitas una sesión concreta y no la última.",
+      "whenToUse": [
+        "Trabajas en varias tareas y quieres recuperar una sesión en particular, idealmente por nombre",
+        "Necesitas reabrir de forma interactiva una sesión de `claude -p` o del Agent SDK: pasa su ID",
+        "Quieres la sesión que creó un pull request: `claude --from-pr <number>`",
+        "Estás en una conversación y quieres saltar a otra sin salir: `/resume`"
+      ],
+      "keyFacts": [
+        "`claude --resume <session-id>` funciona desde cualquier directorio: busca en el proyecto actual y sus worktrees, y luego en todos los demás proyectos de la máquina.",
+        "Nombras sesiones con `claude -n <name>` (`--name`) al iniciar, `/rename <name>` durante la sesión, o `Ctrl+R` en el picker.",
+        "`--from-pr` acepta un número de PR o una URL de GitHub, GitHub Enterprise, GitLab o Bitbucket; pegar esa URL en la búsqueda del picker también encuentra la sesión.",
+        "Teclas del picker: `Ctrl+A` todos los proyectos, `Ctrl+W` todos los worktrees, `Ctrl+B` rama git actual, `Space` vista previa.",
+        "Nombre ambiguo: `claude --resume <name>` abre el picker ya filtrado; `/resume <name>` reporta un error."
+      ],
+      "gotchas": [
+        "El picker y `/resume` no restauran el permission mode guardado; `claude --resume <session-id>` o un nombre que coincide con una sola sesión desde la terminal sí, con algunas excepciones.",
+        "El nombre por defecto (como `my-app-3f`) no sirve para reanudar; un nombre que pusiste o el título generado sí.",
+        "`/clear <name>` etiqueta la conversación que dejas, no la nueva.",
+        "Si eliges en el picker una sesión de un proyecto no relacionado, copia un comando `cd` y de reanudar al portapapeles en vez de reanudarla ahí."
+      ],
+      "confusedWith": [
+        {
+          "concept": "claude --continue",
+          "difference": "Siempre toma la conversación más reciente de este directorio y omite las de `-p`; `--resume` te deja elegir."
+        },
+        {
+          "concept": "/branch",
+          "difference": "Copia la conversación actual en una sesión nueva; `/resume` cambia a una existente."
+        }
+      ],
+      "examCues": [
+        "a specific earlier session",
+        "resume by name",
+        "only has the session ID",
+        "the session that opened this PR",
+        "switch to another conversation without exiting"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sessions.md",
+      "https://code.claude.com/docs/en/cli-reference.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "session-resume--8f4c1a1b",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [
+        "session-continue"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A developer keeps several parallel sessions in one repository. Yesterday they named one `auth-refactor`; since then they have worked in two other sessions there. From the shell, they want to return straight into `auth-refactor` without browsing a list. What should they run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --continue`",
+          "correct": false,
+          "why": "It reopens the most recent conversation, which is one of the two later sessions."
+        },
+        {
+          "id": "B",
+          "text": "`claude -n auth-refactor`",
+          "correct": false,
+          "why": "`-n` sets the name of a new session at startup; it does not resume the existing one."
+        },
+        {
+          "id": "C",
+          "text": "`claude --resume auth-refactor`",
+          "correct": true,
+          "why": "With an exact name match, `--resume <name>` resumes that session directly."
+        },
+        {
+          "id": "D",
+          "text": "`claude --continue --fork-session`",
+          "correct": false,
+          "why": "It forks the most recent conversation, not the named one."
+        }
+      ],
+      "explanation": "The requirement is a specific, named session, reached directly. `claude --resume <name>` resumes an exact match directly, even from another worktree of the repository. `claude --continue` is tempting but only picks the latest conversation, which here is a different session. `-n` names a new session instead of finding an old one.",
+      "keywordCues": [
+        "named one auth-refactor",
+        "two other sessions",
+        "without browsing a list"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador mantiene varias sesiones en paralelo en un repositorio. Ayer nombró una `auth-refactor`; desde entonces trabajó en otras dos sesiones ahí. Desde la shell quiere volver directo a `auth-refactor` sin recorrer una lista. ¿Qué debe correr?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --continue`",
+            "why": "Reabre la conversación más reciente, que es una de las dos sesiones posteriores."
+          },
+          {
+            "id": "B",
+            "text": "`claude -n auth-refactor`",
+            "why": "`-n` pone el nombre de una sesión nueva al iniciar; no reanuda la existente."
+          },
+          {
+            "id": "C",
+            "text": "`claude --resume auth-refactor`",
+            "why": "Con una coincidencia exacta de nombre, `--resume <name>` reanuda esa sesión directamente."
+          },
+          {
+            "id": "D",
+            "text": "`claude --continue --fork-session`",
+            "why": "Bifurca la conversación más reciente, no la que tiene ese nombre."
+          }
+        ],
+        "explanation": "El requisito es una sesión concreta, con nombre, alcanzada directamente. `claude --resume <name>` reanuda directamente una coincidencia exacta, incluso desde otro worktree del repositorio. `claude --continue` tienta, pero solo toma la última conversación, que aquí es otra sesión. `-n` nombra una sesión nueva en vez de encontrar una vieja."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-resume--33337e57",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [
+        "session-continue"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A CI job on a developer's machine ran `claude -p` in `~/build-agent` and logged the session ID. The developer is working in `~/app` and wants to open that exact conversation interactively to inspect what happened, without changing directory. What should they run?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --resume`, press `Ctrl+A`, and pick the CI session",
+          "correct": false,
+          "why": "`-p` sessions are left out of the session picker, even when widened to all projects."
+        },
+        {
+          "id": "B",
+          "text": "`claude --resume <session-id>`",
+          "correct": true,
+          "why": "An ID is the way back into a `-p` session, and the lookup searches every project on the machine."
+        },
+        {
+          "id": "C",
+          "text": "`cd ~/build-agent && claude --continue`",
+          "correct": false,
+          "why": "It changes directory, and interactive `--continue` skips `-p` sessions anyway."
+        },
+        {
+          "id": "D",
+          "text": "`claude --from-pr <session-id>`",
+          "correct": false,
+          "why": "`--from-pr` takes a pull request number or URL, not a session ID."
+        }
+      ],
+      "explanation": "Two requirements decide it: the session was created with `claude -p`, and the developer is in another directory. Sessions from `-p` are excluded from the picker and from `claude --continue`, so passing the ID to `claude --resume` is the route back. The ID lookup checks the current project and its worktrees, then every other project on the machine. The `Ctrl+A` picker option is tempting but never lists `-p` sessions.",
+      "keywordCues": [
+        "ran claude -p",
+        "logged the session ID",
+        "without changing directory"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un job de CI en la máquina de un desarrollador corrió `claude -p` en `~/build-agent` y registró el session ID. El desarrollador trabaja en `~/app` y quiere abrir esa conversación exacta de forma interactiva para revisar qué pasó, sin cambiar de directorio. ¿Qué debe correr?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --resume`, pulsar `Ctrl+A` y elegir la sesión de CI",
+            "why": "Las sesiones de `-p` quedan fuera del picker, incluso ampliado a todos los proyectos."
+          },
+          {
+            "id": "B",
+            "text": "`claude --resume <session-id>`",
+            "why": "El ID es la vía para volver a una sesión de `-p`, y la búsqueda recorre todos los proyectos de la máquina."
+          },
+          {
+            "id": "C",
+            "text": "`cd ~/build-agent && claude --continue`",
+            "why": "Cambia de directorio, y además `--continue` interactivo omite las sesiones de `-p`."
+          },
+          {
+            "id": "D",
+            "text": "`claude --from-pr <session-id>`",
+            "why": "`--from-pr` recibe un número o URL de pull request, no un session ID."
+          }
+        ],
+        "explanation": "Deciden dos requisitos: la sesión se creó con `claude -p` y el desarrollador está en otro directorio. Las sesiones de `-p` quedan fuera del picker y de `claude --continue`, así que pasar el ID a `claude --resume` es la vía de regreso. La búsqueda por ID revisa el proyecto actual y sus worktrees, y luego todos los demás proyectos de la máquina. La opción de `Ctrl+A` tienta, pero el picker nunca lista sesiones de `-p`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-resume--0fe48eba",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A developer's session named `docs-sweep` ended in `acceptEdits` mode; no other session uses that name. They want to resume it and have Claude Code restore that stored permission mode, without passing `--permission-mode`. Which way of resuming does that?",
+      "options": [
+        {
+          "id": "A",
+          "text": "From another interactive session, run `/resume docs-sweep`",
+          "correct": false,
+          "why": "`/resume` keeps the permission mode of the session you are currently in."
+        },
+        {
+          "id": "B",
+          "text": "Run `claude --resume` and select `docs-sweep` in the picker",
+          "correct": false,
+          "why": "A session selected from the picker starts in the mode a new session would, not the stored one."
+        },
+        {
+          "id": "C",
+          "text": "Run `claude -p --resume docs-sweep \"continue\"`",
+          "correct": false,
+          "why": "A `-p` resume starts in the mode a new `claude -p` run would start in."
+        },
+        {
+          "id": "D",
+          "text": "From a terminal, run `claude --resume docs-sweep`",
+          "correct": true,
+          "why": "A terminal resume by a name matching one session restores the stored permission mode."
+        }
+      ],
+      "explanation": "How you resume decides the permission mode. From a terminal, `claude --continue`, `claude --resume <session-id>` or `claude --resume <name>` matching one session restore the stored mode, except for cases like `bypassPermissions` and `plan`; `acceptEdits` is not one of them. The picker and `/resume` start in the mode of a new or current session instead. A `-p` resume starts like a new `claude -p` run.",
+      "keywordCues": [
+        "ended in acceptEdits mode",
+        "no other session uses that name",
+        "restore that stored permission mode"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "La sesión `docs-sweep` de un desarrollador terminó en modo `acceptEdits`; ninguna otra sesión usa ese nombre. Quiere reanudarla y que Claude Code restaure ese permission mode guardado, sin pasar `--permission-mode`. ¿Qué forma de reanudar lo logra?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Desde otra sesión interactiva, correr `/resume docs-sweep`",
+            "why": "`/resume` mantiene el permission mode de la sesión en la que estás."
+          },
+          {
+            "id": "B",
+            "text": "Correr `claude --resume` y elegir `docs-sweep` en el picker",
+            "why": "Una sesión elegida en el picker arranca en el modo de una sesión nueva, no en el guardado."
+          },
+          {
+            "id": "C",
+            "text": "Correr `claude -p --resume docs-sweep \"continue\"`",
+            "why": "Reanudar con `-p` arranca en el modo de una corrida nueva de `claude -p`."
+          },
+          {
+            "id": "D",
+            "text": "Desde una terminal, correr `claude --resume docs-sweep`",
+            "why": "Reanudar desde la terminal con un nombre que coincide con una sola sesión restaura el permission mode guardado."
+          }
+        ],
+        "explanation": "La forma de reanudar decide el permission mode. Desde la terminal, `claude --continue`, `claude --resume <session-id>` o `claude --resume <name>` con una sola coincidencia restauran el modo guardado, salvo casos como `bypassPermissions` y `plan`; `acceptEdits` no es uno de ellos. El picker y `/resume` arrancan en el modo de una sesión nueva o de la actual. Reanudar con `-p` arranca como una corrida nueva de `claude -p`."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-resume--f6a03a59",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [
+        "session-continue"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "A reviewer wants to reopen the Claude Code session that created pull request #812 on GitHub, to ask why a change was made. There are dozens of sessions in the repository and they don't know the session's name or ID. Which two approaches find it? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `claude --from-pr 812`",
+          "correct": true,
+          "why": "It opens the picker filtered to sessions linked to that pull request."
+        },
+        {
+          "id": "B",
+          "text": "Run `claude --continue`",
+          "correct": false,
+          "why": "It opens the most recent conversation, which may have nothing to do with the PR."
+        },
+        {
+          "id": "C",
+          "text": "Open the session picker and paste the PR URL into the search",
+          "correct": true,
+          "why": "Pasting a GitHub pull request URL in search mode finds the session that created it."
+        },
+        {
+          "id": "D",
+          "text": "Open the session picker and press `Ctrl+B`",
+          "correct": false,
+          "why": "`Ctrl+B` filters to the current git branch, not to a pull request."
+        },
+        {
+          "id": "E",
+          "text": "Run `/branch pr-812`",
+          "correct": false,
+          "why": "It copies the current conversation into a new session; it does not find an old one."
+        }
+      ],
+      "explanation": "The requirement is to locate a session by the pull request it created, with no name or ID. `claude --from-pr` accepts a PR number or URL and filters the picker to sessions linked to it; sessions are linked automatically when Claude creates the PR. The picker's search mode also accepts a pasted PR URL. `Ctrl+B` is tempting but filters by git branch, which is not the same as the PR link.",
+      "keywordCues": [
+        "created pull request #812",
+        "don't know the session's name or ID"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "Un revisor quiere reabrir la sesión de Claude Code que creó el pull request #812 en GitHub, para preguntar por qué se hizo un cambio. Hay decenas de sesiones en el repositorio y no conoce el nombre ni el ID de la sesión. ¿Cuáles dos enfoques la encuentran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `claude --from-pr 812`",
+            "why": "Abre el picker filtrado a las sesiones vinculadas a ese pull request."
+          },
+          {
+            "id": "B",
+            "text": "Correr `claude --continue`",
+            "why": "Abre la conversación más reciente, que puede no tener nada que ver con el PR."
+          },
+          {
+            "id": "C",
+            "text": "Abrir el picker y pegar la URL del PR en la búsqueda",
+            "why": "Pegar la URL de un pull request de GitHub en modo búsqueda encuentra la sesión que lo creó."
+          },
+          {
+            "id": "D",
+            "text": "Abrir el picker y pulsar `Ctrl+B`",
+            "why": "`Ctrl+B` filtra por la rama git actual, no por pull request."
+          },
+          {
+            "id": "E",
+            "text": "Correr `/branch pr-812`",
+            "why": "Copia la conversación actual a una sesión nueva; no encuentra una anterior."
+          }
+        ],
+        "explanation": "El requisito es ubicar una sesión por el pull request que creó, sin nombre ni ID. `claude --from-pr` acepta un número o URL de PR y filtra el picker a las sesiones vinculadas; se vinculan solas cuando Claude crea el PR. El modo búsqueda del picker también acepta una URL de PR pegada. `Ctrl+B` tienta, pero filtra por rama git, que no es lo mismo que el vínculo al PR."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-resume--ded0fc63",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which `claude` flag sets a display name for a new session at startup, so you can later resume it by that name?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--name",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "-n",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--name`, short form `-n`, sets the session's display name at startup, shown in `/resume` and the terminal title. You then resume it with `claude --resume <name>`. Mid-session, `/rename` changes the name instead.",
+      "keywordCues": [
+        "display name",
+        "at startup",
+        "resume it by that name"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag de `claude` pone un nombre visible a una sesión nueva al iniciar, para reanudarla después por ese nombre?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--name",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "-n",
+            "why": ""
+          }
+        ],
+        "explanation": "`--name`, en forma corta `-n`, pone el nombre visible de la sesión al iniciar, y aparece en `/resume` y en el título de la terminal. Luego la reanudas con `claude --resume <name>`. A mitad de sesión, `/rename` cambia el nombre."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-resume--fa652271",
+      "conceptId": "session-resume",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which `claude` flag opens the session picker filtered to sessions linked to a given pull request?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--from-pr",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--from-pr` takes a PR number or a GitHub, GitHub Enterprise, GitLab or Bitbucket URL and opens the picker filtered to linked sessions. Sessions are linked automatically when Claude creates the pull request.",
+      "keywordCues": [
+        "session picker filtered",
+        "linked to a given pull request"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/cli-reference.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag de `claude` abre el picker de sesiones filtrado a las sesiones vinculadas a un pull request dado?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--from-pr",
+            "why": ""
+          }
+        ],
+        "explanation": "`--from-pr` recibe un número de PR o una URL de GitHub, GitHub Enterprise, GitLab o Bitbucket y abre el picker filtrado a las sesiones vinculadas. Las sesiones se vinculan solas cuando Claude crea el pull request."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "session-resume--r0",
+      "conceptId": "session-resume",
+      "kind": "recall",
+      "prompt": "List the ways to resume a specific session with claude --resume or /resume, and how to get back into a claude -p session.",
+      "promptEs": "Enumera las formas de reanudar una sesión concreta con claude --resume o /resume, y cómo volver a una sesión de claude -p.",
+      "idealAnswer": "claude --resume alone opens the picker; you can also pass a name, a session ID or the absolute path to a .jsonl transcript, and --from-pr filters by pull request. Inside a session, /resume switches conversations. A claude -p or Agent SDK session is left out of the picker and of interactive --continue, so you resume it by passing its session ID, which works from any directory.",
+      "rubric": [
+        "Picker with no argument; or name, session ID, or transcript path",
+        "--from-pr for PR-linked sessions; /resume from inside a session",
+        "-p/SDK sessions are not in the picker; resume them with claude --resume <session-id>",
+        "An ID works from any directory"
+      ]
+    },
+    {
+      "id": "session-resume--r1",
+      "conceptId": "session-resume",
+      "kind": "why-not",
+      "prompt": "You want to explore an alternative without touching the current conversation. Why is /resume not the answer?",
+      "promptEs": "Quieres explorar una alternativa sin tocar la conversación actual. ¿Por qué /resume no es la respuesta?",
+      "idealAnswer": "/resume switches you into an existing session and keeps writing to it; it does not make a copy. To explore an alternative while keeping the current conversation intact, use /branch, or --fork-session with --continue or --resume, which create a new session ID.",
+      "rubric": [
+        "/resume moves you into an existing session, no copy",
+        "Further messages go into that session",
+        "Use /branch or --fork-session for a copy with a new ID"
+      ]
+    }
+  ]
+}

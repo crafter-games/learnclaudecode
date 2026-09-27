@@ -1,0 +1,415 @@
+{
+  "conceptId": "session-branch",
+  "card": {
+    "en": {
+      "tldr": "`/branch [name]` copies the conversation so far into a new session and switches you into it; the original stays unchanged and reachable with `/resume`. From the command line, add `--fork-session` to `--continue` or `--resume` to get a new session ID. Use it to try another direction without losing the one you were on.",
+      "whenToUse": [
+        "You want to test a different approach but keep the current conversation as it stands",
+        "You want to open an existing session in a second terminal without mixing messages into it",
+        "You want to keep your 'Allow for this session' grants while exploring an alternative: `/branch`"
+      ],
+      "keyFacts": [
+        "The `/branch` confirmation prints two session IDs: the new branch you are in and the original.",
+        "Without a name, the branch is named after the first prompt in the conversation.",
+        "`claude --continue --fork-session` or `claude --resume <id> --fork-session` creates a new session ID instead of reusing the original.",
+        "`/branch` runs in the same process, so session grants carry over; `--fork-session` starts a new process where you re-approve.",
+        "In-flight background subagents and background Bash keep running, and their output appears in the branch, not the original."
+      ],
+      "gotchas": [
+        "Resuming the same session in two terminals without forking interleaves both into one transcript.",
+        "`/rewind` goes back within the same session; `/branch` keeps the original and creates a new one.",
+        "`/fork` copies the conversation into a background session while you stay in the current one; `/branch` switches you into the copy."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/rewind",
+          "difference": "Restores code or conversation to an earlier point inside the current session; no new session is created."
+        },
+        {
+          "concept": "/fork",
+          "difference": "Runs the copy as a separate background session and you keep working here."
+        },
+        {
+          "concept": "/resume",
+          "difference": "Switches to an existing session; it does not copy anything."
+        }
+      ],
+      "examCues": [
+        "try a different approach without losing",
+        "keep the original conversation intact",
+        "new session ID",
+        "open the same session in a second terminal",
+        "without re-approving permissions"
+      ]
+    },
+    "es": {
+      "tldr": "`/branch [name]` copia la conversación hasta ahora en una sesión nueva y te cambia a ella; la original queda igual y accesible con `/resume`. Desde la línea de comandos, agrega `--fork-session` a `--continue` o `--resume` para obtener un session ID nuevo. Úsalo para probar otra dirección sin perder la que llevabas.",
+      "whenToUse": [
+        "Quieres probar otro enfoque pero conservar la conversación actual tal como está",
+        "Quieres abrir una sesión existente en una segunda terminal sin mezclar mensajes en ella",
+        "Quieres conservar tus permisos de 'Allow for this session' mientras exploras una alternativa: `/branch`"
+      ],
+      "keyFacts": [
+        "La confirmación de `/branch` imprime dos session IDs: la rama nueva en la que estás y la original.",
+        "Sin nombre, la rama toma el nombre del primer prompt de la conversación.",
+        "`claude --continue --fork-session` o `claude --resume <id> --fork-session` crea un session ID nuevo en vez de reutilizar el original.",
+        "`/branch` corre en el mismo proceso, así que los permisos de sesión se mantienen; `--fork-session` arranca un proceso nuevo donde vuelves a aprobar.",
+        "Los subagentes y comandos Bash en segundo plano que estaban corriendo siguen, y su salida aparece en la rama, no en la original."
+      ],
+      "gotchas": [
+        "Reanudar la misma sesión en dos terminales sin bifurcar intercala ambas en un solo transcript.",
+        "`/rewind` retrocede dentro de la misma sesión; `/branch` conserva la original y crea otra.",
+        "`/fork` copia la conversación a una sesión en segundo plano y tú sigues en la actual; `/branch` te cambia a la copia."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/rewind",
+          "difference": "Restaura código o conversación a un punto anterior dentro de la sesión actual; no crea una sesión nueva."
+        },
+        {
+          "concept": "/fork",
+          "difference": "Corre la copia como una sesión separada en segundo plano y tú sigues trabajando aquí."
+        },
+        {
+          "concept": "/resume",
+          "difference": "Cambia a una sesión existente; no copia nada."
+        }
+      ],
+      "examCues": [
+        "try a different approach without losing",
+        "keep the original conversation intact",
+        "new session ID",
+        "open the same session in a second terminal",
+        "without re-approving permissions"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/sessions.md",
+      "https://code.claude.com/docs/en/commands.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "session-branch--f8de42bc",
+      "conceptId": "session-branch",
+      "secondaryConcepts": [
+        "session-resume"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Claude and a developer have designed a polling-based sync over a long conversation. The developer wants to try a streaming design instead, continuing in this same terminal, while keeping the polling conversation exactly as it is to come back to later. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/rewind` to the prompt before the design and choose Restore conversation",
+          "correct": false,
+          "why": "It rewinds the current session in place, so the polling discussion is no longer the path you continue from."
+        },
+        {
+          "id": "B",
+          "text": "Run `/fork try-streaming`",
+          "correct": false,
+          "why": "`/fork` runs the copy as a background session and keeps you in the original, not in the new direction."
+        },
+        {
+          "id": "C",
+          "text": "Run `/branch try-streaming`",
+          "correct": true,
+          "why": "It copies the conversation into a new session, switches you into it, and leaves the original intact for `/resume`."
+        },
+        {
+          "id": "D",
+          "text": "Run `/clear` and describe the streaming idea from scratch",
+          "correct": false,
+          "why": "It starts an empty context, so the new direction loses everything discussed so far."
+        }
+      ],
+      "explanation": "The requirements are to explore a new direction here, with the context so far, and keep the original conversation untouched. `/branch` copies the transcript into a new session ID, switches you into it, and leaves the original on disk, reachable with `/resume`. `/fork` also copies, but as a background session while you stay in the original. `/rewind` changes the current session instead of preserving it.",
+      "keywordCues": [
+        "continuing in this same terminal",
+        "keeping the polling conversation exactly as it is",
+        "come back to later"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Claude y un desarrollador diseñaron una sincronización basada en polling a lo largo de una conversación larga. El desarrollador quiere probar un diseño con streaming, siguiendo en esta misma terminal, y conservar la conversación de polling tal como está para volver después. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/rewind` hasta el prompt previo al diseño y elegir Restore conversation",
+            "why": "Retrocede la sesión actual en el mismo lugar, así que la discusión de polling deja de ser el camino desde el que sigues."
+          },
+          {
+            "id": "B",
+            "text": "Correr `/fork try-streaming`",
+            "why": "`/fork` corre la copia como sesión en segundo plano y te deja en la original, no en la nueva dirección."
+          },
+          {
+            "id": "C",
+            "text": "Correr `/branch try-streaming`",
+            "why": "Copia la conversación a una sesión nueva, te cambia a ella y deja la original intacta para `/resume`."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/clear` y describir la idea de streaming desde cero",
+            "why": "Empieza con el contexto vacío, así que la nueva dirección pierde todo lo discutido."
+          }
+        ],
+        "explanation": "Los requisitos son explorar una dirección nueva aquí, con el contexto acumulado, y dejar la conversación original sin tocar. `/branch` copia el transcript a un session ID nuevo, te cambia a él y deja la original en disco, accesible con `/resume`. `/fork` también copia, pero como sesión en segundo plano mientras tú sigues en la original. `/rewind` modifica la sesión actual en vez de preservarla."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-branch--1c5425af",
+      "conceptId": "session-branch",
+      "secondaryConcepts": [
+        "session-continue"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "During a session, a developer approved several Bash commands with \"Allow for this session\". They now want to branch the conversation to try an alternative fix, without having to approve those commands again in the branch. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Run `/branch alt-fix` in the current session",
+          "correct": true,
+          "why": "The branch runs in the same process, so existing session grants still apply."
+        },
+        {
+          "id": "B",
+          "text": "Exit and run `claude --continue --fork-session`",
+          "correct": false,
+          "why": "The fork starts a new process without the session grants, so the developer re-approves there."
+        },
+        {
+          "id": "C",
+          "text": "Open a second terminal and run `claude --continue`",
+          "correct": false,
+          "why": "It is not a copy: both terminals write into one interleaved transcript, and the new process has no session grants."
+        },
+        {
+          "id": "D",
+          "text": "Run `/rewind` and choose Restore conversation",
+          "correct": false,
+          "why": "It rewinds the same session instead of creating a branch to explore separately."
+        }
+      ],
+      "explanation": "The deciding requirement is keeping \"Allow for this session\" grants. `/branch` copies the transcript and switches the running process to write to it, so grants carry over. `--fork-session` also creates a new session ID but in a separate process, which starts without those grants. Resuming the same session in a second terminal without forking interleaves both into one transcript.",
+      "keywordCues": [
+        "Allow for this session",
+        "without having to approve those commands again",
+        "branch the conversation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Durante una sesión, un desarrollador aprobó varios comandos Bash con \"Allow for this session\". Ahora quiere bifurcar la conversación para probar un arreglo alternativo, sin tener que aprobar de nuevo esos comandos en la rama. ¿Qué debe hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Correr `/branch alt-fix` en la sesión actual",
+            "why": "La rama corre en el mismo proceso, así que los permisos de sesión existentes siguen valiendo."
+          },
+          {
+            "id": "B",
+            "text": "Salir y correr `claude --continue --fork-session`",
+            "why": "La bifurcación arranca un proceso nuevo sin los permisos de sesión, así que hay que volver a aprobar."
+          },
+          {
+            "id": "C",
+            "text": "Abrir una segunda terminal y correr `claude --continue`",
+            "why": "No es una copia: ambas terminales escriben en un solo transcript intercalado, y el proceso nuevo no tiene los permisos de sesión."
+          },
+          {
+            "id": "D",
+            "text": "Correr `/rewind` y elegir Restore conversation",
+            "why": "Retrocede la misma sesión en vez de crear una rama para explorar por separado."
+          }
+        ],
+        "explanation": "El requisito que decide es conservar los permisos de \"Allow for this session\". `/branch` copia el transcript y hace que el proceso en marcha escriba en él, así que los permisos se mantienen. `--fork-session` también crea un session ID nuevo, pero en un proceso aparte que arranca sin esos permisos. Reanudar la misma sesión en otra terminal sin bifurcar intercala ambas en un solo transcript."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-branch--bdf45a1d",
+      "conceptId": "session-branch",
+      "secondaryConcepts": [
+        "session-continue",
+        "session-resume"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer has session `a1b2c3` open in terminal 1; it is the most recent conversation in the directory. In terminal 2, same directory, they want to explore a different idea starting from that conversation, without any terminal 2 messages landing in `a1b2c3`'s transcript. Which two commands in terminal 2 achieve this? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`claude --continue`",
+          "correct": false,
+          "why": "Without forking, both terminals write into the same session and their messages interleave."
+        },
+        {
+          "id": "B",
+          "text": "`claude --continue --fork-session`",
+          "correct": true,
+          "why": "It resumes the latest conversation under a new session ID, so the original transcript is untouched."
+        },
+        {
+          "id": "C",
+          "text": "`claude --resume a1b2c3`",
+          "correct": false,
+          "why": "It reuses the same session ID, so messages from both terminals interleave into one transcript."
+        },
+        {
+          "id": "D",
+          "text": "`claude --resume a1b2c3 --fork-session`",
+          "correct": true,
+          "why": "`--fork-session` with `--resume` creates a new session ID from that conversation."
+        },
+        {
+          "id": "E",
+          "text": "`claude`, then `/branch`",
+          "correct": false,
+          "why": "A fresh `claude` session has none of the original history, so `/branch` has nothing of it to copy."
+        }
+      ],
+      "explanation": "The requirement is a copy of an existing conversation in a second process, with a separate transcript. `--fork-session` combined with `--continue` or `--resume` creates a new session ID instead of reusing the original. Resuming the same session in two terminals without forking interleaves messages from both into one transcript. `/branch` only copies the conversation you are already in.",
+      "keywordCues": [
+        "open in terminal 1",
+        "In terminal 2",
+        "without any terminal 2 messages landing in a1b2c3's transcript"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "Un desarrollador tiene la sesión `a1b2c3` abierta en la terminal 1; es la conversación más reciente del directorio. En la terminal 2, mismo directorio, quiere explorar otra idea partiendo de esa conversación, sin que ningún mensaje de la terminal 2 caiga en el transcript de `a1b2c3`. ¿Cuáles dos comandos en la terminal 2 lo logran? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`claude --continue`",
+            "why": "Sin bifurcar, ambas terminales escriben en la misma sesión y sus mensajes se intercalan."
+          },
+          {
+            "id": "B",
+            "text": "`claude --continue --fork-session`",
+            "why": "Reanuda la última conversación con un session ID nuevo, así que el transcript original no se toca."
+          },
+          {
+            "id": "C",
+            "text": "`claude --resume a1b2c3`",
+            "why": "Reutiliza el mismo session ID, así que los mensajes de ambas terminales se intercalan en un solo transcript."
+          },
+          {
+            "id": "D",
+            "text": "`claude --resume a1b2c3 --fork-session`",
+            "why": "`--fork-session` con `--resume` crea un session ID nuevo a partir de esa conversación."
+          },
+          {
+            "id": "E",
+            "text": "`claude` y luego `/branch`",
+            "why": "Una sesión nueva de `claude` no tiene el historial original, así que `/branch` no tiene nada de él que copiar."
+          }
+        ],
+        "explanation": "El requisito es una copia de una conversación existente en un segundo proceso, con su propio transcript. `--fork-session` combinado con `--continue` o `--resume` crea un session ID nuevo en vez de reutilizar el original. Reanudar la misma sesión en dos terminales sin bifurcar intercala los mensajes de ambas en un solo transcript. `/branch` solo copia la conversación en la que ya estás."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "session-branch--8f626520",
+      "conceptId": "session-branch",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Which flag, combined with `--continue` or `--resume`, creates a new session ID instead of reusing the original?",
+      "options": [
+        {
+          "id": "A",
+          "text": "--fork-session",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "`--fork-session` makes a resume create a new session ID, so the original transcript stays untouched. It only works together with `--continue` or `--resume`. Inside a running session, `/branch` does the equivalent without starting a new process.",
+      "keywordCues": [
+        "combined with --continue or --resume",
+        "new session ID"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/sessions.md",
+        "https://code.claude.com/docs/en/commands.md"
+      ],
+      "es": {
+        "stem": "¿Qué flag, combinado con `--continue` o `--resume`, crea un session ID nuevo en vez de reutilizar el original?",
+        "options": [
+          {
+            "id": "A",
+            "text": "--fork-session",
+            "why": ""
+          }
+        ],
+        "explanation": "`--fork-session` hace que reanudar cree un session ID nuevo, así que el transcript original no se toca. Solo funciona junto con `--continue` o `--resume`. Dentro de una sesión en marcha, `/branch` hace lo equivalente sin arrancar un proceso nuevo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "session-branch--r0",
+      "conceptId": "session-branch",
+      "kind": "recall",
+      "prompt": "What does /branch do, what carries over into the branch, and how do you branch from the command line instead?",
+      "promptEs": "¿Qué hace /branch, qué se mantiene en la rama y cómo bifurcas desde la línea de comandos?",
+      "idealAnswer": "/branch copies the conversation so far into a new session ID, switches you into it and leaves the original intact, reachable with /resume. Because it runs in the same process, 'Allow for this session' grants, background work and Remote Control carry over. From the CLI, combine --continue or --resume with --fork-session, which starts a new process where you re-approve permissions.",
+      "rubric": [
+        "Copies the conversation into a new session and switches you into it",
+        "Original stays intact and reachable with /resume",
+        "Same process: session grants carry over",
+        "CLI: --continue or --resume plus --fork-session, re-approve there"
+      ]
+    },
+    {
+      "id": "session-branch--r1",
+      "conceptId": "session-branch",
+      "kind": "why-not",
+      "prompt": "You want to keep the current conversation and try another path in a copy. Why not just open the session again in a second terminal with --resume?",
+      "promptEs": "Quieres conservar la conversación actual y probar otro camino en una copia. ¿Por qué no abrir la sesión otra vez en una segunda terminal con --resume?",
+      "idealAnswer": "Resuming the same session in two terminals without forking reuses its session ID, so messages from both interleave into one transcript and the original is not preserved. Add --fork-session to get a new session ID, or use /branch from inside the session.",
+      "rubric": [
+        "Same session ID is reused",
+        "Messages from both terminals interleave into one transcript",
+        "Use --fork-session or /branch instead"
+      ]
+    }
+  ]
+}

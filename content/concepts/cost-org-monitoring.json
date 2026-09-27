@@ -1,0 +1,389 @@
+{
+  "conceptId": "cost-org-monitoring",
+  "card": {
+    "en": {
+      "tldr": "Per-user tokens and cost across a team come from OpenTelemetry, which streams metrics into your own observability stack on any provider. Admins usually enable it in the managed settings env block, because a repository's settings can't turn it on. Adoption and contribution dashboards are separate: claude.ai for Team and Enterprise, the Claude Console for API customers.",
+      "whenToUse": [
+        "You need per-user token and cost metrics in your own observability stack.",
+        "Your team uses Bedrock, Google Cloud's Agent Platform or Microsoft Foundry, which the analytics dashboards don't cover.",
+        "You want adoption and contribution data such as daily active users or PRs with Claude Code: use the analytics dashboard."
+      ],
+      "keyFacts": [
+        "Enable with CLAUDE_CODE_ENABLE_TELEMETRY=1, choose exporters with OTEL_METRICS_EXPORTER and OTEL_LOGS_EXPORTER (for example otlp), and point OTEL_EXPORTER_OTLP_ENDPOINT at your collector.",
+        "Admins set these for everyone in the managed settings env block; a repository's .claude/settings.json and .claude/settings.local.json can't turn telemetry on or choose its destination.",
+        "Prompt content is redacted by default; set OTEL_LOG_USER_PROMPTS=1 to include it.",
+        "Key metrics include claude_code.cost.usage and claude_code.token.usage; claude_code.session.count confirms a working setup.",
+        "Dashboards: claude.ai/analytics/claude-code for Team and Enterprise, platform.claude.com/claude-code for Claude Console API customers."
+      ],
+      "gotchas": [
+        "The analytics dashboards and the Claude Code Analytics API don't cover usage on cloud providers; use OpenTelemetry or an LLM gateway there.",
+        "Cost figures in OpenTelemetry are computed at list price unless a modelPricing managed setting supplies your contracted rates.",
+        "A repository can still turn a signal off by setting its exporter to none, unless managed settings or the environment set that variable.",
+        "/usage only reflects one machine's history, so it can't replace team-wide reporting."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/usage",
+          "difference": "Per-session and per-machine view for one developer; OpenTelemetry aggregates every user in your own stack."
+        }
+      ],
+      "examCues": [
+        "per-user token and cost metrics",
+        "our own observability stack",
+        "for every developer in the organization",
+        "on Amazon Bedrock",
+        "adoption dashboard"
+      ]
+    },
+    "es": {
+      "tldr": "Los tokens y el costo por usuario en un equipo vienen de OpenTelemetry, que envía métricas a tu propio stack de observabilidad con cualquier proveedor. Los admins suelen activarlo en el bloque env de los managed settings, porque los settings de un repositorio no pueden encenderlo. Los dashboards de adopción y contribución son aparte: claude.ai para Team y Enterprise, la Claude Console para clientes de API.",
+      "whenToUse": [
+        "Necesitas métricas de tokens y costo por usuario en tu propio stack de observabilidad.",
+        "Tu equipo usa Bedrock, Google Cloud's Agent Platform o Microsoft Foundry, que los dashboards de analytics no cubren.",
+        "Quieres datos de adopción y contribución como usuarios activos diarios o PRs con Claude Code: usa el dashboard de analytics."
+      ],
+      "keyFacts": [
+        "Actívalo con CLAUDE_CODE_ENABLE_TELEMETRY=1, elige exportadores con OTEL_METRICS_EXPORTER y OTEL_LOGS_EXPORTER (por ejemplo otlp) y apunta OTEL_EXPORTER_OTLP_ENDPOINT a tu collector.",
+        "Los admins los definen para todos en el bloque env de los managed settings; el .claude/settings.json y el .claude/settings.local.json de un repositorio no pueden encender la telemetría ni elegir su destino.",
+        "El contenido de los prompts se redacta por defecto; define OTEL_LOG_USER_PROMPTS=1 para incluirlo.",
+        "Entre las métricas clave están claude_code.cost.usage y claude_code.token.usage; claude_code.session.count confirma que el setup funciona.",
+        "Dashboards: claude.ai/analytics/claude-code para Team y Enterprise, platform.claude.com/claude-code para clientes de API de la Claude Console."
+      ],
+      "gotchas": [
+        "Los dashboards de analytics y la Claude Code Analytics API no cubren el uso en proveedores cloud; ahí usa OpenTelemetry o un LLM gateway.",
+        "Los costos en OpenTelemetry se calculan a precio de lista salvo que el managed setting modelPricing aporte tus tarifas contratadas.",
+        "Un repositorio sí puede apagar una señal poniendo su exportador en none, salvo que managed settings o el entorno definan esa variable.",
+        "/usage solo refleja el historial de una máquina, así que no reemplaza el reporte a nivel de equipo."
+      ],
+      "confusedWith": [
+        {
+          "concept": "/usage",
+          "difference": "Vista por sesión y por máquina de un desarrollador; OpenTelemetry agrega a todos los usuarios en tu propio stack."
+        }
+      ],
+      "examCues": [
+        "per-user token and cost metrics",
+        "our own observability stack",
+        "for every developer in the organization",
+        "on Amazon Bedrock",
+        "adoption dashboard"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/monitoring-usage.md",
+      "https://code.claude.com/docs/en/analytics.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cost-org-monitoring--5777a23c",
+      "conceptId": "cost-org-monitoring",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A platform team runs Claude Code through Amazon Bedrock for 200 developers. They want per-user token and cost metrics in their existing Grafana stack, enabled for every developer, and a checked-out repository must not be able to turn it on or redirect it. What should they do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Commit an env block with the OTel variables to each repo's .claude/settings.json",
+          "correct": false,
+          "why": "Claude Code ignores the telemetry enable and exporter variables in a repository's project settings."
+        },
+        {
+          "id": "B",
+          "text": "Read per-user numbers from the claude.ai analytics dashboard",
+          "correct": false,
+          "why": "The analytics dashboards don't cover usage on cloud providers, and they don't feed Grafana."
+        },
+        {
+          "id": "C",
+          "text": "Ask each developer to run /usage weekly and report totals",
+          "correct": false,
+          "why": "It only reflects one machine's local history and doesn't reach their observability stack."
+        },
+        {
+          "id": "D",
+          "text": "Set CLAUDE_CODE_ENABLE_TELEMETRY and the OTLP exporter variables in the managed settings env block",
+          "correct": true,
+          "why": "Managed settings apply to everyone and pin the OTLP destination, and OpenTelemetry works on any provider."
+        }
+      ],
+      "explanation": "The requirements are per-user metrics in their own stack, on Bedrock, for everyone, and not controllable by a repository. OpenTelemetry is the only option that streams per-user token and cost metrics into your own stack on any provider, and managed settings deliver it to all developers. Committing the same variables to .claude/settings.json is tempting, but Claude Code ignores them there. The claude.ai dashboard doesn't cover cloud-provider usage.",
+      "keywordCues": [
+        "through Amazon Bedrock",
+        "in their existing Grafana stack",
+        "enabled for every developer",
+        "must not be able to turn it on or redirect it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/monitoring-usage.md",
+        "https://code.claude.com/docs/en/analytics.md"
+      ],
+      "es": {
+        "stem": "Un equipo de plataforma usa Claude Code a través de Amazon Bedrock para 200 desarrolladores. Quieren métricas de tokens y costo por usuario en su stack de Grafana existente, activadas para todos, y un repositorio clonado no debe poder encenderlas ni redirigirlas. ¿Qué deben hacer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Commitear un bloque env con las variables OTel en el .claude/settings.json de cada repo",
+            "why": "Claude Code ignora las variables de activación y de exportadores de telemetría en los settings de proyecto de un repositorio."
+          },
+          {
+            "id": "B",
+            "text": "Leer los números por usuario en el dashboard de analytics de claude.ai",
+            "why": "Los dashboards de analytics no cubren el uso en proveedores cloud, y no alimentan Grafana."
+          },
+          {
+            "id": "C",
+            "text": "Pedir a cada desarrollador que corra /usage cada semana y reporte totales",
+            "why": "Solo refleja el historial local de una máquina y no llega a su stack de observabilidad."
+          },
+          {
+            "id": "D",
+            "text": "Definir CLAUDE_CODE_ENABLE_TELEMETRY y las variables del exportador OTLP en el bloque env de los managed settings",
+            "why": "Los managed settings aplican a todos y fijan el destino OTLP, y OpenTelemetry funciona con cualquier proveedor."
+          }
+        ],
+        "explanation": "Los requisitos son métricas por usuario en su propio stack, sobre Bedrock, para todos y sin control desde un repositorio. OpenTelemetry es la única opción que envía tokens y costo por usuario a tu propio stack con cualquier proveedor, y los managed settings lo entregan a todos los desarrolladores. Commitear las mismas variables en .claude/settings.json tienta, pero Claude Code las ignora ahí. El dashboard de claude.ai no cubre el uso en proveedores cloud."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-org-monitoring--bf8be64a",
+      "conceptId": "cost-org-monitoring",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which environment variable must be set to 1 before any OpenTelemetry exporter configuration takes effect?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE_CODE_ENABLE_TELEMETRY",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE_CODE_ENABLE_TELEMETRY=1",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "CLAUDE_CODE_ENABLE_TELEMETRY=1 enables OpenTelemetry collection and is required before configuring exporters such as OTEL_METRICS_EXPORTER. Set it in your shell, user settings or managed settings; Claude Code ignores it in project and local settings.",
+      "keywordCues": [
+        "must be set to 1",
+        "before any OpenTelemetry exporter configuration"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/monitoring-usage.md",
+        "https://code.claude.com/docs/en/analytics.md"
+      ],
+      "es": {
+        "stem": "¿Qué variable de entorno debe valer 1 antes de que cualquier configuración de exportadores de OpenTelemetry surta efecto?",
+        "options": [
+          {
+            "id": "A",
+            "text": "CLAUDE_CODE_ENABLE_TELEMETRY",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "CLAUDE_CODE_ENABLE_TELEMETRY=1",
+            "why": ""
+          }
+        ],
+        "explanation": "CLAUDE_CODE_ENABLE_TELEMETRY=1 activa la recolección de OpenTelemetry y es obligatoria antes de configurar exportadores como OTEL_METRICS_EXPORTER. Defínela en tu shell, en los settings de usuario o en managed settings; Claude Code la ignora en los settings de proyecto y locales."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "cost-org-monitoring--7c1528e6",
+      "conceptId": "cost-org-monitoring",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this managed settings file so every developer exports metrics to the company's OTLP collector, with prompt content kept redacted.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "env",
+          "correct": true,
+          "why": "Environment variables for Claude Code go under the env key of the settings file."
+        },
+        {
+          "id": "1b",
+          "text": "hooks",
+          "correct": false,
+          "why": "The hooks key holds hook definitions, not environment variables."
+        },
+        {
+          "id": "1c",
+          "text": "permissions",
+          "correct": false,
+          "why": "The permissions key holds allow, ask and deny rules, not telemetry variables."
+        },
+        {
+          "id": "2a",
+          "text": "OTEL_LOG_USER_PROMPTS",
+          "correct": false,
+          "why": "It would include prompt content in events, the opposite of keeping it redacted, and doesn't enable telemetry."
+        },
+        {
+          "id": "2b",
+          "text": "CLAUDE_CODE_ENABLE_TELEMETRY",
+          "correct": true,
+          "why": "Setting it to 1 enables OpenTelemetry and is required before exporters work."
+        },
+        {
+          "id": "2c",
+          "text": "DISABLE_TELEMETRY",
+          "correct": false,
+          "why": "Any non-empty value opts out of telemetry; it doesn't enable OpenTelemetry export."
+        },
+        {
+          "id": "3a",
+          "text": "console",
+          "correct": false,
+          "why": "It prints metrics locally instead of sending them to the collector."
+        },
+        {
+          "id": "3b",
+          "text": "none",
+          "correct": false,
+          "why": "It disables the metrics signal entirely."
+        },
+        {
+          "id": "3c",
+          "text": "otlp",
+          "correct": true,
+          "why": "The otlp exporter sends metrics to the configured OTLP endpoint."
+        }
+      ],
+      "explanation": "Admins configure OpenTelemetry for everyone through the env block of managed settings. CLAUDE_CODE_ENABLE_TELEMETRY must be 1 for any exporter to work, and the otlp exporter sends metrics to the endpoint set below it. OTEL_LOG_USER_PROMPTS is tempting because it is a telemetry variable, but it would un-redact prompts, and DISABLE_TELEMETRY opts out instead of enabling export.",
+      "keywordCues": [
+        "managed settings",
+        "every developer",
+        "company's OTLP collector",
+        "prompt content kept redacted"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/monitoring-usage.md",
+        "https://code.claude.com/docs/en/analytics.md"
+      ],
+      "es": {
+        "stem": "Completa este archivo de managed settings para que todos los desarrolladores exporten métricas al collector OTLP de la empresa, manteniendo redactado el contenido de los prompts.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "env",
+            "why": "Las variables de entorno para Claude Code van bajo la key env del archivo de settings."
+          },
+          {
+            "id": "1b",
+            "text": "hooks",
+            "why": "La key hooks contiene definiciones de hooks, no variables de entorno."
+          },
+          {
+            "id": "1c",
+            "text": "permissions",
+            "why": "La key permissions contiene reglas allow, ask y deny, no variables de telemetría."
+          },
+          {
+            "id": "2a",
+            "text": "OTEL_LOG_USER_PROMPTS",
+            "why": "Incluiría el contenido de los prompts en los eventos, lo contrario de mantenerlo redactado, y no activa la telemetría."
+          },
+          {
+            "id": "2b",
+            "text": "CLAUDE_CODE_ENABLE_TELEMETRY",
+            "why": "Ponerla en 1 activa OpenTelemetry y es obligatoria para que funcionen los exportadores."
+          },
+          {
+            "id": "2c",
+            "text": "DISABLE_TELEMETRY",
+            "why": "Cualquier valor no vacío desactiva la telemetría; no activa el export de OpenTelemetry."
+          },
+          {
+            "id": "3a",
+            "text": "console",
+            "why": "Imprime las métricas localmente en vez de enviarlas al collector."
+          },
+          {
+            "id": "3b",
+            "text": "none",
+            "why": "Desactiva por completo la señal de métricas."
+          },
+          {
+            "id": "3c",
+            "text": "otlp",
+            "why": "El exportador otlp envía las métricas al endpoint OTLP configurado."
+          }
+        ],
+        "explanation": "Los admins configuran OpenTelemetry para todos mediante el bloque env de los managed settings. CLAUDE_CODE_ENABLE_TELEMETRY debe valer 1 para que funcione cualquier exportador, y el exportador otlp envía las métricas al endpoint definido debajo. OTEL_LOG_USER_PROMPTS tienta porque es una variable de telemetría, pero quitaría la redacción de los prompts, y DISABLE_TELEMETRY desactiva en vez de activar el export."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": {\n    \"{{2}}\": \"1\",\n    \"OTEL_METRICS_EXPORTER\": \"{{3}}\",\n    \"OTEL_EXPORTER_OTLP_PROTOCOL\": \"grpc\",\n    \"OTEL_EXPORTER_OTLP_ENDPOINT\": \"http://collector.example.com:4317\"\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        },
+        {
+          "id": "3",
+          "optionIds": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "cost-org-monitoring--r0",
+      "conceptId": "cost-org-monitoring",
+      "kind": "recall",
+      "prompt": "How does an admin get per-user token and cost metrics for a whole team, and where is it configured?",
+      "promptEs": "¿Cómo obtiene un admin métricas de tokens y costo por usuario para todo un equipo, y dónde se configura?",
+      "idealAnswer": "Through OpenTelemetry: set CLAUDE_CODE_ENABLE_TELEMETRY=1, an exporter such as OTEL_METRICS_EXPORTER=otlp and OTEL_EXPORTER_OTLP_ENDPOINT, usually in the managed settings env block because a repository's settings can't turn it on. Prompt content stays redacted unless OTEL_LOG_USER_PROMPTS=1. Adoption dashboards are separate, at claude.ai/analytics/claude-code or platform.claude.com/claude-code.",
+      "rubric": [
+        "OpenTelemetry with CLAUDE_CODE_ENABLE_TELEMETRY=1 plus exporter and endpoint variables",
+        "Configured in managed settings env; repo project settings can't enable it",
+        "Prompts redacted unless OTEL_LOG_USER_PROMPTS=1",
+        "Analytics dashboards are a separate adoption view"
+      ]
+    }
+  ]
+}

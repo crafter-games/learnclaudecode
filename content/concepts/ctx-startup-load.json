@@ -1,0 +1,681 @@
+{
+  "conceptId": "ctx-startup-load",
+  "card": {
+    "en": {
+      "tldr": "Before your first prompt, Claude Code already loads the system prompt, auto memory, environment info, MCP tool names, skill descriptions and your CLAUDE.md files. As Claude works, file reads, path-scoped rules and hook context are appended. Knowing what loads when tells you where to put an instruction so it costs context only when needed.",
+      "whenToUse": [
+        "Deciding whether an instruction belongs in CLAUDE.md, a path-scoped rule or a skill.",
+        "Understanding why context is already partly full before you type.",
+        "Checking whether hook or command output will actually reach Claude."
+      ],
+      "keyFacts": [
+        "Startup order in the docs' timeline: system prompt, auto memory (MEMORY.md), environment info, MCP tool names, skill descriptions, ~/.claude/CLAUDE.md, then project CLAUDE.md.",
+        "Auto memory loads the first 200 lines or 25KB of MEMORY.md, whichever comes first; topic files are read on demand.",
+        "MCP tools load as names; full schemas are deferred and loaded via tool search when a task needs them.",
+        "Skills load only a one-line description; skills with disable-model-invocation: true are left out until you invoke them with /name.",
+        "CLAUDE.md files in subdirectories and rules with paths: frontmatter load when Claude reads matching files, not at launch.",
+        "A hook reaches Claude through hookSpecificOutput.additionalContext; output of a !command enters context as part of your message."
+      ],
+      "gotchas": [
+        "@path imports do not save context: imported files load at launch with the CLAUDE.md that references them.",
+        "The terminal shows a one-liner for a file read or loaded rule, but the full content costs context.",
+        "For most hook events, such as PostToolUse, plain stdout on exit 0 goes to the debug log only, not to Claude; the exceptions are UserPromptSubmit, UserPromptExpansion, SessionStart and PostModelSwitch, where plain stdout is added as context.",
+        "Rules in .claude/rules/ without paths: load at launch like .claude/CLAUDE.md."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Path-scoped rules vs @imports",
+          "difference": "A paths: rule loads only when a matching file is read; an @import always loads at launch."
+        },
+        {
+          "concept": "user-invocable: false",
+          "difference": "Keeps the description in context and hides the skill from you; disable-model-invocation: true keeps it out of context."
+        }
+      ],
+      "examCues": [
+        "before the first prompt",
+        "without loading it every session",
+        "only when Claude works on files under",
+        "the terminal only shows a one-line notice",
+        "costs zero context until invoked"
+      ]
+    },
+    "es": {
+      "tldr": "Antes de tu primer prompt, Claude Code ya carga el system prompt, la auto memoria, la información del entorno, los nombres de las tools MCP, las descripciones de skills y tus CLAUDE.md. Mientras Claude trabaja se suman lecturas de archivos, reglas con paths y contexto de hooks. Saber qué carga y cuándo te dice dónde poner una instrucción para que cueste contexto solo cuando hace falta.",
+      "whenToUse": [
+        "Decidir si una instrucción va en CLAUDE.md, en una regla con paths o en una skill.",
+        "Entender por qué el contexto ya está en parte lleno antes de que escribas.",
+        "Verificar si la salida de un hook o de un comando realmente llega a Claude."
+      ],
+      "keyFacts": [
+        "Orden de inicio en la línea de tiempo de la documentación: system prompt, auto memoria (MEMORY.md), información del entorno, nombres de tools MCP, descripciones de skills, ~/.claude/CLAUDE.md y luego el CLAUDE.md del proyecto.",
+        "La auto memoria carga las primeras 200 líneas o 25KB de MEMORY.md, lo que ocurra primero; los archivos de tema se leen bajo demanda.",
+        "Las tools MCP cargan como nombres; los esquemas completos se difieren y se cargan vía tool search cuando una tarea los necesita.",
+        "Las skills cargan solo una descripción de una línea; las que tienen disable-model-invocation: true quedan fuera hasta que las invocas con /name.",
+        "Los CLAUDE.md de subdirectorios y las reglas con frontmatter paths: cargan cuando Claude lee archivos que coinciden, no al inicio.",
+        "Un hook llega a Claude mediante hookSpecificOutput.additionalContext; la salida de un !comando entra al contexto como parte de tu mensaje."
+      ],
+      "gotchas": [
+        "Los imports @path no ahorran contexto: los archivos importados cargan al inicio junto con el CLAUDE.md que los referencia.",
+        "La terminal muestra una línea por cada lectura o regla cargada, pero el contenido completo ocupa contexto.",
+        "En la mayoría de los eventos de hook, como PostToolUse, el stdout plano con exit 0 va solo al log de debug, no a Claude; las excepciones son UserPromptSubmit, UserPromptExpansion, SessionStart y PostModelSwitch, donde el stdout plano se agrega como contexto.",
+        "Las reglas en .claude/rules/ sin paths: cargan al inicio igual que .claude/CLAUDE.md."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Reglas con paths vs @imports",
+          "difference": "Una regla con paths: carga solo al leer un archivo que coincide; un @import siempre carga al inicio."
+        },
+        {
+          "concept": "user-invocable: false",
+          "difference": "Mantiene la descripción en contexto y oculta la skill de ti; disable-model-invocation: true la deja fuera del contexto."
+        }
+      ],
+      "examCues": [
+        "before the first prompt",
+        "without loading it every session",
+        "only when Claude works on files under",
+        "the terminal only shows a one-line notice",
+        "costs zero context until invoked"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/context-window.md",
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "ctx-startup-load--43940c45",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A team keeps a long step-by-step production deploy procedure in the project CLAUDE.md, so it consumes context in every session. They want the procedure available only when someone types /deploy, and Claude must never start a deploy on its own. Which change meets both requirements while costing zero context until it is invoked?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the procedure into a skill without extra frontmatter fields",
+          "correct": false,
+          "why": "Its one-line description loads at startup and Claude may invoke it on its own, which breaks the second requirement."
+        },
+        {
+          "id": "B",
+          "text": "Move it into a separate file and pull it in with an @path import",
+          "correct": false,
+          "why": "Imported files are expanded and loaded at launch, so the context cost stays the same."
+        },
+        {
+          "id": "C",
+          "text": "Move it into a skill with disable-model-invocation: true",
+          "correct": true,
+          "why": "Its description is left out of the startup listing and only you can invoke it with /deploy, so it costs nothing until then."
+        },
+        {
+          "id": "D",
+          "text": "Move it into a skill with user-invocable: false",
+          "correct": false,
+          "why": "This does the opposite: the description stays in context and only Claude can invoke the skill."
+        }
+      ],
+      "explanation": "The decisive requirements are zero context until invoked and no automatic invocation. A skill with disable-model-invocation: true is excluded from the startup skill listing and loads its full content only when you type /deploy. A plain skill still puts its description into context and lets Claude trigger it. An @path import is tempting as a way to split the file, but imported files load at launch anyway.",
+      "keywordCues": [
+        "costing zero context until it is invoked",
+        "Claude must never start a deploy on its own",
+        "only when someone types /deploy"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un equipo guarda un procedimiento largo de deploy a producción, paso a paso, en el CLAUDE.md del proyecto, así que ocupa contexto en cada sesión. Quieren que esté disponible solo cuando alguien escribe /deploy, y Claude nunca debe iniciar un deploy por su cuenta. ¿Qué cambio cumple ambos requisitos sin costar contexto hasta que se invoca?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover el procedimiento a una skill sin campos extra en el frontmatter",
+            "why": "Su descripción de una línea carga al inicio y Claude puede invocarla por su cuenta, lo que rompe el segundo requisito."
+          },
+          {
+            "id": "B",
+            "text": "Moverlo a un archivo aparte e incluirlo con un import @path",
+            "why": "Los archivos importados se expanden y cargan al inicio, así que el costo de contexto es el mismo."
+          },
+          {
+            "id": "C",
+            "text": "Moverlo a una skill con disable-model-invocation: true",
+            "why": "Su descripción queda fuera del listado de inicio y solo tú puedes invocarla con /deploy, así que no cuesta nada hasta entonces."
+          },
+          {
+            "id": "D",
+            "text": "Moverlo a una skill con user-invocable: false",
+            "why": "Hace lo contrario: la descripción sigue en contexto y solo Claude puede invocar la skill."
+          }
+        ],
+        "explanation": "Los requisitos que deciden son cero contexto hasta invocarla y ninguna invocación automática. Una skill con disable-model-invocation: true queda fuera del listado de skills de inicio y carga su contenido completo solo cuando escribes /deploy. Una skill normal igual pone su descripción en contexto y deja que Claude la dispare. Un import @path tienta como forma de dividir el archivo, pero los archivos importados cargan al inicio de todos modos."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--22e008c4",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "A PostToolUse hook runs a linter after every edit and prints a summary to stdout with exit code 0. Claude never reacts to the lint results. The developer wants the summary to reach Claude's context as informational feedback after each edit, without signaling an error. What should the hook do?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Print a longer, more detailed summary to stdout",
+          "correct": false,
+          "why": "Plain stdout on exit 0 is written to the debug log only, however long it is."
+        },
+        {
+          "id": "B",
+          "text": "Return the summary in hookSpecificOutput.additionalContext",
+          "correct": true,
+          "why": "That field enters Claude's context, so Claude sees the lint summary after each edit."
+        },
+        {
+          "id": "C",
+          "text": "Write the summary to stderr and exit with code 2",
+          "correct": false,
+          "why": "Exit code 2 surfaces stderr to Claude, but as an error signal, which the requirement rules out."
+        },
+        {
+          "id": "D",
+          "text": "Move the linter to a SessionStart hook",
+          "correct": false,
+          "why": "It would run when the session starts, not after each edit."
+        }
+      ],
+      "explanation": "The requirement is informational feedback that reaches Claude after each edit. The docs' timeline shows that hookSpecificOutput.additionalContext enters Claude's context, while plain stdout on exit 0 only goes to the debug log. Exit code 2 does surface stderr to Claude, but it signals an error, which the developer wants to avoid. A SessionStart hook fires at the wrong moment.",
+      "keywordCues": [
+        "prints a summary to stdout with exit code 0",
+        "reach Claude's context",
+        "without signaling an error"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un hook PostToolUse ejecuta un linter después de cada edición e imprime un resumen en stdout con exit code 0. Claude nunca reacciona a los resultados. El desarrollador quiere que el resumen llegue al contexto de Claude como feedback informativo tras cada edición, sin señalar un error. ¿Qué debe hacer el hook?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Imprimir en stdout un resumen más largo y detallado",
+            "why": "El stdout plano con exit 0 se escribe solo en el log de debug, sin importar su largo."
+          },
+          {
+            "id": "B",
+            "text": "Devolver el resumen en hookSpecificOutput.additionalContext",
+            "why": "Ese campo entra al contexto de Claude, así que Claude ve el resumen tras cada edición."
+          },
+          {
+            "id": "C",
+            "text": "Escribir el resumen en stderr y salir con exit code 2",
+            "why": "El exit code 2 muestra stderr a Claude, pero como señal de error, que el requisito descarta."
+          },
+          {
+            "id": "D",
+            "text": "Mover el linter a un hook SessionStart",
+            "why": "Correría al iniciar la sesión, no después de cada edición."
+          }
+        ],
+        "explanation": "El requisito es feedback informativo que llegue a Claude tras cada edición. La línea de tiempo de la documentación muestra que hookSpecificOutput.additionalContext entra al contexto de Claude, mientras que el stdout plano con exit 0 solo va al log de debug. El exit code 2 sí muestra stderr a Claude, pero señala un error, lo que el desarrollador quiere evitar. Un hook SessionStart se dispara en el momento equivocado."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--f83c28a8",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 3,
+      "stem": "A developer's session already uses a large share of its context window before she types anything. Her project CLAUDE.md contains conventions that only matter for files under src/api/, and she has several skills with side effects that she always triggers herself. Which two changes reduce what loads before her first prompt? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Move the API conventions to a .claude/rules/ file with a paths: pattern for src/api/",
+          "correct": true,
+          "why": "Path-scoped rules load only when Claude reads a matching file, not at launch."
+        },
+        {
+          "id": "B",
+          "text": "Split CLAUDE.md into several files referenced with @path imports",
+          "correct": false,
+          "why": "Imported files still load at launch, so this helps organization but not context."
+        },
+        {
+          "id": "C",
+          "text": "Set disable-model-invocation: true on the side-effect skills",
+          "correct": true,
+          "why": "Their descriptions leave the startup listing and cost nothing until she invokes them."
+        },
+        {
+          "id": "D",
+          "text": "Move the API conventions to ~/.claude/CLAUDE.md",
+          "correct": false,
+          "why": "The user CLAUDE.md also loads at the start of every session, in every project."
+        },
+        {
+          "id": "E",
+          "text": "Move the API conventions to a .claude/rules/ file without frontmatter",
+          "correct": false,
+          "why": "Rules without paths: load at launch with the same priority as .claude/CLAUDE.md."
+        }
+      ],
+      "explanation": "The goal is less content before the first prompt. A rule with a paths: pattern defers the API conventions until Claude reads a file under src/api/, and disable-model-invocation: true removes skill descriptions from the startup listing. @path imports are tempting because they shrink CLAUDE.md, but imported files are loaded at launch too. Rules without paths: and the user CLAUDE.md also load at startup.",
+      "keywordCues": [
+        "before she types anything",
+        "only matter for files under src/api/",
+        "she always triggers herself"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "La sesión de una desarrolladora ya usa buena parte de su ventana de contexto antes de que escriba nada. El CLAUDE.md del proyecto tiene convenciones que solo importan para archivos en src/api/, y tiene varias skills con efectos secundarios que siempre dispara ella misma. ¿Qué dos cambios reducen lo que carga antes de su primer prompt? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mover las convenciones de API a un archivo en .claude/rules/ con un patrón paths: para src/api/",
+            "why": "Las reglas con paths cargan solo cuando Claude lee un archivo que coincide, no al inicio."
+          },
+          {
+            "id": "B",
+            "text": "Dividir CLAUDE.md en varios archivos referenciados con imports @path",
+            "why": "Los archivos importados igual cargan al inicio, así que ayuda a organizar pero no al contexto."
+          },
+          {
+            "id": "C",
+            "text": "Poner disable-model-invocation: true en las skills con efectos secundarios",
+            "why": "Sus descripciones salen del listado de inicio y no cuestan nada hasta que ella las invoca."
+          },
+          {
+            "id": "D",
+            "text": "Mover las convenciones de API a ~/.claude/CLAUDE.md",
+            "why": "El CLAUDE.md de usuario también carga al inicio de cada sesión, en todos los proyectos."
+          },
+          {
+            "id": "E",
+            "text": "Mover las convenciones de API a un archivo en .claude/rules/ sin frontmatter",
+            "why": "Las reglas sin paths: cargan al inicio con la misma prioridad que .claude/CLAUDE.md."
+          }
+        ],
+        "explanation": "El objetivo es menos contenido antes del primer prompt. Una regla con patrón paths: difiere las convenciones de API hasta que Claude lee un archivo en src/api/, y disable-model-invocation: true quita las descripciones de skills del listado de inicio. Los imports @path tientan porque achican CLAUDE.md, pero los archivos importados también cargan al inicio. Las reglas sin paths: y el CLAUDE.md de usuario también cargan al arrancar."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--81fa0167",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Midway through a session, a developer wants Claude to see the current output of git status so it can tell which files it modified. He wants to run the command himself so that Claude does not have to run a tool for it. What is the best way?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ask Claude to run git status",
+          "correct": false,
+          "why": "Claude would run the command with a tool, which the developer wants to avoid."
+        },
+        {
+          "id": "B",
+          "text": "Rely on the git information loaded at session start",
+          "correct": false,
+          "why": "That snapshot was taken at startup and does not reflect the edits made since."
+        },
+        {
+          "id": "C",
+          "text": "Type !git status in the prompt",
+          "correct": true,
+          "why": "A ! command runs in your shell and its output enters context as part of your message."
+        },
+        {
+          "id": "D",
+          "text": "Run /context",
+          "correct": false,
+          "why": "It shows what occupies the context window, not the output of git status."
+        }
+      ],
+      "explanation": "The requirement is current output that the developer runs himself. Prefixing a command with ! runs it in your shell, and both the command and its output enter context as part of your message. The git information loaded at startup is tempting, but it is a snapshot from before the edits. Asking Claude would make Claude run the tool.",
+      "keywordCues": [
+        "current output of git status",
+        "run the command himself",
+        "Claude does not have to run a tool"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "A mitad de una sesión, un desarrollador quiere que Claude vea la salida actual de git status para saber qué archivos modificó. Quiere correr el comando él mismo para que Claude no tenga que usar una tool. ¿Cuál es la mejor forma?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Pedirle a Claude que ejecute git status",
+            "why": "Claude correría el comando con una tool, que es lo que el desarrollador quiere evitar."
+          },
+          {
+            "id": "B",
+            "text": "Confiar en la información de git cargada al inicio de la sesión",
+            "why": "Esa instantánea se tomó al arrancar y no refleja las ediciones posteriores."
+          },
+          {
+            "id": "C",
+            "text": "Escribir !git status en el prompt",
+            "why": "Un comando con ! corre en tu shell y su salida entra al contexto como parte de tu mensaje."
+          },
+          {
+            "id": "D",
+            "text": "Ejecutar /context",
+            "why": "Muestra qué ocupa la ventana de contexto, no la salida de git status."
+          }
+        ],
+        "explanation": "El requisito es la salida actual, ejecutada por el propio desarrollador. Anteponer ! a un comando lo corre en tu shell, y tanto el comando como su salida entran al contexto como parte de tu mensaje. La información de git cargada al inicio tienta, pero es una instantánea previa a las ediciones. Pedírselo a Claude haría que Claude use la tool."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--5c3233a7",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "Which file in the auto memory directory is the index whose first lines are loaded at the start of every conversation?",
+      "options": [
+        {
+          "id": "A",
+          "text": "MEMORY.md",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "MEMORY.md is the auto memory index, one line per memory. Its first 200 lines or 25KB, whichever comes first, load at the start of every conversation; topic files are not loaded at startup and Claude reads them on demand.",
+      "keywordCues": [
+        "auto memory directory",
+        "loaded at the start of every conversation"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué archivo del directorio de auto memoria es el índice cuyas primeras líneas cargan al inicio de cada conversación?",
+        "options": [
+          {
+            "id": "A",
+            "text": "MEMORY.md",
+            "why": ""
+          }
+        ],
+        "explanation": "MEMORY.md es el índice de la auto memoria, una línea por memoria. Sus primeras 200 líneas o 25KB, lo que ocurra primero, cargan al inicio de cada conversación; los archivos de tema no cargan al inicio y Claude los lee bajo demanda."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--95f4ff10",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Put these startup items in the order the docs' context window timeline loads them, from first to last.",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/CLAUDE.md",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "System prompt",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "C",
+          "text": "MCP tool names",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "D",
+          "text": "Project CLAUDE.md",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "E",
+          "text": "Auto memory (MEMORY.md)",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "The system prompt always loads first, followed by auto memory and environment info. Then come the MCP tool names and skill descriptions. The CLAUDE.md files load from broadest to most specific, so ~/.claude/CLAUDE.md comes before the project CLAUDE.md, and a project instruction appears in context after a user instruction.",
+      "keywordCues": [
+        "from first to last",
+        "startup items"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Ordena estos elementos de inicio según los carga la línea de tiempo de la ventana de contexto de la documentación, del primero al último.",
+        "options": [
+          {
+            "id": "A",
+            "text": "~/.claude/CLAUDE.md",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "System prompt",
+            "why": ""
+          },
+          {
+            "id": "C",
+            "text": "Nombres de tools MCP",
+            "why": ""
+          },
+          {
+            "id": "D",
+            "text": "CLAUDE.md del proyecto",
+            "why": ""
+          },
+          {
+            "id": "E",
+            "text": "Auto memoria (MEMORY.md)",
+            "why": ""
+          }
+        ],
+        "explanation": "El system prompt siempre carga primero, seguido de la auto memoria y la información del entorno. Luego vienen los nombres de tools MCP y las descripciones de skills. Los CLAUDE.md cargan del alcance más amplio al más específico, así que ~/.claude/CLAUDE.md va antes del CLAUDE.md del proyecto, y una instrucción de proyecto aparece en contexto después de una de usuario."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "order",
+      "order": [
+        "B",
+        "E",
+        "C",
+        "A",
+        "D"
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "ctx-startup-load--ddc7c6d3",
+      "conceptId": "ctx-startup-load",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Make this skill cost zero context until you type /deploy, and never let Claude invoke it on its own.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "user-invocable",
+          "correct": false,
+          "why": "This field controls whether you can invoke the skill; its description stays in context either way."
+        },
+        {
+          "id": "1b",
+          "text": "disable-model-invocation",
+          "correct": true,
+          "why": "This field stops Claude from loading the skill on its own and removes its description from the startup listing."
+        },
+        {
+          "id": "1c",
+          "text": "paths",
+          "correct": false,
+          "why": "It is not the field that controls who invokes a skill or whether its description loads at startup."
+        },
+        {
+          "id": "2a",
+          "text": "false",
+          "correct": false,
+          "why": "false is the default for disable-model-invocation, so the description would still load and Claude could invoke it."
+        },
+        {
+          "id": "2b",
+          "text": "true",
+          "correct": true,
+          "why": "With true, only you can invoke the skill and it stays out of context until you do."
+        },
+        {
+          "id": "2c",
+          "text": "fork",
+          "correct": false,
+          "why": "fork is a value of the context field, which runs a skill in a subagent; it is not a valid boolean here."
+        }
+      ],
+      "explanation": "The goal combines two requirements: no context cost before invocation and no automatic invocation. disable-model-invocation: true satisfies both, because the description is left out of the startup skill listing and only /deploy loads the full content. user-invocable: false is the tempting look-alike, but it keeps the description in context and lets only Claude invoke the skill.",
+      "keywordCues": [
+        "cost zero context until you type /deploy",
+        "never let Claude invoke it on its own"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/context-window.md",
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Haz que esta skill no cueste contexto hasta que escribas /deploy, y que Claude nunca la invoque por su cuenta.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "user-invocable",
+            "why": "Este campo controla si tú puedes invocar la skill; su descripción queda en contexto de todos modos."
+          },
+          {
+            "id": "1b",
+            "text": "disable-model-invocation",
+            "why": "Este campo impide que Claude cargue la skill por su cuenta y quita su descripción del listado de inicio."
+          },
+          {
+            "id": "1c",
+            "text": "paths",
+            "why": "No es el campo que controla quién invoca una skill ni si su descripción carga al inicio."
+          },
+          {
+            "id": "2a",
+            "text": "false",
+            "why": "false es el valor por defecto de disable-model-invocation, así que la descripción seguiría cargando y Claude podría invocarla."
+          },
+          {
+            "id": "2b",
+            "text": "true",
+            "why": "Con true, solo tú puedes invocar la skill y queda fuera del contexto hasta que lo hagas."
+          },
+          {
+            "id": "2c",
+            "text": "fork",
+            "why": "fork es un valor del campo context, que corre una skill en un subagente; aquí no es un booleano válido."
+          }
+        ],
+        "explanation": "El objetivo combina dos requisitos: ningún costo de contexto antes de invocarla y ninguna invocación automática. disable-model-invocation: true cumple ambos, porque la descripción queda fuera del listado de skills de inicio y solo /deploy carga el contenido completo. user-invocable: false es el parecido tentador, pero mantiene la descripción en contexto y deja que solo Claude invoque la skill."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "# .claude/skills/deploy/SKILL.md\n---\nname: deploy\ndescription: Deploy the app to production\n{{1}}: {{2}}\n---\nRun the test suite, build, then push to the deploy target.",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "ctx-startup-load--r0",
+      "conceptId": "ctx-startup-load",
+      "kind": "recall",
+      "prompt": "What loads into Claude Code's context before your first prompt, and what gets added while Claude works?",
+      "promptEs": "¿Qué carga en el contexto de Claude Code antes de tu primer prompt y qué se suma mientras Claude trabaja?",
+      "idealAnswer": "Before your first prompt: the system prompt, auto memory (the start of MEMORY.md), environment info, MCP tool names with schemas deferred, one-line skill descriptions except disable-model-invocation skills, then ~/.claude/CLAUDE.md and the project CLAUDE.md. While Claude works, file reads, path-scoped rules and nested CLAUDE.md files, and hook additionalContext are appended. The terminal often shows only a one-liner, but the full content costs context.",
+      "rubric": [
+        "System prompt, auto memory and CLAUDE.md files load at startup",
+        "MCP loads only tool names and skills only one-line descriptions",
+        "File reads, path-scoped rules and hook additionalContext are added during work",
+        "A one-line terminal notice can hide full content in context"
+      ]
+    }
+  ]
+}

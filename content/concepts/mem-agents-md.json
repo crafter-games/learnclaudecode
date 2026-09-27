@@ -1,0 +1,531 @@
+{
+  "conceptId": "mem-agents-md",
+  "card": {
+    "en": {
+      "tldr": "Claude Code can read a repository's `AGENTS.md` as its project instructions. By default it does so only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the working directory or above; the **Project instructions** setting changes that.",
+      "whenToUse": [
+        "A repo already set up for other coding agents, with no CLAUDE.md",
+        "You need both CLAUDE.md and AGENTS.md read in every session",
+        "Keeping one shared instruction file for several tools plus Claude-only notes"
+      ],
+      "keyFacts": [
+        "Default value `claude-md-or-agents-md`: CLAUDE.md files, or AGENTS.md files when none of `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the working directory or above.",
+        "`~/.claude/CLAUDE.md`, the managed CLAUDE.md and `.claude/rules/` files don't count for that check and keep loading alongside AGENTS.md.",
+        "Other values: `claude-md-and-agents-md` (both, each directory's CLAUDE.md files first), `claude-md` (CLAUDE.md only), `managed-only` (managed CLAUDE.md and auto memory at launch).",
+        "Change it with `/config` → **Project instructions**, or `pluginConfigs.\"agents-md@builtin\".options.instructionFiles` in user settings, a `--settings` file or managed settings; project and local settings files ignore it.",
+        "`@AGENTS.md` at the top of a CLAUDE.md shares one file with other tools and lets you add Claude-specific instructions below it.",
+        "`AGENTS.local.md`, `AGENTS.override.md` and anything under `.agents/` are never read."
+      ],
+      "gotchas": [
+        "Adding a `CLAUDE.local.md` to an AGENTS.md-only repo stops Claude from reading AGENTS.md for you, unless you set `claude-md-and-agents-md`.",
+        "A CLAUDE.md that says in words \"read AGENTS.md\" works only if Claude decides to open the file; use an `@AGENTS.md` import.",
+        "A committed `CLAUDE.md` symlink to AGENTS.md checks out as a plain text file on Windows clones without `core.symlinks`.",
+        "A `SessionStart` hook that prints AGENTS.md adds a second copy once Claude reads AGENTS.md directly."
+      ],
+      "confusedWith": [
+        {
+          "concept": "Project CLAUDE.md",
+          "difference": "Always read; AGENTS.md is read by default only when no CLAUDE.md exists on the path."
+        },
+        {
+          "concept": "/import",
+          "difference": "Appends a one-time copy of another agent's files into CLAUDE.md, instead of reading AGENTS.md live."
+        }
+      ],
+      "examCues": [
+        "the repo already has AGENTS.md",
+        "Claude ignores our AGENTS.md",
+        "read both files",
+        "one file shared with other coding tools",
+        "Project instructions"
+      ]
+    },
+    "es": {
+      "tldr": "Claude Code puede leer el `AGENTS.md` de un repositorio como instrucciones del proyecto. Por defecto lo hace solo cuando no hay `CLAUDE.md`, `.claude/CLAUDE.md` ni `CLAUDE.local.md` en el directorio de trabajo o encima; el setting **Project instructions** cambia eso.",
+      "whenToUse": [
+        "Un repo ya preparado para otros agentes de código, sin CLAUDE.md",
+        "Necesitas que CLAUDE.md y AGENTS.md se lean en cada sesión",
+        "Mantener un solo archivo de instrucciones para varias herramientas más notas solo para Claude"
+      ],
+      "keyFacts": [
+        "Valor por defecto `claude-md-or-agents-md`: los CLAUDE.md, o los AGENTS.md cuando no existe `CLAUDE.md`, `.claude/CLAUDE.md` ni `CLAUDE.local.md` en el directorio de trabajo o encima.",
+        "`~/.claude/CLAUDE.md`, el CLAUDE.md managed y los archivos de `.claude/rules/` no cuentan para esa verificación y siguen cargando junto a AGENTS.md.",
+        "Otros valores: `claude-md-and-agents-md` (ambos, primero los CLAUDE.md de cada directorio), `claude-md` (solo CLAUDE.md), `managed-only` (CLAUDE.md managed y auto memory al lanzar).",
+        "Se cambia con `/config` → **Project instructions**, o con `pluginConfigs.\"agents-md@builtin\".options.instructionFiles` en settings de user, un archivo `--settings` o managed settings; los settings de proyecto y local lo ignoran.",
+        "`@AGENTS.md` al inicio de un CLAUDE.md comparte un archivo con otras herramientas y te deja agregar instrucciones propias de Claude debajo.",
+        "`AGENTS.local.md`, `AGENTS.override.md` y todo lo que esté bajo `.agents/` nunca se lee."
+      ],
+      "gotchas": [
+        "Agregar un `CLAUDE.local.md` a un repo que solo usa AGENTS.md hace que Claude deje de leer AGENTS.md para ti, salvo que definas `claude-md-and-agents-md`.",
+        "Un CLAUDE.md que dice en palabras \"lee AGENTS.md\" funciona solo si Claude decide abrir el archivo; usa un import `@AGENTS.md`.",
+        "Un symlink `CLAUDE.md` a AGENTS.md commiteado se descarga como archivo de texto en clones de Windows sin `core.symlinks`.",
+        "Un hook `SessionStart` que imprime AGENTS.md agrega una segunda copia cuando Claude ya lee AGENTS.md directamente."
+      ],
+      "confusedWith": [
+        {
+          "concept": "CLAUDE.md de proyecto",
+          "difference": "Siempre se lee; AGENTS.md por defecto solo se lee si no hay CLAUDE.md en la ruta."
+        },
+        {
+          "concept": "/import",
+          "difference": "Agrega una copia única de los archivos de otro agente a CLAUDE.md, en vez de leer AGENTS.md en vivo."
+        }
+      ],
+      "examCues": [
+        "the repo already has AGENTS.md",
+        "Claude ignores our AGENTS.md",
+        "read both files",
+        "one file shared with other coding tools",
+        "Project instructions"
+      ]
+    },
+    "docs": [
+      "https://code.claude.com/docs/en/memory.md"
+    ]
+  },
+  "questions": [
+    {
+      "id": "mem-agents-md--924f7a30",
+      "conceptId": "mem-agents-md",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "An open-source repo keeps its agent instructions only in `AGENTS.md`, and Claude has been following them. Marco adds a gitignored `CLAUDE.local.md` with his sandbox URLs, and now Claude ignores `AGENTS.md`. He wants to keep his `CLAUDE.local.md` and have AGENTS.md read again, with the least setup.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set **Project instructions** to `claude-md-and-agents-md` in `/config`",
+          "correct": true,
+          "why": "This value reads CLAUDE.md files and AGENTS.md together, so his local file no longer suppresses AGENTS.md."
+        },
+        {
+          "id": "B",
+          "text": "Set **Project instructions** to `claude-md`",
+          "correct": false,
+          "why": "That reads CLAUDE.md files only, which is exactly the problem."
+        },
+        {
+          "id": "C",
+          "text": "Rename his file to `AGENTS.local.md`",
+          "correct": false,
+          "why": "`AGENTS.local.md` is never read, so he'd lose his sandbox URLs."
+        },
+        {
+          "id": "D",
+          "text": "Move his notes to `.claude/CLAUDE.md`",
+          "correct": false,
+          "why": "`.claude/CLAUDE.md` also counts as a CLAUDE.md, so AGENTS.md stays suppressed."
+        }
+      ],
+      "explanation": "Under the default `claude-md-or-agents-md`, a `CLAUDE.local.md` counts as a CLAUDE.md and stops Claude from reading AGENTS.md. Switching to `claude-md-and-agents-md` loads both, keeping the local file. Renaming to `AGENTS.local.md` looks like a clean fit for the AGENTS.md world, but Claude Code never reads that file.",
+      "keywordCues": [
+        "adds a gitignored `CLAUDE.local.md`",
+        "now Claude ignores `AGENTS.md`",
+        "keep his `CLAUDE.local.md`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un repo open source guarda sus instrucciones para agentes solo en `AGENTS.md`, y Claude las venía siguiendo. Marco agrega un `CLAUDE.local.md` en .gitignore con sus URLs de sandbox, y ahora Claude ignora `AGENTS.md`. Quiere conservar su `CLAUDE.local.md` y que AGENTS.md se vuelva a leer, con la menor configuración.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Poner **Project instructions** en `claude-md-and-agents-md` desde `/config`",
+            "why": "Este valor lee los CLAUDE.md y AGENTS.md juntos, así que su archivo local ya no suprime AGENTS.md."
+          },
+          {
+            "id": "B",
+            "text": "Poner **Project instructions** en `claude-md`",
+            "why": "Eso lee solo los CLAUDE.md, que es justamente el problema."
+          },
+          {
+            "id": "C",
+            "text": "Renombrar su archivo a `AGENTS.local.md`",
+            "why": "`AGENTS.local.md` nunca se lee, así que perdería sus URLs de sandbox."
+          },
+          {
+            "id": "D",
+            "text": "Mover sus notas a `.claude/CLAUDE.md`",
+            "why": "`.claude/CLAUDE.md` también cuenta como CLAUDE.md, así que AGENTS.md sigue suprimido."
+          }
+        ],
+        "explanation": "Con el default `claude-md-or-agents-md`, un `CLAUDE.local.md` cuenta como CLAUDE.md y hace que Claude deje de leer AGENTS.md. Cambiar a `claude-md-and-agents-md` carga ambos y conserva el archivo local. Renombrar a `AGENTS.local.md` parece encajar con el mundo AGENTS.md, pero Claude Code nunca lee ese archivo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-agents-md--52a5cff0",
+      "conceptId": "mem-agents-md",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 3,
+      "stem": "A team shares `AGENTS.md` with several coding tools and also wants Claude-only guidance, such as using plan mode for changes under `src/billing/`. Some teammates clone on Windows. The setup must work for everyone who clones the repo, with nothing configured per machine.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Commit a symlink `CLAUDE.md` pointing to `AGENTS.md`",
+          "correct": false,
+          "why": "A symlink can't hold Claude-only content, and Windows clones may get a one-line text file."
+        },
+        {
+          "id": "B",
+          "text": "Commit a `CLAUDE.md` whose text asks Claude to read `AGENTS.md`",
+          "correct": false,
+          "why": "Claude sees AGENTS.md only if it decides to open it; this isn't an import."
+        },
+        {
+          "id": "C",
+          "text": "Set `instructionFiles` to `claude-md-and-agents-md` in `.claude/settings.json`",
+          "correct": false,
+          "why": "Claude Code ignores this value in project and local settings files."
+        },
+        {
+          "id": "D",
+          "text": "Commit a `CLAUDE.md` starting with `@AGENTS.md`, plus the Claude-only guidance",
+          "correct": true,
+          "why": "The import reads AGENTS.md first, then the Claude-specific lines, for anyone who clones."
+        }
+      ],
+      "explanation": "Three constraints decide: one shared file, room for Claude-only content, and nothing per machine including Windows. An `@AGENTS.md` import in a committed CLAUDE.md meets all three and never reads AGENTS.md twice. Setting the value in `.claude/settings.json` is tempting because it's committed, but that key is only honored in user, `--settings` or managed settings.",
+      "keywordCues": [
+        "shares `AGENTS.md` with several coding tools",
+        "Claude-only guidance",
+        "clone on Windows",
+        "nothing configured per machine"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Un equipo comparte `AGENTS.md` con varias herramientas de código y además quiere guía solo para Claude, como usar plan mode para cambios bajo `src/billing/`. Algunos compañeros clonan en Windows. La solución debe funcionar para todos los que clonan el repo, sin configurar nada por máquina.",
+        "options": [
+          {
+            "id": "A",
+            "text": "Commitear un symlink `CLAUDE.md` que apunte a `AGENTS.md`",
+            "why": "Un symlink no puede tener contenido solo para Claude, y los clones de Windows pueden recibir un archivo de texto de una línea."
+          },
+          {
+            "id": "B",
+            "text": "Commitear un `CLAUDE.md` cuyo texto le pide a Claude leer `AGENTS.md`",
+            "why": "Claude ve AGENTS.md solo si decide abrirlo; esto no es un import."
+          },
+          {
+            "id": "C",
+            "text": "Definir `instructionFiles` en `claude-md-and-agents-md` en `.claude/settings.json`",
+            "why": "Claude Code ignora este valor en los settings de proyecto y local."
+          },
+          {
+            "id": "D",
+            "text": "Commitear un `CLAUDE.md` que empiece con `@AGENTS.md`, más la guía solo para Claude",
+            "why": "El import lee primero AGENTS.md y luego las líneas propias de Claude, para cualquiera que clone."
+          }
+        ],
+        "explanation": "Deciden tres restricciones: un archivo compartido, espacio para contenido solo de Claude, y nada por máquina, Windows incluido. Un import `@AGENTS.md` en un CLAUDE.md commiteado cumple las tres y nunca lee AGENTS.md dos veces. Definir el valor en `.claude/settings.json` tienta porque se commitea, pero esa clave solo se respeta en settings de user, `--settings` o managed."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-agents-md--4f9bb310",
+      "conceptId": "mem-agents-md",
+      "secondaryConcepts": [
+        "mem-claude-md-locations"
+      ],
+      "domain": "d1",
+      "type": "multi",
+      "difficulty": 2,
+      "stem": "Sofía's repository has an `AGENTS.md` at its root, **Project instructions** is at its default, and Claude doesn't seem to know what `AGENTS.md` says. Which two files, if present, would explain it? (Choose two.)",
+      "options": [
+        {
+          "id": "A",
+          "text": "`~/.claude/CLAUDE.md`",
+          "correct": false,
+          "why": "The user CLAUDE.md doesn't count; it loads alongside AGENTS.md."
+        },
+        {
+          "id": "B",
+          "text": "`.claude/CLAUDE.md` in the repository",
+          "correct": true,
+          "why": "It counts as a project CLAUDE.md, so Claude reads it instead of AGENTS.md."
+        },
+        {
+          "id": "C",
+          "text": "`.claude/rules/style.md` in the repository",
+          "correct": false,
+          "why": "Rules files don't count for the check and load alongside AGENTS.md."
+        },
+        {
+          "id": "D",
+          "text": "`CLAUDE.local.md` at the repository root",
+          "correct": true,
+          "why": "A local CLAUDE.md counts too, so it suppresses AGENTS.md by default."
+        },
+        {
+          "id": "E",
+          "text": "The organization's managed policy CLAUDE.md",
+          "correct": false,
+          "why": "The managed CLAUDE.md doesn't count; it keeps loading alongside AGENTS.md."
+        }
+      ],
+      "explanation": "By default Claude reads AGENTS.md only when there is no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the working directory or above. The user, managed and rules files are tempting because they are all CLAUDE.md-family files, but the docs say they don't count and load alongside AGENTS.md.",
+      "keywordCues": [
+        "**Project instructions** is at its default",
+        "doesn't seem to know what `AGENTS.md` says"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "El repositorio de Sofía tiene un `AGENTS.md` en la raíz, **Project instructions** está en su valor por defecto y Claude parece no saber qué dice `AGENTS.md`. ¿Qué dos archivos, si existen, lo explicarían? (Elige dos.)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`~/.claude/CLAUDE.md`",
+            "why": "El CLAUDE.md de user no cuenta; carga junto a AGENTS.md."
+          },
+          {
+            "id": "B",
+            "text": "`.claude/CLAUDE.md` en el repositorio",
+            "why": "Cuenta como CLAUDE.md de proyecto, así que Claude lo lee en lugar de AGENTS.md."
+          },
+          {
+            "id": "C",
+            "text": "`.claude/rules/style.md` en el repositorio",
+            "why": "Los archivos de reglas no cuentan para la verificación y cargan junto a AGENTS.md."
+          },
+          {
+            "id": "D",
+            "text": "`CLAUDE.local.md` en la raíz del repositorio",
+            "why": "Un CLAUDE.md local también cuenta, así que suprime AGENTS.md por defecto."
+          },
+          {
+            "id": "E",
+            "text": "El CLAUDE.md de managed policy de la organización",
+            "why": "El CLAUDE.md managed no cuenta; sigue cargando junto a AGENTS.md."
+          }
+        ],
+        "explanation": "Por defecto Claude lee AGENTS.md solo cuando no hay `CLAUDE.md`, `.claude/CLAUDE.md` ni `CLAUDE.local.md` en el directorio de trabajo o encima. Los archivos de user, managed y reglas tientan porque son de la familia CLAUDE.md, pero la documentación dice que no cuentan y cargan junto a AGENTS.md."
+      },
+      "heldOut": true,
+      "source": "generated",
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-agents-md--ce07abfd",
+      "conceptId": "mem-agents-md",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 2,
+      "stem": "Complete this `~/.claude/settings.json` so that Claude always reads your CLAUDE.md files and AGENTS.md together, in every project.",
+      "options": [
+        {
+          "id": "1a",
+          "text": "enabledPlugins",
+          "correct": false,
+          "why": "`enabledPlugins` turns plugins on or off; it doesn't carry plugin options."
+        },
+        {
+          "id": "1b",
+          "text": "pluginConfigs",
+          "correct": true,
+          "why": "The value goes under the built-in `agents-md` plugin's ID in `pluginConfigs`."
+        },
+        {
+          "id": "1c",
+          "text": "env",
+          "correct": false,
+          "why": "`env` sets environment variables, not plugin options."
+        },
+        {
+          "id": "2a",
+          "text": "claude-md-or-agents-md",
+          "correct": false,
+          "why": "The default: AGENTS.md is read only when no CLAUDE.md exists."
+        },
+        {
+          "id": "2b",
+          "text": "claude-md",
+          "correct": false,
+          "why": "Reads CLAUDE.md files only, never AGENTS.md."
+        },
+        {
+          "id": "2c",
+          "text": "claude-md-and-agents-md",
+          "correct": true,
+          "why": "Reads CLAUDE.md and AGENTS.md together, each directory's CLAUDE.md files first."
+        }
+      ],
+      "explanation": "The **Project instructions** setting can live in user settings under `pluginConfigs`, keyed by the built-in plugin ID `agents-md@builtin`, with `options.instructionFiles`. The value `claude-md-and-agents-md` reads both files. The default `claude-md-or-agents-md` is tempting, but it drops AGENTS.md as soon as a CLAUDE.md exists.",
+      "keywordCues": [
+        "always reads your CLAUDE.md files and AGENTS.md together",
+        "`~/.claude/settings.json`"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "Completa este `~/.claude/settings.json` para que Claude siempre lea tus CLAUDE.md y AGENTS.md juntos, en todos los proyectos.",
+        "options": [
+          {
+            "id": "1a",
+            "text": "enabledPlugins",
+            "why": "`enabledPlugins` activa o desactiva plugins; no lleva opciones de plugins."
+          },
+          {
+            "id": "1b",
+            "text": "pluginConfigs",
+            "why": "El valor va bajo el ID del plugin integrado `agents-md` dentro de `pluginConfigs`."
+          },
+          {
+            "id": "1c",
+            "text": "env",
+            "why": "`env` define variables de entorno, no opciones de plugins."
+          },
+          {
+            "id": "2a",
+            "text": "claude-md-or-agents-md",
+            "why": "El default: AGENTS.md se lee solo si no existe un CLAUDE.md."
+          },
+          {
+            "id": "2b",
+            "text": "claude-md",
+            "why": "Lee solo los CLAUDE.md, nunca AGENTS.md."
+          },
+          {
+            "id": "2c",
+            "text": "claude-md-and-agents-md",
+            "why": "Lee CLAUDE.md y AGENTS.md juntos, primero los CLAUDE.md de cada directorio."
+          }
+        ],
+        "explanation": "El setting **Project instructions** puede vivir en los settings de user bajo `pluginConfigs`, con la clave del plugin integrado `agents-md@builtin` y `options.instructionFiles`. El valor `claude-md-and-agents-md` lee ambos archivos. El default `claude-md-or-agents-md` tienta, pero descarta AGENTS.md en cuanto existe un CLAUDE.md."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "config",
+      "template": "{\n  \"{{1}}\": {\n    \"agents-md@builtin\": {\n      \"options\": { \"instructionFiles\": \"{{2}}\" }\n    }\n  }\n}",
+      "slots": [
+        {
+          "id": "1",
+          "optionIds": [
+            "1a",
+            "1b",
+            "1c"
+          ]
+        },
+        {
+          "id": "2",
+          "optionIds": [
+            "2a",
+            "2b",
+            "2c"
+          ]
+        }
+      ],
+      "verification": {
+        "status": "pass",
+        "notes": ""
+      }
+    },
+    {
+      "id": "mem-agents-md--6b6a0370",
+      "conceptId": "mem-agents-md",
+      "secondaryConcepts": [],
+      "domain": "d1",
+      "type": "single",
+      "difficulty": 1,
+      "stem": "What line do you put at the top of a CLAUDE.md so Claude reads the AGENTS.md next to it before the Claude-specific instructions?",
+      "options": [
+        {
+          "id": "A",
+          "text": "@AGENTS.md",
+          "correct": true,
+          "why": ""
+        },
+        {
+          "id": "B",
+          "text": "@./AGENTS.md",
+          "correct": true,
+          "why": ""
+        }
+      ],
+      "explanation": "An `@AGENTS.md` import expands AGENTS.md into the CLAUDE.md that references it, so Claude reads the shared file first and then the lines you add below it.",
+      "keywordCues": [
+        "at the top of a CLAUDE.md",
+        "reads the AGENTS.md next to it"
+      ],
+      "docs": [
+        "https://code.claude.com/docs/en/memory.md"
+      ],
+      "es": {
+        "stem": "¿Qué línea pones al inicio de un CLAUDE.md para que Claude lea el AGENTS.md que está al lado antes de las instrucciones propias de Claude?",
+        "options": [
+          {
+            "id": "A",
+            "text": "@AGENTS.md",
+            "why": ""
+          },
+          {
+            "id": "B",
+            "text": "@./AGENTS.md",
+            "why": ""
+          }
+        ],
+        "explanation": "Un import `@AGENTS.md` expande AGENTS.md dentro del CLAUDE.md que lo referencia, así que Claude lee primero el archivo compartido y luego las líneas que agregas debajo."
+      },
+      "heldOut": false,
+      "source": "generated",
+      "format": "command",
+      "verification": {
+        "status": "fixed",
+        "notes": ""
+      }
+    }
+  ],
+  "recall": [
+    {
+      "id": "mem-agents-md--r0",
+      "conceptId": "mem-agents-md",
+      "kind": "recall",
+      "prompt": "When does Claude Code read AGENTS.md by default, which files count against it, and how do you change that behavior?",
+      "promptEs": "¿Cuándo lee Claude Code AGENTS.md por defecto, qué archivos lo impiden y cómo cambias ese comportamiento?",
+      "idealAnswer": "By default Claude reads AGENTS.md only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the working directory or above; the user and managed CLAUDE.md and rules files don't count. To change it, set **Project instructions** in `/config`, for example to `claude-md-and-agents-md`, or import it with `@AGENTS.md` from a CLAUDE.md.",
+      "rubric": [
+        "Only when no CLAUDE.md, .claude/CLAUDE.md or CLAUDE.local.md on the path",
+        "User, managed and rules files don't count",
+        "/config Project instructions, e.g. claude-md-and-agents-md",
+        "Or an @AGENTS.md import"
+      ]
+    },
+    {
+      "id": "mem-agents-md--r1",
+      "conceptId": "mem-agents-md",
+      "kind": "why-not",
+      "prompt": "You want the whole team's Claude to read both CLAUDE.md and AGENTS.md. Why not set instructionFiles in the committed .claude/settings.json?",
+      "promptEs": "Quieres que el Claude de todo el equipo lea CLAUDE.md y AGENTS.md. ¿Por qué no definir instructionFiles en el .claude/settings.json commiteado?",
+      "idealAnswer": "Claude Code ignores the `instructionFiles` value in project and local settings files; it's honored only in user settings, a `--settings` file or managed settings. For the whole team, put `@AGENTS.md` at the top of the committed CLAUDE.md instead.",
+      "rubric": [
+        "Ignored in project and local settings",
+        "Honored in user, --settings or managed settings",
+        "Use an @AGENTS.md import in the committed CLAUDE.md"
+      ]
+    }
+  ]
+}

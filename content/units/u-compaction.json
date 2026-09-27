@@ -1,0 +1,469 @@
+{
+  "unitId": "u-compaction",
+  "audited": true,
+  "overview": {
+    "title": "Compactar y limpiar el contexto",
+    "hook": "La conversación crece hasta llenar el contexto: ¿resumes o empiezas de cero?",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "you",
+          "label": "Tú",
+          "kind": "actor",
+          "x": 8,
+          "y": 50
+        },
+        {
+          "id": "conv",
+          "label": "Conversación",
+          "kind": "data",
+          "x": 30,
+          "y": 50
+        },
+        {
+          "id": "clear",
+          "label": "/clear",
+          "kind": "service",
+          "x": 55,
+          "y": 18
+        },
+        {
+          "id": "compact",
+          "label": "/compact",
+          "kind": "service",
+          "x": 55,
+          "y": 82
+        },
+        {
+          "id": "summary",
+          "label": "Resumen",
+          "kind": "data",
+          "x": 78,
+          "y": 82
+        },
+        {
+          "id": "disk",
+          "label": "Recarga de disco",
+          "kind": "note",
+          "x": 96,
+          "y": 50
+        }
+      ],
+      "edges": [
+        {
+          "from": "you",
+          "to": "conv",
+          "label": "prompts"
+        },
+        {
+          "from": "conv",
+          "to": "clear",
+          "label": "otra tarea"
+        },
+        {
+          "from": "conv",
+          "to": "compact",
+          "label": "contexto lleno"
+        },
+        {
+          "from": "compact",
+          "to": "summary",
+          "label": "reemplaza"
+        },
+        {
+          "from": "summary",
+          "to": "disk",
+          "label": "luego recarga"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cada prompt, cada archivo leído y cada respuesta llenan la ventana de contexto. Una sesión larga acumula ruido que cuesta tokens en cada mensaje y empeora el rendimiento.",
+        "show": [
+          "you",
+          "conv"
+        ],
+        "focus": "conv"
+      },
+      {
+        "narration": "Si cambias a trabajo no relacionado, usa /clear. Empieza una conversación nueva con el contexto vacío, no cuesta nada y guarda la anterior para retomarla con /resume.",
+        "show": [
+          "you",
+          "conv",
+          "clear"
+        ],
+        "focus": "clear"
+      },
+      {
+        "narration": "Si la misma tarea sigue pero el contexto está lleno, usa /compact. Reemplaza la conversación con un resumen estructurado, y puedes pasarle instrucciones de enfoque.",
+        "show": [
+          "you",
+          "conv",
+          "clear",
+          "compact",
+          "summary"
+        ],
+        "focus": "compact"
+      },
+      {
+        "narration": "Claude Code también compacta solo al acercarse al límite. Con /autocompact eliges qué tan llena se pone la ventana antes, y con /rewind puedes resumir solo una parte de la conversación.",
+        "show": [
+          "you",
+          "conv",
+          "clear",
+          "compact",
+          "summary"
+        ],
+        "focus": "summary"
+      },
+      {
+        "narration": "Tras compactar, el CLAUDE.md de la raíz del proyecto, las reglas sin paths y la memoria automática se vuelven a cargar desde disco, y se reinyectan los cuerpos de las skills que invocaste; la lista de descripciones de skills no vuelve. Lo que solo dijiste en el chat queda resumido y puede perderse.",
+        "show": [
+          "you",
+          "conv",
+          "clear",
+          "compact",
+          "summary",
+          "disk"
+        ],
+        "focus": "disk"
+      },
+      {
+        "narration": "No compactes para cambiar de tarea: compactar lee toda la conversación y es una petición grande. Y para una pregunta al margen que no debe quedar en el historial, usa /btw.",
+        "show": [
+          "you",
+          "conv",
+          "clear",
+          "compact",
+          "summary",
+          "disk"
+        ],
+        "focus": "clear"
+      }
+    ],
+    "keyPoints": [
+      "/clear: tarea no relacionada, contexto vacío, costo cero",
+      "/compact: misma tarea, resumen con enfoque opcional",
+      "/rewind resume solo una parte de la conversación",
+      "CLAUDE.md raíz y memoria se recargan tras compactar",
+      "Instrucciones solo en el chat pueden perderse"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "/btw",
+        "difference": "Pregunta al margen que nunca entra al historial; no vacía ni resume el contexto."
+      },
+      {
+        "unitOrService": "/rewind",
+        "difference": "Sus opciones Summarize resumen solo desde o hasta un mensaje elegido."
+      },
+      {
+        "unitOrService": "/context",
+        "difference": "Solo muestra qué ocupa el contexto; no libera espacio."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-compaction--l1",
+      "conceptId": "ctx-clear",
+      "format": "lightning",
+      "prompt": "Switch to unrelated work, carry nothing over, at zero cost → ?",
+      "promptEs": "Pasar a trabajo no relacionado, sin arrastrar nada y sin costo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact"
+        },
+        {
+          "id": "B",
+          "text": "/clear"
+        },
+        {
+          "id": "C",
+          "text": "/rewind"
+        },
+        {
+          "id": "D",
+          "text": "/btw"
+        }
+      ],
+      "answer": "B",
+      "why": "/clear empieza una conversación con contexto vacío y no cuesta nada. /compact arrastra un resumen y es una petición grande; /btw no vacía nada."
+    },
+    {
+      "id": "u-compaction--l2",
+      "conceptId": "ctx-clear",
+      "format": "thisorthat",
+      "prompt": "Quick side question that must never enter conversation history → ?",
+      "promptEs": "Pregunta rápida al margen que nunca debe entrar al historial → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/clear"
+        },
+        {
+          "id": "B",
+          "text": "/btw"
+        }
+      ],
+      "answer": "B",
+      "why": "La respuesta de /btw nunca entra al historial. /clear descarta todo el contexto de la tarea actual, que sí necesitas conservar."
+    },
+    {
+      "id": "u-compaction--l3",
+      "conceptId": "ctx-clear",
+      "format": "lightning",
+      "prompt": "Corrected Claude twice on the same issue; context full of failed attempts → ?",
+      "promptEs": "Corregiste a Claude dos veces en lo mismo; el contexto está lleno de intentos fallidos → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact"
+        },
+        {
+          "id": "B",
+          "text": "/context"
+        },
+        {
+          "id": "C",
+          "text": "/clear and a better prompt"
+        },
+        {
+          "id": "D",
+          "text": "/btw"
+        }
+      ],
+      "answer": "C",
+      "why": "Las buenas prácticas piden /clear y un prompt más específico con lo aprendido. /compact conservaría un resumen de los enfoques fallidos."
+    },
+    {
+      "id": "u-compaction--l4",
+      "conceptId": "ctx-clear",
+      "format": "lightning",
+      "prompt": "Start fresh and label the conversation you are leaving, in one command → ?",
+      "promptEs": "Empezar de cero y ponerle nombre a la conversación que dejas, en un comando → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact release-prep"
+        },
+        {
+          "id": "B",
+          "text": "/btw release-prep"
+        },
+        {
+          "id": "C",
+          "text": "/rewind"
+        },
+        {
+          "id": "D",
+          "text": "/clear release-prep"
+        }
+      ],
+      "answer": "D",
+      "why": "/clear con un nombre etiqueta la conversación anterior en el selector de /resume. En /compact el argumento son instrucciones de enfoque, no un nombre."
+    },
+    {
+      "id": "u-compaction--l5",
+      "conceptId": "ctx-compact",
+      "format": "lightning",
+      "prompt": "Same task continues, window nearly full, keep a summary → ?",
+      "promptEs": "La misma tarea sigue, la ventana casi llena, conservar un resumen → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/clear"
+        },
+        {
+          "id": "B",
+          "text": "/compact"
+        },
+        {
+          "id": "C",
+          "text": "/btw"
+        },
+        {
+          "id": "D",
+          "text": "/context"
+        }
+      ],
+      "answer": "B",
+      "why": "/compact reemplaza el historial con un resumen y la tarea continúa. /clear no arrastra nada y /context solo muestra el uso."
+    },
+    {
+      "id": "u-compaction--l6",
+      "conceptId": "ctx-compact",
+      "format": "thisorthat",
+      "prompt": "Condense early messages, keep the recent ones in full → ?",
+      "promptEs": "Condensar los mensajes antiguos y mantener completos los recientes → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Summarize up to here"
+        },
+        {
+          "id": "B",
+          "text": "Summarize from here"
+        }
+      ],
+      "answer": "A",
+      "why": "Summarize up to here condensa lo anterior y deja completos los mensajes recientes. Summarize from here hace lo contrario: condensa desde ese punto hacia adelante."
+    },
+    {
+      "id": "u-compaction--l7",
+      "conceptId": "ctx-compact",
+      "format": "lightning",
+      "prompt": "Every compaction in the project should focus on test output → ?",
+      "promptEs": "Toda compactación del proyecto debe enfocarse en la salida de tests → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/compact focus on tests"
+        },
+        {
+          "id": "B",
+          "text": "PostCompact hook"
+        },
+        {
+          "id": "C",
+          "text": "# Compact instructions in CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "/autocompact auto"
+        }
+      ],
+      "answer": "C",
+      "why": "Una sección # Compact instructions en el CLAUDE.md del proyecto guía cada compactación. /compact con enfoque aplica solo a esa vez; PostCompact no cambia el resultado."
+    },
+    {
+      "id": "u-compaction--l8",
+      "conceptId": "ctx-compact",
+      "format": "lightning",
+      "prompt": "Make automatic compaction run before the window gets so full → ?",
+      "promptEs": "Hacer que la compactación automática ocurra antes de que la ventana se llene tanto → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "PreCompact hook"
+        },
+        {
+          "id": "B",
+          "text": "/compact"
+        },
+        {
+          "id": "C",
+          "text": "/clear"
+        },
+        {
+          "id": "D",
+          "text": "/autocompact"
+        }
+      ],
+      "answer": "D",
+      "why": "/autocompact fija qué tan llena se pone la ventana antes de compactar solo. Un hook PreCompact puede bloquear la compactación, no adelantarla."
+    },
+    {
+      "id": "u-compaction--l9",
+      "conceptId": "ctx-what-survives-compaction",
+      "format": "lightning",
+      "prompt": "Instruction must reliably survive every compaction → put it in ?",
+      "promptEs": "Una instrucción debe sobrevivir siempre a cada compactación → ¿dónde va?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A chat message to Claude"
+        },
+        {
+          "id": "B",
+          "text": "A rule with paths: frontmatter"
+        },
+        {
+          "id": "C",
+          "text": "Project-root CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "A nested CLAUDE.md"
+        }
+      ],
+      "answer": "C",
+      "why": "El CLAUDE.md de la raíz se vuelve a cargar desde disco tras compactar. Las reglas con paths: y los CLAUDE.md anidados solo vuelven al leer un archivo que coincida."
+    },
+    {
+      "id": "u-compaction--l10",
+      "conceptId": "ctx-what-survives-compaction",
+      "format": "thisorthat",
+      "prompt": "Add a script's output to context after each compaction → ?",
+      "promptEs": "Añadir al contexto la salida de un script tras cada compactación → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "PostCompact hook"
+        },
+        {
+          "id": "B",
+          "text": "SessionStart hook, matcher compact"
+        }
+      ],
+      "answer": "B",
+      "why": "Los hooks SessionStart con el source compact se ejecutan y su salida se añade al contexto compactado. PostCompact no tiene control de decisión ni afecta el resultado."
+    },
+    {
+      "id": "u-compaction--l11",
+      "conceptId": "ctx-what-survives-compaction",
+      "format": "lightning",
+      "prompt": "Which startup content is NOT re-injected after compaction?",
+      "promptEs": "¿Qué contenido del arranque NO se reinyecta tras compactar?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Auto memory"
+        },
+        {
+          "id": "B",
+          "text": "Skill description listing"
+        },
+        {
+          "id": "C",
+          "text": "Project-root CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": "The plan-mode plan"
+        }
+      ],
+      "answer": "B",
+      "why": "La lista de descripciones de skills no se reinyecta; solo vuelven los cuerpos de skills invocadas. Memoria automática, CLAUDE.md raíz y el plan sí se recargan de disco."
+    },
+    {
+      "id": "u-compaction--l12",
+      "conceptId": "ctx-what-survives-compaction",
+      "format": "lightning",
+      "prompt": "A long invoked skill gets truncated after compaction; where do critical instructions go?",
+      "promptEs": "Una skill larga invocada se trunca tras compactar; ¿dónde van las instrucciones críticas?",
+      "options": [
+        {
+          "id": "A",
+          "text": "At the end of SKILL.md"
+        },
+        {
+          "id": "B",
+          "text": "In the skill description"
+        },
+        {
+          "id": "C",
+          "text": "In a paths: rule"
+        },
+        {
+          "id": "D",
+          "text": "Near the top of SKILL.md"
+        }
+      ],
+      "answer": "D",
+      "why": "El truncado conserva el inicio del archivo, así que lo importante va arriba en SKILL.md. Lo que esté al final es lo primero que se pierde."
+    }
+  ]
+}

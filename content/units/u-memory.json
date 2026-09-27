@@ -1,0 +1,431 @@
+{
+  "unitId": "u-memory",
+  "audited": true,
+  "overview": {
+    "title": "CLAUDE.md y sus niveles",
+    "hook": "Dejar de re-explicar tu proyecto en cada sesión nueva.",
+    "diagram": {
+      "nodes": [
+        {
+          "id": "managed",
+          "label": "CLAUDE.md managed",
+          "kind": "service",
+          "x": 10,
+          "y": 15
+        },
+        {
+          "id": "user",
+          "label": "CLAUDE.md de user",
+          "kind": "data",
+          "x": 10,
+          "y": 50
+        },
+        {
+          "id": "project",
+          "label": "CLAUDE.md proyecto",
+          "kind": "data",
+          "x": 35,
+          "y": 30
+        },
+        {
+          "id": "local",
+          "label": "CLAUDE.local.md",
+          "kind": "data",
+          "x": 35,
+          "y": 65
+        },
+        {
+          "id": "imports",
+          "label": "Imports @path",
+          "kind": "note",
+          "x": 60,
+          "y": 90
+        },
+        {
+          "id": "agents",
+          "label": "AGENTS.md",
+          "kind": "data",
+          "x": 60,
+          "y": 50
+        },
+        {
+          "id": "context",
+          "label": "Contexto de Claude",
+          "kind": "zone",
+          "x": 88,
+          "y": 40
+        }
+      ],
+      "edges": [
+        {
+          "from": "managed",
+          "to": "user",
+          "label": "primero"
+        },
+        {
+          "from": "user",
+          "to": "project",
+          "label": "todos tus repos"
+        },
+        {
+          "from": "project",
+          "to": "local",
+          "label": "commiteado"
+        },
+        {
+          "from": "local",
+          "to": "context",
+          "label": "se concatenan"
+        },
+        {
+          "from": "imports",
+          "to": "project",
+          "label": "al inicio"
+        },
+        {
+          "from": "agents",
+          "to": "context",
+          "label": "si no hay CLAUDE.md"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "narration": "Cada sesión empieza con una ventana de contexto vacía. Lo que le repites a Claude una y otra vez, como comandos de build o convenciones, va escrito en un archivo CLAUDE.md que se carga al inicio.",
+        "show": [
+          "context"
+        ],
+        "focus": "context"
+      },
+      {
+        "narration": "Hay cuatro niveles. El managed lo despliega tu organización. El de user vive en tu home y te sigue en todos los proyectos. El de proyecto se commitea para el equipo, y CLAUDE.local.md es solo tuyo y queda fuera de git.",
+        "show": [
+          "context",
+          "managed",
+          "user",
+          "project",
+          "local"
+        ],
+        "focus": "project"
+      },
+      {
+        "narration": "Los archivos no se pisan: se concatenan, del más amplio al más específico. Los de directorios ancestros cargan al lanzar, de la raíz hacia abajo, y los de subdirectorios cargan cuando Claude lee archivos ahí.",
+        "show": [
+          "context",
+          "managed",
+          "user",
+          "project",
+          "local"
+        ],
+        "focus": "local"
+      },
+      {
+        "narration": "Con @path importas otros archivos, pero se expanden al inicio, así que ordenan sin ahorrar contexto. Apunta a menos de 200 líneas por archivo y genera un primer borrador con /init.",
+        "show": [
+          "context",
+          "managed",
+          "user",
+          "project",
+          "local",
+          "imports"
+        ],
+        "focus": "imports"
+      },
+      {
+        "narration": "Si el repo solo tiene AGENTS.md, Claude lo lee en su lugar. Por defecto, apenas existe un CLAUDE.md o CLAUDE.local.md en tu directorio o encima, Claude deja de leer AGENTS.md. Eso se cambia en /config, en Project instructions.",
+        "show": [
+          "context",
+          "managed",
+          "user",
+          "project",
+          "local",
+          "imports",
+          "agents"
+        ],
+        "focus": "agents"
+      },
+      {
+        "narration": "Ojo: CLAUDE.md llega como mensaje de usuario, no como regla obligatoria. Para bloquear una acción siempre, usa permissions.deny o un hook PreToolUse.",
+        "show": [
+          "context",
+          "managed",
+          "user",
+          "project",
+          "local",
+          "imports",
+          "agents"
+        ],
+        "focus": "context"
+      }
+    ],
+    "keyPoints": [
+      "Orden: managed, user, proyecto, local",
+      "Los archivos se concatenan, no se sobreescriben",
+      "Los imports @path cargan al inicio: no ahorran contexto",
+      "Por defecto, AGENTS.md se lee solo si no hay CLAUDE.md",
+      "CLAUDE.md guía; no bloquea acciones"
+    ],
+    "confusedWith": [
+      {
+        "unitOrService": "Auto memory",
+        "difference": "La escribe Claude a partir de tus correcciones; CLAUDE.md lo escribes tú."
+      },
+      {
+        "unitOrService": ".claude/rules/",
+        "difference": "Reglas por tema que pueden cargar solo al tocar archivos que coinciden con paths."
+      },
+      {
+        "unitOrService": "permissions.deny",
+        "difference": "El cliente lo aplica siempre; CLAUDE.md solo orienta a Claude."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "u-memory--l1",
+      "conceptId": "mem-claude-md-locations",
+      "format": "lightning",
+      "prompt": "Personal sandbox URLs for one repo, never committed → which file?",
+      "promptEs": "URLs de tu sandbox personal para un repo, nunca commiteadas → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "./CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "./CLAUDE.local.md"
+        },
+        {
+          "id": "C",
+          "text": "~/.claude/CLAUDE.md"
+        },
+        {
+          "id": "D",
+          "text": ".claude/settings.local.json"
+        }
+      ],
+      "answer": "B",
+      "why": "CLAUDE.local.md es tu instrucción personal para ese proyecto y va en .gitignore. El de user aplicaría en todos tus proyectos, y settings.local.json guarda settings, no instrucciones."
+    },
+    {
+      "id": "u-memory--l2",
+      "conceptId": "mem-claude-md-locations",
+      "format": "lightning",
+      "prompt": "Your code-style preferences in every project on your machine → which file?",
+      "promptEs": "Tus preferencias de estilo en todos los proyectos de tu máquina → ¿qué archivo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "~/.claude/CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "./.claude/CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "./CLAUDE.local.md"
+        },
+        {
+          "id": "D",
+          "text": "Managed policy CLAUDE.md"
+        }
+      ],
+      "answer": "A",
+      "why": "El CLAUDE.md de user te acompaña en todos los proyectos. .claude/CLAUDE.md y CLAUDE.local.md son de un solo proyecto, y el managed lo controla tu organización."
+    },
+    {
+      "id": "u-memory--l3",
+      "conceptId": "mem-claude-md-locations",
+      "format": "thisorthat",
+      "prompt": "Parent and child directories both have CLAUDE.md → what reaches context?",
+      "promptEs": "El directorio padre y el hijo tienen CLAUDE.md → ¿qué llega al contexto?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Only the closest file"
+        },
+        {
+          "id": "B",
+          "text": "Both, concatenated root-down"
+        }
+      ],
+      "answer": "B",
+      "why": "Los CLAUDE.md se concatenan, no se sobreescriben: primero el de la raíz y al final el más cercano a donde lanzaste Claude."
+    },
+    {
+      "id": "u-memory--l4",
+      "conceptId": "mem-claude-md-locations",
+      "format": "lightning",
+      "prompt": "Block edits to a folder no matter what Claude decides → ?",
+      "promptEs": "Bloquear ediciones en una carpeta decida lo que decida Claude → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A rule in ./CLAUDE.md"
+        },
+        {
+          "id": "B",
+          "text": "A managed policy CLAUDE.md"
+        },
+        {
+          "id": "C",
+          "text": "A note in CLAUDE.local.md"
+        },
+        {
+          "id": "D",
+          "text": "A permissions.deny rule"
+        }
+      ],
+      "answer": "D",
+      "why": "CLAUDE.md, incluso el managed, es contexto que Claude intenta seguir, no una capa de enforcement. permissions.deny lo aplica el cliente siempre."
+    },
+    {
+      "id": "u-memory--l5",
+      "conceptId": "mem-imports-and-size",
+      "format": "lightning",
+      "prompt": "Mention @README in CLAUDE.md as plain text, without importing it → ?",
+      "promptEs": "Mencionar @README en CLAUDE.md como texto, sin importarlo → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Use an absolute path"
+        },
+        {
+          "id": "B",
+          "text": "Add it to claudeMdExcludes"
+        },
+        {
+          "id": "C",
+          "text": "Wrap it in backticks"
+        },
+        {
+          "id": "D",
+          "text": "Move it to CLAUDE.local.md"
+        }
+      ],
+      "answer": "C",
+      "why": "El parser de imports ignora code spans y bloques de código. Una ruta absoluta sigue importando, y claudeMdExcludes excluye archivos CLAUDE.md completos."
+    },
+    {
+      "id": "u-memory--l6",
+      "conceptId": "mem-imports-and-size",
+      "format": "thisorthat",
+      "prompt": "Splitting CLAUDE.md into @path imports → effect on startup context?",
+      "promptEs": "Dividir CLAUDE.md en imports @path → ¿efecto en el contexto de inicio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Less context, imports load on demand"
+        },
+        {
+          "id": "B",
+          "text": "Same context, imports load at launch"
+        }
+      ],
+      "answer": "B",
+      "why": "Los archivos importados se expanden y cargan al inicio junto al CLAUDE.md. Ordenan, pero no ahorran contexto; para eso usa reglas con paths."
+    },
+    {
+      "id": "u-memory--l7",
+      "conceptId": "mem-imports-and-size",
+      "format": "lightning",
+      "prompt": "Generate a starter CLAUDE.md by analyzing the codebase → ?",
+      "promptEs": "Generar un CLAUDE.md inicial analizando el código → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/memory"
+        },
+        {
+          "id": "B",
+          "text": "/context"
+        },
+        {
+          "id": "C",
+          "text": "/doctor"
+        },
+        {
+          "id": "D",
+          "text": "/init"
+        }
+      ],
+      "answer": "D",
+      "why": "/init analiza el código y crea el archivo, o sugiere mejoras si ya existe. /memory lista y abre tus archivos de memoria, /context muestra qué cargó y /doctor propone recortes a un CLAUDE.md existente."
+    },
+    {
+      "id": "u-memory--l8",
+      "conceptId": "mem-agents-md",
+      "format": "lightning",
+      "prompt": "Repo has CLAUDE.md and AGENTS.md, default settings → Claude reads?",
+      "promptEs": "El repo tiene CLAUDE.md y AGENTS.md, settings por defecto → ¿qué lee Claude?",
+      "options": [
+        {
+          "id": "A",
+          "text": "AGENTS.md only"
+        },
+        {
+          "id": "B",
+          "text": "CLAUDE.md files only"
+        },
+        {
+          "id": "C",
+          "text": "Both, CLAUDE.md first"
+        },
+        {
+          "id": "D",
+          "text": "Both, AGENTS.md first"
+        }
+      ],
+      "answer": "B",
+      "why": "El valor por defecto, claude-md-or-agents-md, lee AGENTS.md solo cuando no hay CLAUDE.md. Leer ambos requiere claude-md-and-agents-md."
+    },
+    {
+      "id": "u-memory--l9",
+      "conceptId": "mem-agents-md",
+      "format": "lightning",
+      "prompt": "Always read CLAUDE.md and AGENTS.md together → Project instructions value?",
+      "promptEs": "Leer siempre CLAUDE.md y AGENTS.md juntos → ¿valor de Project instructions?",
+      "options": [
+        {
+          "id": "A",
+          "text": "claude-md-or-agents-md"
+        },
+        {
+          "id": "B",
+          "text": "claude-md"
+        },
+        {
+          "id": "C",
+          "text": "claude-md-and-agents-md"
+        },
+        {
+          "id": "D",
+          "text": "managed-only"
+        }
+      ],
+      "answer": "C",
+      "why": "claude-md-and-agents-md lee ambos, cada directorio primero sus CLAUDE.md. El valor con or es el default y descarta AGENTS.md si hay un CLAUDE.md."
+    },
+    {
+      "id": "u-memory--l10",
+      "conceptId": "mem-agents-md",
+      "format": "thisorthat",
+      "prompt": "Share AGENTS.md with other tools, plus Claude-only instructions → ?",
+      "promptEs": "Compartir AGENTS.md con otras herramientas, más instrucciones solo para Claude → ?",
+      "options": [
+        {
+          "id": "A",
+          "text": "CLAUDE.md starting with @AGENTS.md"
+        },
+        {
+          "id": "B",
+          "text": "Symlink CLAUDE.md to AGENTS.md"
+        }
+      ],
+      "answer": "A",
+      "why": "El import deja agregar contenido propio de Claude debajo. Un symlink solo apunta a AGENTS.md, sin espacio para instrucciones propias de Claude, y en clones de Windows sin core.symlinks queda como un archivo de texto de una línea."
+    }
+  ]
+}

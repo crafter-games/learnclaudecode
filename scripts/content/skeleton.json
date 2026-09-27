@@ -1,0 +1,129 @@
+{
+  "domains": [
+    { "id": "d1", "name": "Fundamentos, contexto y memoria", "weight": 0.25, "islands": ["i1", "i2"] },
+    { "id": "d2", "name": "Configuración, permisos y seguridad", "weight": 0.2, "islands": ["i3"] },
+    { "id": "d3", "name": "Extender Claude Code: skills, hooks, MCP y plugins", "weight": 0.3, "islands": ["i4", "i5", "i7"] },
+    { "id": "d4", "name": "Agentes, automatización y escala", "weight": 0.25, "islands": ["i6", "i8", "i9"] }
+  ],
+  "islands": [
+    {
+      "id": "i1", "name": "The agentic loop and tools", "nameEs": "El loop agéntico y las herramientas", "icon": "cycle", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-how-it-works", "nameEs": "Cómo funciona Claude Code", "docs": ["how-claude-code-works", "overview", "features-overview", "glossary"] },
+        { "id": "u-install-auth", "nameEs": "Instalación y cuenta", "docs": ["quickstart", "setup", "authentication", "troubleshoot-install"] },
+        { "id": "u-tools", "nameEs": "Las herramientas integradas", "docs": ["tools-reference"] },
+        { "id": "u-interactive", "nameEs": "Modo interactivo y atajos", "docs": ["interactive-mode", "keybindings", "terminal-config", "fullscreen", "statusline"] },
+        { "id": "u-builtin-commands", "nameEs": "Comandos integrados esenciales", "docs": ["commands"] },
+        { "id": "u-checkpointing", "nameEs": "Checkpoints y rewind", "docs": ["checkpointing"] },
+        { "id": "u-model-config", "nameEs": "Modelos, esfuerzo y estilos de salida", "docs": ["model-config", "fast-mode", "advisor", "output-styles"] },
+        { "id": "u-workflows-best", "nameEs": "Flujos comunes y buenas prácticas", "docs": ["common-workflows", "best-practices", "prompt-library"] },
+        { "id": "u-debug", "nameEs": "Diagnosticar la configuración", "docs": ["debug-your-config", "troubleshooting", "errors"] }
+      ]
+    },
+    {
+      "id": "i2", "name": "Context, memory and caching", "nameEs": "Contexto, memoria y caché", "icon": "open-book", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-context-window", "nameEs": "La ventana de contexto", "docs": ["context-window"] },
+        { "id": "u-compaction", "nameEs": "Compactar y limpiar el contexto", "docs": ["context-window", "commands", "best-practices"] },
+        { "id": "u-memory", "nameEs": "CLAUDE.md y sus niveles", "docs": ["memory"] },
+        { "id": "u-auto-memory-rules", "nameEs": "Auto memory y reglas", "docs": ["memory", "claude-directory"] },
+        { "id": "u-claude-dir", "nameEs": "El directorio .claude", "docs": ["claude-directory"] },
+        { "id": "u-prompt-caching", "nameEs": "Prompt caching", "docs": ["prompt-caching"] },
+        { "id": "u-sessions", "nameEs": "Sesiones: continuar, reanudar y bifurcar", "docs": ["sessions"] },
+        { "id": "u-costs", "nameEs": "Costos y uso", "docs": ["costs", "monitoring-usage", "analytics"] },
+        { "id": "u-large-codebases", "nameEs": "Monorepos y bases de código grandes", "docs": ["large-codebases"] }
+      ]
+    },
+    {
+      "id": "i3", "name": "Settings, permissions and modes", "nameEs": "Settings, permisos y modos", "icon": "settings-knobs", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-settings-scopes", "nameEs": "Scopes y precedencia de settings", "docs": ["settings", "settings-example"] },
+        { "id": "u-settings-keys", "nameEs": "Claves de settings y variables de entorno", "docs": ["settings-reference", "env-vars"] },
+        { "id": "u-permission-rules", "nameEs": "Reglas de permisos", "docs": ["permissions"] },
+        { "id": "u-permission-modes", "nameEs": "Modos de permisos y plan mode", "docs": ["permission-modes"] },
+        { "id": "u-auto-mode", "nameEs": "Auto mode", "docs": ["auto-mode-config", "permission-modes"] },
+        { "id": "u-sandboxing", "nameEs": "Sandboxing", "docs": ["sandboxing", "sandbox-environments", "devcontainer"] },
+        { "id": "u-managed-settings", "nameEs": "Settings administrados", "docs": ["managed-settings", "server-managed-settings"] },
+        { "id": "u-security-data", "nameEs": "Seguridad y datos", "docs": ["security", "data-usage", "zero-data-retention"] }
+      ]
+    },
+    {
+      "id": "i4", "name": "Commands and skills", "nameEs": "Comandos y skills", "icon": "gift-of-knowledge", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-skills-basics", "nameEs": "Qué es una skill y dónde vive", "docs": ["skills", "features-overview"] },
+        { "id": "u-skill-frontmatter", "nameEs": "El frontmatter de SKILL.md", "docs": ["skills"] },
+        { "id": "u-skill-invocation", "nameEs": "Quién invoca una skill", "docs": ["skills"] },
+        { "id": "u-skill-arguments", "nameEs": "Argumentos y contexto dinámico", "docs": ["skills"] },
+        { "id": "u-skill-files", "nameEs": "Archivos de apoyo y divulgación progresiva", "docs": ["skills"] },
+        { "id": "u-custom-commands", "nameEs": "Comandos personalizados", "docs": ["skills", "commands"] },
+        { "id": "u-bundled-skills", "nameEs": "Skills incluidas", "docs": ["commands", "skills"] }
+      ]
+    },
+    {
+      "id": "i5", "name": "Hooks", "nameEs": "Hooks", "icon": "linked-rings", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-hooks-intro", "nameEs": "Para qué sirven los hooks", "docs": ["hooks-guide"] },
+        { "id": "u-hook-events", "nameEs": "Los eventos del ciclo de vida", "docs": ["hooks"] },
+        { "id": "u-hook-config", "nameEs": "Dónde se configuran y matchers", "docs": ["hooks", "hooks-guide"] },
+        { "id": "u-hook-io", "nameEs": "Entrada, salida y códigos de salida", "docs": ["hooks"] },
+        { "id": "u-hook-decisions", "nameEs": "Bloquear, permitir y dar contexto", "docs": ["hooks"] },
+        { "id": "u-hook-types", "nameEs": "Tipos de hook", "docs": ["hooks"] },
+        { "id": "u-hook-safety", "nameEs": "Seguridad y depuración de hooks", "docs": ["hooks", "hooks-guide", "debug-your-config"] }
+      ]
+    },
+    {
+      "id": "i6", "name": "Subagents and parallel work", "nameEs": "Subagentes y trabajo en paralelo", "icon": "mesh-network", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-parallel-options", "nameEs": "Formas de trabajar en paralelo", "docs": ["agents"] },
+        { "id": "u-subagents", "nameEs": "Subagentes", "docs": ["sub-agents"] },
+        { "id": "u-subagent-config", "nameEs": "Configurar un subagente", "docs": ["sub-agents"] },
+        { "id": "u-worktrees", "nameEs": "Worktrees", "docs": ["worktrees"] },
+        { "id": "u-agent-teams", "nameEs": "Agent teams y mensajes entre sesiones", "docs": ["agent-teams", "cross-session-messaging"] },
+        { "id": "u-agent-view", "nameEs": "Agent view", "docs": ["agent-view"] },
+        { "id": "u-dynamic-workflows", "nameEs": "Dynamic workflows", "docs": ["workflows"] },
+        { "id": "u-loops-goals", "nameEs": "/loop, tareas programadas, /goal y channels", "docs": ["scheduled-tasks", "goal", "channels", "channels-reference"] }
+      ]
+    },
+    {
+      "id": "i7", "name": "MCP and plugins", "nameEs": "MCP y plugins", "icon": "cardboard-box", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-mcp-basics", "nameEs": "Qué es MCP y cómo se conecta", "docs": ["mcp-quickstart", "mcp"] },
+        { "id": "u-mcp-scopes", "nameEs": "Scopes, transportes y .mcp.json", "docs": ["mcp"] },
+        { "id": "u-mcp-advanced", "nameEs": "Autenticación, recursos, prompts y tool search", "docs": ["mcp"] },
+        { "id": "u-managed-mcp", "nameEs": "MCP administrado", "docs": ["managed-mcp"] },
+        { "id": "u-plugins-use", "nameEs": "Instalar y usar plugins", "docs": ["plugins-overview", "plugins-install", "plugins-anthropic-marketplaces", "plugins-code-intelligence", "plugins-security"] },
+        { "id": "u-plugins-create", "nameEs": "Crear un plugin", "docs": ["plugins-create", "plugins-components", "plugins-manifest-reference"] },
+        { "id": "u-marketplaces", "nameEs": "Marketplaces y dependencias", "docs": ["plugins-create-marketplace", "plugins-host-marketplace", "plugins-marketplace-reference", "plugins-dependencies", "plugins-publish"] },
+        { "id": "u-plugin-ops", "nameEs": "Evals, métricas y problemas de plugins", "docs": ["plugin-evals", "plugins-measure", "plugins-troubleshooting", "plugins-loading", "plugins-org"] }
+      ]
+    },
+    {
+      "id": "i8", "name": "Headless, SDK and CI", "nameEs": "Headless, SDK y CI", "icon": "cog", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-headless", "nameEs": "Modo headless con -p", "docs": ["headless", "cli-reference"] },
+        { "id": "u-output-formats", "nameEs": "Formatos de salida y structured output", "docs": ["headless", "cli-reference", "agent-sdk-structured-outputs"] },
+        { "id": "u-sdk-intro", "nameEs": "El Agent SDK y su loop", "docs": ["agent-sdk-overview", "agent-sdk-quickstart", "agent-sdk-agent-loop", "agent-sdk-claude-code-features"] },
+        { "id": "u-sdk-tools", "nameEs": "Herramientas propias, MCP y subagentes en el SDK", "docs": ["agent-sdk-custom-tools", "agent-sdk-mcp", "agent-sdk-tool-search", "agent-sdk-subagents"] },
+        { "id": "u-sdk-control", "nameEs": "Permisos, hooks y entrada del usuario en el SDK", "docs": ["agent-sdk-permissions", "agent-sdk-hooks", "agent-sdk-user-input", "agent-sdk-modifying-system-prompts"] },
+        { "id": "u-sdk-sessions", "nameEs": "Sesiones, checkpoints y costos en el SDK", "docs": ["agent-sdk-sessions", "agent-sdk-session-storage", "agent-sdk-file-checkpointing", "agent-sdk-cost-tracking"] },
+        { "id": "u-sdk-deploy", "nameEs": "Desplegar agentes con el SDK", "docs": ["agent-sdk-hosting", "agent-sdk-secure-deployment", "agent-sdk-observability"] },
+        { "id": "u-github-actions", "nameEs": "GitHub Actions y GitLab CI", "docs": ["github-actions", "github-actions-cloud-providers", "gitlab-ci-cd"] },
+        { "id": "u-deep-links", "nameEs": "Deep links", "docs": ["deep-links"] }
+      ]
+    },
+    {
+      "id": "i9", "name": "Cloud and surfaces", "nameEs": "Nube y superficies", "icon": "world", "color": "#bf4f2a",
+      "units": [
+        { "id": "u-cloud-sessions", "nameEs": "Claude Code en la nube", "docs": ["web-quickstart", "claude-code-on-the-web", "cloud-environments"] },
+        { "id": "u-routines", "nameEs": "Routines", "docs": ["routines", "desktop-scheduled-tasks"] },
+        { "id": "u-code-review", "nameEs": "Code Review, ultrareview y seguridad", "docs": ["code-review", "ultrareview", "security-guidance", "claude-security"] },
+        { "id": "u-remote-mobile", "nameEs": "Remote Control y móvil", "docs": ["remote-control", "mobile", "claude-projects"] },
+        { "id": "u-desktop", "nameEs": "La app de escritorio", "docs": ["desktop", "desktop-quickstart", "desktop-linux", "desktop-wsl", "desktop-ios-simulator"] },
+        { "id": "u-ide", "nameEs": "VS Code y JetBrains", "docs": ["vs-code", "jetbrains"] },
+        { "id": "u-integrations", "nameEs": "Chrome, computer use, Slack y artifacts", "docs": ["chrome", "computer-use", "slack", "claude-tag", "artifacts", "voice-dictation"] },
+        { "id": "u-providers", "nameEs": "Proveedores cloud y gateways", "docs": ["third-party-integrations", "amazon-bedrock", "google-vertex-ai", "microsoft-foundry", "claude-platform-on-aws", "gateways", "llm-gateway", "network-config"] },
+        { "id": "u-enterprise", "nameEs": "Administración para organizaciones", "docs": ["admin-setup", "feature-availability", "self-hosted-environments", "corporate-launcher"] }
+      ]
+    }
+  ]
+}

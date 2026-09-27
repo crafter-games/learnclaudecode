@@ -11,7 +11,7 @@ import { handle, ok } from "@/lib/http/json";
 
 const Body = z.object({
   questionId: z.string(),
-  selected: z.array(z.string()).min(1),
+  selected: z.array(z.string().max(300)).min(1).max(20),
   confidence: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   timeMs: z.number().int().nonnegative(),
   usedSpanish: z.boolean(),

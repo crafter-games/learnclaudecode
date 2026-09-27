@@ -5,6 +5,8 @@ import { getContent } from "../content/load";
 import { chipsFor } from "../game/cues";
 import { xpFor } from "../game/xp";
 import type { Question } from "../content/types";
+import { isCorrect } from "./grade";
+export { isCorrect, normalizeCommand } from "./grade";
 import { planSession, type QueueItem, type QuestionMode } from "../engine/planner";
 import {
   applyLearnAttempt,
@@ -36,25 +38,31 @@ import {
 
 /** Question as sent to the client before answering: no correctness data. */
 export function publicQuestion(q: Question) {
+  const hidden = q.format === "command";
   return {
     id: q.id,
     conceptId: q.conceptId,
     domain: q.domain,
     type: q.type,
-    answerCount: q.options.filter((o) => o.correct).length,
+    format: q.format ?? "scenario",
+    template: q.template ?? null,
+    slots: q.slots ?? null,
+    answerCount: q.format === "command" ? 1 : q.format === "config" ? (q.slots?.length ?? 0) : q.options.filter((o) => o.correct).length,
     stem: q.stem,
     /** Requirement phrases from the stem (not the answer): shown as chips/highlights. */
     cues: q.keywordCues,
     chips: chipsFor(q.keywordCues, q.stem),
-    options: q.options.map((o) => ({ id: o.id, text: o.text })),
-    es: { stem: q.es.stem, options: q.es.options.map((o) => ({ id: o.id, text: o.text })) },
+    options: hidden ? [] : q.options.map((o) => ({ id: o.id, text: o.text })),
+    es: { stem: q.es.stem, options: hidden ? [] : q.es.options.map((o) => ({ id: o.id, text: o.text })) },
   };
 }
 export type PublicQuestion = ReturnType<typeof publicQuestion>;
 
 export function revealQuestion(q: Question) {
   return {
-    correctIds: q.options.filter((o) => o.correct).map((o) => o.id),
+    correctIds: q.format === "order" && q.order ? q.order : q.options.filter((o) => o.correct).map((o) => o.id),
+    /** command: the canonical answer to show. */
+    answerText: q.format === "command" ? (q.options[0]?.text ?? null) : null,
     options: q.options.map((o) => ({ id: o.id, correct: o.correct, why: o.why })),
     optionsEs: q.es.options.map((o) => ({ id: o.id, why: o.why })),
     explanation: q.explanation,
@@ -197,12 +205,6 @@ export interface AnswerInput {
   /** Set when retrying after tutor hints: the retry is recorded as aided and changes no schedule. */
   retryOf?: number;
   hintLevel?: number;
-}
-
-export function isCorrect(q: Question, selected: string[]): boolean {
-  const correct = q.options.filter((o) => o.correct).map((o) => o.id).sort();
-  const sel = [...new Set(selected)].sort();
-  return correct.length === sel.length && correct.every((id, i) => id === sel[i]);
 }
 
 export async function submitAnswer(userId: string, input: AnswerInput) {

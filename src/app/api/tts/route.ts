@@ -29,7 +29,10 @@ export const GET = handle(async (req: Request) => {
       const q = questions.get(id);
       if (q) {
         const stem = lang === "es" ? q.es.stem : q.stem;
-        const opts = (lang === "es" ? q.es.options : q.options).map((o) => `${o.id}. ${o.text}`).join(". ");
+        const opts =
+          q.format === "command" || q.format === "config"
+            ? ""
+            : (lang === "es" ? q.es.options : q.options).map((o) => `${o.id}. ${o.text}`).join(". ");
         text = `${stem} ${opts}`;
       }
     } else if (kind === "card") {

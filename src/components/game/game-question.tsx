@@ -8,6 +8,7 @@ import { duckWhilePlaying } from "@/lib/game/music";
 import type { Chip } from "@/lib/game/cues";
 import type { PublicQuestion, Reveal } from "../question-view";
 import { ExpertPanel } from "./expert-panel";
+import { CommandInput, ConfigInput, OrderInput } from "./format-inputs";
 import { GameIcon, type GameIconName } from "./icons";
 
 export type GameQuestionData = PublicQuestion & { cues: string[]; chips: Chip[] };
@@ -106,8 +107,16 @@ export function GameQuestion({
   const stem = spanish ? question.es.stem : question.stem;
   const options = spanish ? question.es.options : question.options;
   const parts = spanish ? [{ text: stem, hit: false }] : highlight(stem, question.cues);
-  const ready = selected.length === need;
-  const two = options.length === 2;
+  const format = question.format ?? "scenario";
+  const slots = question.slots ?? [];
+  const ready =
+    format === "command"
+      ? !!selected[0]?.trim()
+      : format === "config"
+        ? slots.length > 0 && slots.every((_, i) => !!selected[i])
+        : selected.length === need;
+  const two = options.length === 2 && format !== "order";
+  const choiceFormat = format !== "command" && format !== "config" && format !== "order";
 
   function pick(id: string) {
     if (phase === "revealed") return;
@@ -206,7 +215,7 @@ export function GameQuestion({
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
       const k = e.key.toLowerCase();
       const idx = "12345".indexOf(k);
-      if (idx >= 0 && options[idx]) pick(options[idx].id);
+      if (idx >= 0 && options[idx] && (choiceFormat || format === "order")) pick(options[idx].id);
       const conf = CONFIDENCE.find((c) => c.key === k);
       if (conf && phase === "answering") void submit(conf.value);
       if (k === "enter" && phase === "revealed") onNext();
@@ -235,7 +244,10 @@ export function GameQuestion({
             <GameIcon name={c.icon} size={15} /> {c.label}
           </span>
         ))}
-        {need > 1 && <span className="display rounded-full bg-yellow px-3 py-1 text-[0.85em] text-ink ring-2 ring-ink">Elige {need}</span>}
+        {need > 1 && choiceFormat && <span className="display rounded-full bg-yellow px-3 py-1 text-[0.85em] text-ink ring-2 ring-ink">Elige {need}</span>}
+        {format === "order" && <span className="display rounded-full bg-yellow px-3 py-1 text-[0.85em] text-ink ring-2 ring-ink">Ordena</span>}
+        {format === "command" && <span className="display rounded-full bg-yellow px-3 py-1 text-[0.85em] text-ink ring-2 ring-ink">Completa el comando</span>}
+        {format === "config" && <span className="display rounded-full bg-yellow px-3 py-1 text-[0.85em] text-ink ring-2 ring-ink">Arma la config</span>}
       </div>
 
       <motion.div
@@ -272,6 +284,30 @@ export function GameQuestion({
         </p>
       </motion.div>
 
+      {format === "order" && (
+        <OrderInput options={options} selected={selected} setSelected={setSelected} phase={phase} correctIds={correctIds} />
+      )}
+      {format === "command" && (
+        <CommandInput
+          value={selected[0] ?? ""}
+          setValue={(v) => setSelected(v ? [v] : [])}
+          phase={phase}
+          answerText={reveal?.answerText ?? null}
+        />
+      )}
+      {format === "config" && question.template && (
+        <ConfigInput
+          template={question.template}
+          slots={slots}
+          options={options}
+          selected={selected}
+          setSelected={setSelected}
+          phase={phase}
+          correctIds={correctIds}
+          firstPick={firstPick}
+        />
+      )}
+      {choiceFormat && (
       <div className={`grid gap-3 ${two ? "grid-cols-2" : ""}`}>
         {options.map((o, i) => {
           const s = OPTION_STYLE[i] ?? OPTION_STYLE[0];
@@ -306,12 +342,23 @@ export function GameQuestion({
           );
         })}
       </div>
+      )}
 
       <AnimatePresence mode="wait">
         {phase === "answering" && (
           <motion.div key="conf" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
             <p className="text-center text-[0.95em] font-extrabold text-white">
-              {ready ? "¿Qué tan seguro estás? Esto envía tu respuesta" : need > 1 ? `Elige ${need} opciones` : "Elige una opción"}
+              {ready
+                ? "¿Qué tan seguro estás? Esto envía tu respuesta"
+                : format === "command"
+                  ? "Escribe tu respuesta"
+                  : format === "config"
+                    ? "Llena todos los huecos"
+                    : format === "order"
+                      ? "Ordena todos los elementos"
+                      : need > 1
+                        ? `Elige ${need} opciones`
+                        : "Elige una opción"}
             </p>
             <div className="grid grid-cols-3 gap-2.5">
               {CONFIDENCE.map((c) => (

@@ -9,6 +9,9 @@ export interface PublicQuestion {
   conceptId: string;
   domain: string;
   type: "single" | "multi";
+  format?: "scenario" | "lightning" | "thisorthat" | "command" | "order" | "config";
+  template?: string | null;
+  slots?: { id: string; optionIds: string[] }[] | null;
   answerCount: number;
   stem: string;
   options: { id: string; text: string }[];
@@ -17,6 +20,7 @@ export interface PublicQuestion {
 
 export interface Reveal {
   correctIds: string[];
+  answerText?: string | null;
   options: { id: string; correct: boolean; why: string }[];
   optionsEs: { id: string; why: string }[];
   explanation: string;

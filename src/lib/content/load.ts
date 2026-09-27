@@ -135,7 +135,9 @@ function lightningToQuestion(item: LightningItem, concept: Concept): Question {
   };
 }
 
-export const isShortFormat = (q: Question) => q.format === "lightning" || q.format === "thisorthat";
+export const isShortFormat = (q: Question) => q.format === "lightning" || q.format === "thisorthat" || q.format === "command";
+/** Mocks mirror a multiple-choice exam: scenarios only. */
+export const isScenario = (q: Question) => !q.format || q.format === "scenario";
 
 export function getContent(): ContentIndex {
   if (!cached || process.env.NODE_ENV === "development") cached = build();

@@ -1,1 +1,1950 @@
-{ "islands": [], "units": [] }
+{
+  "islands": [
+    {
+      "id": "i1",
+      "name": "The agentic loop and tools",
+      "nameEs": "El loop agéntico y las herramientas",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 0,
+      "units": [
+        "u-how-it-works",
+        "u-install-auth",
+        "u-tools",
+        "u-interactive",
+        "u-builtin-commands",
+        "u-checkpointing",
+        "u-model-config",
+        "u-workflows-best",
+        "u-debug"
+      ]
+    },
+    {
+      "id": "i2",
+      "name": "Context, memory and caching",
+      "nameEs": "Contexto, memoria y caché",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 1,
+      "units": [
+        "u-context-window",
+        "u-compaction",
+        "u-memory",
+        "u-auto-memory-rules",
+        "u-claude-dir",
+        "u-prompt-caching",
+        "u-sessions",
+        "u-costs",
+        "u-large-codebases"
+      ]
+    },
+    {
+      "id": "i3",
+      "name": "Settings, permissions and modes",
+      "nameEs": "Settings, permisos y modos",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 2,
+      "units": [
+        "u-settings-scopes",
+        "u-settings-keys",
+        "u-permission-rules",
+        "u-permission-modes",
+        "u-auto-mode",
+        "u-sandboxing",
+        "u-managed-settings",
+        "u-security-data"
+      ]
+    },
+    {
+      "id": "i4",
+      "name": "Commands and skills",
+      "nameEs": "Comandos y skills",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 3,
+      "units": [
+        "u-skills-basics",
+        "u-skill-frontmatter",
+        "u-skill-invocation",
+        "u-skill-arguments",
+        "u-skill-files",
+        "u-custom-commands",
+        "u-bundled-skills"
+      ]
+    },
+    {
+      "id": "i5",
+      "name": "Hooks",
+      "nameEs": "Hooks",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 4,
+      "units": [
+        "u-hooks-intro",
+        "u-hook-events",
+        "u-hook-config",
+        "u-hook-io",
+        "u-hook-decisions",
+        "u-hook-types",
+        "u-hook-safety"
+      ]
+    },
+    {
+      "id": "i6",
+      "name": "Subagents and parallel work",
+      "nameEs": "Subagentes y trabajo en paralelo",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 5,
+      "units": [
+        "u-parallel-options",
+        "u-subagents",
+        "u-subagent-config",
+        "u-worktrees",
+        "u-agent-teams",
+        "u-agent-view",
+        "u-dynamic-workflows",
+        "u-loops-goals"
+      ]
+    },
+    {
+      "id": "i7",
+      "name": "MCP and plugins",
+      "nameEs": "MCP y plugins",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 6,
+      "units": [
+        "u-mcp-basics",
+        "u-mcp-scopes",
+        "u-mcp-advanced",
+        "u-managed-mcp",
+        "u-plugins-use",
+        "u-plugins-create",
+        "u-marketplaces",
+        "u-plugin-ops"
+      ]
+    },
+    {
+      "id": "i8",
+      "name": "Headless, SDK and CI",
+      "nameEs": "Headless, SDK y CI",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 7,
+      "units": [
+        "u-headless",
+        "u-output-formats",
+        "u-sdk-intro",
+        "u-sdk-tools",
+        "u-sdk-control",
+        "u-sdk-sessions",
+        "u-sdk-deploy",
+        "u-github-actions",
+        "u-deep-links"
+      ]
+    },
+    {
+      "id": "i9",
+      "name": "Cloud and surfaces",
+      "nameEs": "Nube y superficies",
+      "emoji": "",
+      "color": "#bf4f2a",
+      "order": 8,
+      "units": [
+        "u-cloud-sessions",
+        "u-routines",
+        "u-code-review",
+        "u-remote-mobile",
+        "u-desktop",
+        "u-ide",
+        "u-integrations",
+        "u-providers",
+        "u-enterprise"
+      ]
+    }
+  ],
+  "units": [
+    {
+      "id": "u-how-it-works",
+      "name": "How Claude Code works",
+      "nameEs": "Cómo funciona Claude Code",
+      "island": "i1",
+      "services": [
+        "agentic loop",
+        "tools",
+        "CLAUDE.md",
+        "skills",
+        "hooks",
+        "subagents"
+      ],
+      "concepts": [
+        "loop-agentic-loop",
+        "loop-extension-map",
+        "loop-guidance-vs-enforcement"
+      ],
+      "prerequisiteUnits": [],
+      "order": 1,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-install-auth",
+      "name": "Installation and account",
+      "nameEs": "Instalación y cuenta",
+      "island": "i1",
+      "services": [
+        "claude update",
+        "autoUpdatesChannel",
+        "DISABLE_AUTOUPDATER",
+        "ANTHROPIC_API_KEY",
+        "claude setup-token",
+        "/status"
+      ],
+      "concepts": [
+        "install-updates",
+        "auth-precedence"
+      ],
+      "prerequisiteUnits": [],
+      "order": 2,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-tools",
+      "name": "Built-in tools",
+      "nameEs": "Las herramientas integradas",
+      "island": "i1",
+      "services": [
+        "Read",
+        "Edit",
+        "Write",
+        "Bash",
+        "Glob",
+        "Grep"
+      ],
+      "concepts": [
+        "tools-builtin-names",
+        "tools-edit-vs-write",
+        "tools-bash-behavior"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works"
+      ],
+      "order": 3,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-interactive",
+      "name": "Interactive mode and shortcuts",
+      "nameEs": "Modo interactivo y atajos",
+      "island": "i1",
+      "services": [
+        "Esc",
+        "Shift+Tab",
+        "! shell mode",
+        "@ mentions",
+        "/keybindings",
+        "statusLine"
+      ],
+      "concepts": [
+        "interactive-interrupt-queue",
+        "interactive-input-prefixes",
+        "interactive-keybindings-statusline"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works"
+      ],
+      "order": 4,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-builtin-commands",
+      "name": "Essential built-in commands",
+      "nameEs": "Comandos integrados esenciales",
+      "island": "i1",
+      "services": [
+        "/init",
+        "/config",
+        "/diff",
+        "/add-dir",
+        "/btw",
+        "/export"
+      ],
+      "concepts": [
+        "cmd-everyday-commands",
+        "cmd-btw"
+      ],
+      "prerequisiteUnits": [
+        "u-interactive"
+      ],
+      "order": 5,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-checkpointing",
+      "name": "Checkpoints and rewind",
+      "nameEs": "Checkpoints y rewind",
+      "island": "i1",
+      "services": [
+        "/rewind",
+        "Esc Esc",
+        "checkpoints",
+        "cleanupPeriodDays"
+      ],
+      "concepts": [
+        "checkpoint-rewind-options",
+        "checkpoint-limits"
+      ],
+      "prerequisiteUnits": [
+        "u-tools",
+        "u-interactive"
+      ],
+      "order": 6,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-model-config",
+      "name": "Models, effort and output styles",
+      "nameEs": "Modelos, esfuerzo y estilos de salida",
+      "island": "i1",
+      "services": [
+        "/model",
+        "opusplan",
+        "/effort",
+        "/fast",
+        "/advisor",
+        "/output-style"
+      ],
+      "concepts": [
+        "model-select",
+        "model-effort-fast",
+        "model-output-styles"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works"
+      ],
+      "order": 7,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-workflows-best",
+      "name": "Common workflows and best practices",
+      "nameEs": "Flujos comunes y buenas prácticas",
+      "island": "i1",
+      "services": [
+        "plan mode",
+        "Ctrl+G",
+        "@ references",
+        "/clear",
+        "Stop hook",
+        "/goal"
+      ],
+      "concepts": [
+        "workflow-verify",
+        "workflow-explore-plan-code",
+        "workflow-failure-patterns"
+      ],
+      "prerequisiteUnits": [
+        "u-tools",
+        "u-checkpointing"
+      ],
+      "order": 8,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-debug",
+      "name": "Diagnosing your configuration",
+      "nameEs": "Diagnosticar la configuración",
+      "island": "i1",
+      "services": [
+        "/context",
+        "/doctor",
+        "claude doctor",
+        "/debug",
+        "--safe-mode",
+        "CLAUDE_CONFIG_DIR"
+      ],
+      "concepts": [
+        "debug-inspect-commands",
+        "debug-clean-config"
+      ],
+      "prerequisiteUnits": [
+        "u-builtin-commands"
+      ],
+      "order": 9,
+      "iconHint": "cycle"
+    },
+    {
+      "id": "u-context-window",
+      "name": "The context window",
+      "nameEs": "La ventana de contexto",
+      "island": "i2",
+      "services": [
+        "context window",
+        "/context",
+        "CLAUDE.md",
+        "MEMORY.md"
+      ],
+      "concepts": [
+        "ctx-startup-load",
+        "ctx-context-command"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works"
+      ],
+      "order": 10,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-compaction",
+      "name": "Compacting and clearing context",
+      "nameEs": "Compactar y limpiar el contexto",
+      "island": "i2",
+      "services": [
+        "/compact",
+        "/clear",
+        "/autocompact",
+        "/rewind",
+        "/btw"
+      ],
+      "concepts": [
+        "ctx-clear",
+        "ctx-compact",
+        "ctx-what-survives-compaction"
+      ],
+      "prerequisiteUnits": [
+        "u-context-window",
+        "u-checkpointing"
+      ],
+      "order": 11,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-memory",
+      "name": "CLAUDE.md and its levels",
+      "nameEs": "CLAUDE.md y sus niveles",
+      "island": "i2",
+      "services": [
+        "CLAUDE.md",
+        "CLAUDE.local.md",
+        "AGENTS.md",
+        "@path imports",
+        "/init"
+      ],
+      "concepts": [
+        "mem-claude-md-locations",
+        "mem-imports-and-size",
+        "mem-agents-md"
+      ],
+      "prerequisiteUnits": [
+        "u-context-window"
+      ],
+      "order": 12,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-auto-memory-rules",
+      "name": "Auto memory and rules",
+      "nameEs": "Auto memory y reglas",
+      "island": "i2",
+      "services": [
+        "auto memory",
+        "MEMORY.md",
+        "/memory",
+        ".claude/rules/",
+        "paths frontmatter",
+        "autoMemoryEnabled"
+      ],
+      "concepts": [
+        "mem-auto-memory",
+        "mem-rules-paths"
+      ],
+      "prerequisiteUnits": [
+        "u-memory"
+      ],
+      "order": 13,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-claude-dir",
+      "name": "The .claude directory",
+      "nameEs": "El directorio .claude",
+      "island": "i2",
+      "services": [
+        ".claude/",
+        "~/.claude/",
+        "~/.claude.json",
+        "cleanupPeriodDays",
+        "claude project purge"
+      ],
+      "concepts": [
+        "dir-project-vs-global",
+        "dir-application-data"
+      ],
+      "prerequisiteUnits": [
+        "u-memory",
+        "u-auto-memory-rules"
+      ],
+      "order": 14,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-prompt-caching",
+      "name": "Prompt caching",
+      "nameEs": "Prompt caching",
+      "island": "i2",
+      "services": [
+        "prompt caching",
+        "promptCacheTtl",
+        "subagentPromptCacheTtl",
+        "/model",
+        "/usage"
+      ],
+      "concepts": [
+        "cache-prefix-layers",
+        "cache-invalidators",
+        "cache-ttl"
+      ],
+      "prerequisiteUnits": [
+        "u-context-window",
+        "u-compaction",
+        "u-model-config"
+      ],
+      "order": 15,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-sessions",
+      "name": "Sessions: continue, resume and branch",
+      "nameEs": "Sesiones: continuar, reanudar y bifurcar",
+      "island": "i2",
+      "services": [
+        "--continue",
+        "--resume",
+        "/resume",
+        "/branch",
+        "--fork-session",
+        "/rename"
+      ],
+      "concepts": [
+        "session-continue",
+        "session-resume",
+        "session-branch"
+      ],
+      "prerequisiteUnits": [
+        "u-compaction",
+        "u-checkpointing"
+      ],
+      "order": 16,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-costs",
+      "name": "Costs and usage",
+      "nameEs": "Costos y uso",
+      "island": "i2",
+      "services": [
+        "/usage",
+        "/insights",
+        "OpenTelemetry",
+        "CLAUDE_CODE_ENABLE_TELEMETRY",
+        "MAX_THINKING_TOKENS"
+      ],
+      "concepts": [
+        "cost-usage-command",
+        "cost-reduce-tokens",
+        "cost-org-monitoring"
+      ],
+      "prerequisiteUnits": [
+        "u-prompt-caching",
+        "u-compaction"
+      ],
+      "order": 17,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-large-codebases",
+      "name": "Monorepos and large codebases",
+      "nameEs": "Monorepos y bases de código grandes",
+      "island": "i2",
+      "services": [
+        "claudeMdExcludes",
+        "additionalDirectories",
+        "--add-dir",
+        "worktree.sparsePaths",
+        "permissions.deny"
+      ],
+      "concepts": [
+        "large-scope-instructions",
+        "large-reduce-reads",
+        "large-add-dir"
+      ],
+      "prerequisiteUnits": [
+        "u-memory",
+        "u-auto-memory-rules",
+        "u-permission-rules",
+        "u-worktrees"
+      ],
+      "order": 18,
+      "iconHint": "open-book"
+    },
+    {
+      "id": "u-settings-scopes",
+      "name": "Settings scopes and precedence",
+      "nameEs": "Scopes y precedencia de settings",
+      "island": "i3",
+      "services": [
+        "~/.claude/settings.json",
+        ".claude/settings.json",
+        ".claude/settings.local.json",
+        "managed-settings.json",
+        "/status",
+        "claude doctor"
+      ],
+      "concepts": [
+        "settings-scopes-files",
+        "settings-precedence-order",
+        "settings-verify-status"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works"
+      ],
+      "order": 19,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-settings-keys",
+      "name": "Settings keys and environment variables",
+      "nameEs": "Claves de settings y variables de entorno",
+      "island": "i3",
+      "services": [
+        "env",
+        "--settings",
+        "ANTHROPIC_MODEL",
+        "CLAUDE_CONFIG_DIR",
+        "workspace trust"
+      ],
+      "concepts": [
+        "settings-env-block",
+        "settings-session-overrides",
+        "settings-repo-file-limits"
+      ],
+      "prerequisiteUnits": [
+        "u-settings-scopes"
+      ],
+      "order": 20,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-permission-rules",
+      "name": "Permission rules",
+      "nameEs": "Reglas de permisos",
+      "island": "i3",
+      "services": [
+        "permissions.allow",
+        "permissions.ask",
+        "permissions.deny",
+        "/permissions",
+        "Bash(...)",
+        "Read(...)/Edit(...)"
+      ],
+      "concepts": [
+        "perm-rule-eval-order",
+        "perm-bash-wildcards",
+        "perm-read-edit-paths"
+      ],
+      "prerequisiteUnits": [
+        "u-settings-scopes",
+        "u-tools"
+      ],
+      "order": 21,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-permission-modes",
+      "name": "Permission modes and plan mode",
+      "nameEs": "Modos de permisos y plan mode",
+      "island": "i3",
+      "services": [
+        "default",
+        "acceptEdits",
+        "plan",
+        "dontAsk",
+        "bypassPermissions",
+        "Shift+Tab"
+      ],
+      "concepts": [
+        "mode-catalog",
+        "mode-plan",
+        "mode-bypass-vs-dontask"
+      ],
+      "prerequisiteUnits": [
+        "u-permission-rules",
+        "u-interactive"
+      ],
+      "order": 22,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-auto-mode",
+      "name": "Auto mode",
+      "nameEs": "Auto mode",
+      "island": "i3",
+      "services": [
+        "auto",
+        "autoMode.environment",
+        "autoMode.soft_deny",
+        "claude auto-mode",
+        "/auto-mode-setup"
+      ],
+      "concepts": [
+        "auto-mode-classifier",
+        "auto-mode-environment",
+        "auto-mode-checkpoints"
+      ],
+      "prerequisiteUnits": [
+        "u-permission-modes",
+        "u-permission-rules"
+      ],
+      "order": 23,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-sandboxing",
+      "name": "Sandboxing",
+      "nameEs": "Sandboxing",
+      "island": "i3",
+      "services": [
+        "/sandbox",
+        "sandbox.filesystem",
+        "sandbox.network.allowedDomains",
+        "excludedCommands",
+        "dev container",
+        "sandbox-runtime"
+      ],
+      "concepts": [
+        "sandbox-bash-basics",
+        "sandbox-config-keys",
+        "sandbox-environments-choice"
+      ],
+      "prerequisiteUnits": [
+        "u-permission-rules",
+        "u-permission-modes"
+      ],
+      "order": 24,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-managed-settings",
+      "name": "Managed settings",
+      "nameEs": "Settings administrados",
+      "island": "i3",
+      "services": [
+        "managed-settings.json",
+        "server-managed settings",
+        "allowManagedPermissionRulesOnly",
+        "forceRemoteSettingsRefresh"
+      ],
+      "concepts": [
+        "managed-delivery",
+        "managed-only-locks"
+      ],
+      "prerequisiteUnits": [
+        "u-settings-scopes",
+        "u-permission-rules"
+      ],
+      "order": 25,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-security-data",
+      "name": "Security and data",
+      "nameEs": "Seguridad y datos",
+      "island": "i3",
+      "services": [
+        "workspace trust",
+        "cleanupPeriodDays",
+        "DISABLE_TELEMETRY",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+        "Zero Data Retention"
+      ],
+      "concepts": [
+        "security-enforcement-layers",
+        "security-data-usage",
+        "security-zdr"
+      ],
+      "prerequisiteUnits": [
+        "u-permission-rules",
+        "u-sandboxing"
+      ],
+      "order": 26,
+      "iconHint": "settings-knobs"
+    },
+    {
+      "id": "u-skills-basics",
+      "name": "What a skill is and where it lives",
+      "nameEs": "Qué es una skill y dónde vive",
+      "island": "i4",
+      "services": [
+        "SKILL.md",
+        "~/.claude/skills/",
+        ".claude/skills/",
+        "CLAUDE.md"
+      ],
+      "concepts": [
+        "skill-vs-claudemd",
+        "skill-vs-hook-subagent",
+        "skill-locations"
+      ],
+      "prerequisiteUnits": [
+        "u-memory"
+      ],
+      "order": 27,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-skill-frontmatter",
+      "name": "SKILL.md frontmatter",
+      "nameEs": "El frontmatter de SKILL.md",
+      "island": "i4",
+      "services": [
+        "name",
+        "description",
+        "when_to_use",
+        "allowed-tools",
+        "context: fork",
+        "agent"
+      ],
+      "concepts": [
+        "skill-frontmatter-core",
+        "skill-allowed-tools",
+        "skill-context-fork"
+      ],
+      "prerequisiteUnits": [
+        "u-skills-basics",
+        "u-permission-rules"
+      ],
+      "order": 28,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-skill-invocation",
+      "name": "Who invokes a skill",
+      "nameEs": "Quién invoca una skill",
+      "island": "i4",
+      "services": [
+        "disable-model-invocation",
+        "user-invocable",
+        "skillOverrides",
+        "/skills",
+        "Skill(name)"
+      ],
+      "concepts": [
+        "skill-disable-model-invocation",
+        "skill-user-invocable-false",
+        "skill-visibility-overrides"
+      ],
+      "prerequisiteUnits": [
+        "u-skill-frontmatter"
+      ],
+      "order": 29,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-skill-arguments",
+      "name": "Arguments and dynamic context",
+      "nameEs": "Argumentos y contexto dinámico",
+      "island": "i4",
+      "services": [
+        "$ARGUMENTS",
+        "$N",
+        "arguments",
+        "!`command`",
+        "${CLAUDE_SKILL_DIR}",
+        "disableSkillShellExecution"
+      ],
+      "concepts": [
+        "skill-arguments",
+        "skill-dynamic-context",
+        "skill-env-substitutions"
+      ],
+      "prerequisiteUnits": [
+        "u-skill-frontmatter"
+      ],
+      "order": 30,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-skill-files",
+      "name": "Supporting files and progressive disclosure",
+      "nameEs": "Archivos de apoyo y divulgación progresiva",
+      "island": "i4",
+      "services": [
+        "reference.md",
+        "scripts/",
+        "paths",
+        "/skill-doctor",
+        "skillListingBudgetFraction"
+      ],
+      "concepts": [
+        "skill-supporting-files",
+        "skill-content-lifecycle",
+        "skill-paths"
+      ],
+      "prerequisiteUnits": [
+        "u-skills-basics",
+        "u-context-window"
+      ],
+      "order": 31,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-custom-commands",
+      "name": "Custom commands",
+      "nameEs": "Comandos personalizados",
+      "island": "i4",
+      "services": [
+        ".claude/commands/",
+        "/deploy",
+        "/plugin-name:skill-name",
+        "/reload-skills"
+      ],
+      "concepts": [
+        "skill-commands-merged",
+        "skill-name-resolution"
+      ],
+      "prerequisiteUnits": [
+        "u-skills-basics",
+        "u-builtin-commands"
+      ],
+      "order": 32,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-bundled-skills",
+      "name": "Bundled skills",
+      "nameEs": "Skills incluidas",
+      "island": "i4",
+      "services": [
+        "/batch",
+        "/simplify",
+        "/code-review",
+        "/run",
+        "/verify",
+        "disableBundledSkills"
+      ],
+      "concepts": [
+        "skill-bundled-vs-builtin",
+        "skill-bundled-catalog",
+        "skill-run-verify"
+      ],
+      "prerequisiteUnits": [
+        "u-builtin-commands",
+        "u-skill-invocation"
+      ],
+      "order": 33,
+      "iconHint": "gift-of-knowledge"
+    },
+    {
+      "id": "u-hooks-intro",
+      "name": "What hooks are for",
+      "nameEs": "Para qué sirven los hooks",
+      "island": "i5",
+      "services": [
+        "hooks",
+        "Notification",
+        "PostToolUse",
+        "CLAUDE.md"
+      ],
+      "concepts": [
+        "hook-deterministic-control",
+        "hook-common-automations"
+      ],
+      "prerequisiteUnits": [
+        "u-settings-scopes",
+        "u-memory"
+      ],
+      "order": 34,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-events",
+      "name": "Hook lifecycle events",
+      "nameEs": "Los eventos del ciclo de vida",
+      "island": "i5",
+      "services": [
+        "SessionStart",
+        "UserPromptSubmit",
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+        "SessionEnd"
+      ],
+      "concepts": [
+        "hook-event-lifecycle-order",
+        "hook-event-pretooluse-vs-posttooluse",
+        "hook-event-stop"
+      ],
+      "prerequisiteUnits": [
+        "u-hooks-intro",
+        "u-how-it-works"
+      ],
+      "order": 35,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-config",
+      "name": "Where hooks are configured and matchers",
+      "nameEs": "Dónde se configuran y matchers",
+      "island": "i5",
+      "services": [
+        "settings.json",
+        "hooks/hooks.json",
+        "matcher",
+        "if",
+        "/hooks"
+      ],
+      "concepts": [
+        "hook-config-locations",
+        "hook-config-matcher",
+        "hook-config-if"
+      ],
+      "prerequisiteUnits": [
+        "u-hooks-intro",
+        "u-settings-scopes",
+        "u-permission-rules"
+      ],
+      "order": 36,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-io",
+      "name": "Input, output and exit codes",
+      "nameEs": "Entrada, salida y códigos de salida",
+      "island": "i5",
+      "services": [
+        "stdin JSON",
+        "exit code 2",
+        "hookSpecificOutput",
+        "systemMessage",
+        "continue"
+      ],
+      "concepts": [
+        "hook-io-stdin-input",
+        "hook-io-exit-codes",
+        "hook-io-json-output"
+      ],
+      "prerequisiteUnits": [
+        "u-hook-events",
+        "u-hook-config"
+      ],
+      "order": 37,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-decisions",
+      "name": "Block, allow and add context",
+      "nameEs": "Bloquear, permitir y dar contexto",
+      "island": "i5",
+      "services": [
+        "permissionDecision",
+        "updatedInput",
+        "PermissionRequest",
+        "additionalContext"
+      ],
+      "concepts": [
+        "hook-decision-pretooluse",
+        "hook-decision-permissionrequest",
+        "hook-decision-additional-context"
+      ],
+      "prerequisiteUnits": [
+        "u-hook-io",
+        "u-permission-rules",
+        "u-permission-modes"
+      ],
+      "order": 38,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-types",
+      "name": "Hook types",
+      "nameEs": "Tipos de hook",
+      "island": "i5",
+      "services": [
+        "type: command",
+        "type: http",
+        "type: mcp_tool",
+        "type: prompt",
+        "type: agent",
+        "async"
+      ],
+      "concepts": [
+        "hook-type-command",
+        "hook-type-http-mcp",
+        "hook-type-prompt-agent"
+      ],
+      "prerequisiteUnits": [
+        "u-hook-io",
+        "u-mcp-basics",
+        "u-subagents"
+      ],
+      "order": 39,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-hook-safety",
+      "name": "Hook security and debugging",
+      "nameEs": "Seguridad y depuración de hooks",
+      "island": "i5",
+      "services": [
+        "/hooks",
+        "--debug",
+        "disableAllHooks",
+        "workspace trust",
+        "allowManagedHooksOnly"
+      ],
+      "concepts": [
+        "hook-safety-trust",
+        "hook-safety-disable",
+        "hook-debug-diagnose"
+      ],
+      "prerequisiteUnits": [
+        "u-hook-config",
+        "u-hook-io",
+        "u-debug",
+        "u-managed-settings"
+      ],
+      "order": 40,
+      "iconHint": "linked-rings"
+    },
+    {
+      "id": "u-parallel-options",
+      "name": "Ways to work in parallel",
+      "nameEs": "Formas de trabajar en paralelo",
+      "island": "i6",
+      "services": [
+        "Subagents",
+        "Agent view",
+        "Agent teams",
+        "Dynamic workflows",
+        "/tasks"
+      ],
+      "concepts": [
+        "parallel-choose-approach",
+        "parallel-check-running-work"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works",
+        "u-context-window"
+      ],
+      "order": 41,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-subagents",
+      "name": "Subagents",
+      "nameEs": "Subagentes",
+      "island": "i6",
+      "services": [
+        "Agent tool",
+        "Explore",
+        "Plan",
+        "general-purpose",
+        "@-mention"
+      ],
+      "concepts": [
+        "subagent-when-to-use",
+        "subagent-builtin-types",
+        "subagent-invoke"
+      ],
+      "prerequisiteUnits": [
+        "u-parallel-options",
+        "u-context-window"
+      ],
+      "order": 42,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-subagent-config",
+      "name": "Configuring a subagent",
+      "nameEs": "Configurar un subagente",
+      "island": "i6",
+      "services": [
+        ".claude/agents/",
+        "~/.claude/agents/",
+        "--agents",
+        "tools",
+        "disallowedTools",
+        "CLAUDE_CODE_SUBAGENT_MODEL"
+      ],
+      "concepts": [
+        "subagent-scope-precedence",
+        "subagent-frontmatter",
+        "subagent-model-order"
+      ],
+      "prerequisiteUnits": [
+        "u-subagents",
+        "u-permission-modes",
+        "u-skills-basics"
+      ],
+      "order": 43,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-worktrees",
+      "name": "Worktrees",
+      "nameEs": "Worktrees",
+      "island": "i6",
+      "services": [
+        "--worktree",
+        ".worktreeinclude",
+        "worktree.baseRef",
+        "WorktreeCreate",
+        "isolation: worktree"
+      ],
+      "concepts": [
+        "worktree-flag",
+        "worktree-include",
+        "worktree-nongit-hooks"
+      ],
+      "prerequisiteUnits": [
+        "u-parallel-options"
+      ],
+      "order": 44,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-agent-teams",
+      "name": "Agent teams and cross-session messaging",
+      "nameEs": "Agent teams y mensajes entre sesiones",
+      "island": "i6",
+      "services": [
+        "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS",
+        "SendMessage",
+        "ListAgents",
+        "/list-agents",
+        "crossSessionInbound",
+        "TeammateIdle"
+      ],
+      "concepts": [
+        "team-vs-subagents",
+        "team-quality-gates",
+        "crosssession-messaging"
+      ],
+      "prerequisiteUnits": [
+        "u-subagents",
+        "u-hook-events"
+      ],
+      "order": 45,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-agent-view",
+      "name": "Agent view",
+      "nameEs": "Agent view",
+      "island": "i6",
+      "services": [
+        "claude agents",
+        "claude --bg",
+        "/background",
+        "/fork",
+        "claude attach",
+        "/subtask"
+      ],
+      "concepts": [
+        "agentview-dispatch",
+        "subagent-fork",
+        "agentview-bg-vs-fork"
+      ],
+      "prerequisiteUnits": [
+        "u-worktrees",
+        "u-sessions"
+      ],
+      "order": 46,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-dynamic-workflows",
+      "name": "Dynamic workflows",
+      "nameEs": "Dynamic workflows",
+      "island": "i6",
+      "services": [
+        "ultracode",
+        "/workflows",
+        "/deep-research",
+        ".claude/workflows/"
+      ],
+      "concepts": [
+        "workflow-when-to-use",
+        "workflow-save-reuse"
+      ],
+      "prerequisiteUnits": [
+        "u-subagents",
+        "u-model-config"
+      ],
+      "order": 47,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-loops-goals",
+      "name": "/loop, scheduled tasks, /goal and channels",
+      "nameEs": "/loop, tareas programadas, /goal y channels",
+      "island": "i6",
+      "services": [
+        "/loop",
+        "CronCreate",
+        "loop.md",
+        "/goal",
+        "--channels"
+      ],
+      "concepts": [
+        "loop-scheduled-tasks",
+        "goal-condition",
+        "channels-push-events"
+      ],
+      "prerequisiteUnits": [
+        "u-hook-events",
+        "u-mcp-basics",
+        "u-routines"
+      ],
+      "order": 48,
+      "iconHint": "mesh-network"
+    },
+    {
+      "id": "u-mcp-basics",
+      "name": "What MCP is and how to connect a server",
+      "nameEs": "Qué es MCP y cómo se conecta",
+      "island": "i7",
+      "services": [
+        "claude mcp add",
+        "claude mcp list",
+        "/mcp",
+        "--transport"
+      ],
+      "concepts": [
+        "mcp-add-and-verify",
+        "mcp-transport-http",
+        "mcp-transport-stdio"
+      ],
+      "prerequisiteUnits": [
+        "u-tools"
+      ],
+      "order": 49,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-mcp-scopes",
+      "name": "Scopes, transports and .mcp.json",
+      "nameEs": "Scopes, transportes y .mcp.json",
+      "island": "i7",
+      "services": [
+        "--scope",
+        ".mcp.json",
+        "~/.claude.json",
+        "${VAR} expansion"
+      ],
+      "concepts": [
+        "mcp-scope-local",
+        "mcp-scope-project",
+        "mcp-scope-user"
+      ],
+      "prerequisiteUnits": [
+        "u-mcp-basics",
+        "u-settings-scopes"
+      ],
+      "order": 50,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-mcp-advanced",
+      "name": "Authentication, resources, prompts and tool search",
+      "nameEs": "Autenticación, recursos, prompts y tool search",
+      "island": "i7",
+      "services": [
+        "claude mcp login",
+        "headersHelper",
+        "@server:resource",
+        "/mcp__server__prompt",
+        "ENABLE_TOOL_SEARCH",
+        "alwaysLoad"
+      ],
+      "concepts": [
+        "mcp-remote-auth",
+        "mcp-resources-prompts",
+        "mcp-tool-search"
+      ],
+      "prerequisiteUnits": [
+        "u-mcp-scopes",
+        "u-context-window"
+      ],
+      "order": 51,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-managed-mcp",
+      "name": "Managed MCP",
+      "nameEs": "MCP administrado",
+      "island": "i7",
+      "services": [
+        "managed-mcp.json",
+        "managedMcpServers",
+        "allowedMcpServers",
+        "deniedMcpServers",
+        "allowManagedMcpServersOnly"
+      ],
+      "concepts": [
+        "mcp-managed-mcp-json",
+        "mcp-allow-deny-lists"
+      ],
+      "prerequisiteUnits": [
+        "u-mcp-scopes",
+        "u-managed-settings"
+      ],
+      "order": 52,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-plugins-use",
+      "name": "Installing and using plugins",
+      "nameEs": "Instalar y usar plugins",
+      "island": "i7",
+      "services": [
+        "/plugin",
+        "claude plugin install",
+        "enabledPlugins",
+        "claude-plugins-official",
+        "/reload-plugins"
+      ],
+      "concepts": [
+        "plugin-what-and-when",
+        "plugin-install-scopes",
+        "plugin-security-trust"
+      ],
+      "prerequisiteUnits": [
+        "u-skills-basics",
+        "u-hooks-intro",
+        "u-subagents",
+        "u-mcp-basics",
+        "u-settings-scopes"
+      ],
+      "order": 53,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-plugins-create",
+      "name": "Creating a plugin",
+      "nameEs": "Crear un plugin",
+      "island": "i7",
+      "services": [
+        ".claude-plugin/plugin.json",
+        "userConfig",
+        "${CLAUDE_PLUGIN_ROOT}",
+        "${CLAUDE_PLUGIN_DATA}",
+        ".lsp.json"
+      ],
+      "concepts": [
+        "plugin-layout",
+        "plugin-manifest",
+        "plugin-path-variables"
+      ],
+      "prerequisiteUnits": [
+        "u-plugins-use",
+        "u-skill-frontmatter",
+        "u-hook-config",
+        "u-subagent-config"
+      ],
+      "order": 54,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-marketplaces",
+      "name": "Marketplaces and dependencies",
+      "nameEs": "Marketplaces y dependencias",
+      "island": "i7",
+      "services": [
+        ".claude-plugin/marketplace.json",
+        "/plugin marketplace add",
+        "extraKnownMarketplaces",
+        "dependencies",
+        "autoUpdate"
+      ],
+      "concepts": [
+        "plugin-marketplace-json",
+        "plugin-versioning-updates",
+        "plugin-dependencies"
+      ],
+      "prerequisiteUnits": [
+        "u-plugins-create"
+      ],
+      "order": 55,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-plugin-ops",
+      "name": "Plugin evals, metrics and troubleshooting",
+      "nameEs": "Evals, métricas y problemas de plugins",
+      "island": "i7",
+      "services": [
+        "claude plugin validate",
+        "claude plugin eval",
+        "claude plugin details",
+        "--plugin-dir",
+        "/reload-plugins"
+      ],
+      "concepts": [
+        "plugin-dev-loop",
+        "plugin-eval",
+        "plugin-details-cost"
+      ],
+      "prerequisiteUnits": [
+        "u-plugins-create"
+      ],
+      "order": 56,
+      "iconHint": "cardboard-box"
+    },
+    {
+      "id": "u-headless",
+      "name": "Headless mode with -p",
+      "nameEs": "Modo headless con -p",
+      "island": "i8",
+      "services": [
+        "claude -p",
+        "--bare",
+        "--allowedTools",
+        "--permission-mode",
+        "--permission-prompts"
+      ],
+      "concepts": [
+        "headless-print-basics",
+        "headless-bare-mode",
+        "headless-unattended-permissions"
+      ],
+      "prerequisiteUnits": [
+        "u-how-it-works",
+        "u-permission-rules",
+        "u-permission-modes"
+      ],
+      "order": 57,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-output-formats",
+      "name": "Output formats and structured output",
+      "nameEs": "Formatos de salida y structured output",
+      "island": "i8",
+      "services": [
+        "--output-format",
+        "--json-schema",
+        "stream-json",
+        "structured_output",
+        "outputFormat"
+      ],
+      "concepts": [
+        "output-formats-json-stream",
+        "output-json-schema"
+      ],
+      "prerequisiteUnits": [
+        "u-headless"
+      ],
+      "order": 58,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-sdk-intro",
+      "name": "The Agent SDK and its loop",
+      "nameEs": "El Agent SDK y su loop",
+      "island": "i8",
+      "services": [
+        "Agent SDK",
+        "query()",
+        "ResultMessage",
+        "settingSources",
+        "maxTurns",
+        "maxBudgetUsd"
+      ],
+      "concepts": [
+        "sdk-vs-other-tools",
+        "sdk-loop-results",
+        "sdk-setting-sources"
+      ],
+      "prerequisiteUnits": [
+        "u-headless",
+        "u-how-it-works",
+        "u-memory"
+      ],
+      "order": 59,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-sdk-tools",
+      "name": "Custom tools, MCP and subagents in the SDK",
+      "nameEs": "Herramientas propias, MCP y subagentes en el SDK",
+      "island": "i8",
+      "services": [
+        "createSdkMcpServer",
+        "tool()",
+        "mcpServers",
+        "ENABLE_TOOL_SEARCH",
+        "agents",
+        "AgentDefinition"
+      ],
+      "concepts": [
+        "sdk-custom-tools",
+        "sdk-mcp-servers",
+        "sdk-subagents"
+      ],
+      "prerequisiteUnits": [
+        "u-sdk-intro",
+        "u-mcp-basics",
+        "u-subagents"
+      ],
+      "order": 60,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-sdk-control",
+      "name": "Permissions, hooks and user input in the SDK",
+      "nameEs": "Permisos, hooks y entrada del usuario en el SDK",
+      "island": "i8",
+      "services": [
+        "canUseTool",
+        "permissionMode",
+        "allowedTools",
+        "disallowedTools",
+        "hooks",
+        "systemPrompt"
+      ],
+      "concepts": [
+        "sdk-permission-flow",
+        "sdk-hooks-callbacks",
+        "sdk-system-prompt"
+      ],
+      "prerequisiteUnits": [
+        "u-sdk-intro",
+        "u-permission-rules",
+        "u-permission-modes",
+        "u-hook-events"
+      ],
+      "order": 61,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-sdk-sessions",
+      "name": "Sessions, checkpoints and costs in the SDK",
+      "nameEs": "Sesiones, checkpoints y costos en el SDK",
+      "island": "i8",
+      "services": [
+        "continue",
+        "resume",
+        "forkSession",
+        "enableFileCheckpointing",
+        "rewindFiles",
+        "total_cost_usd"
+      ],
+      "concepts": [
+        "sdk-sessions",
+        "sdk-file-checkpointing",
+        "sdk-cost-tracking"
+      ],
+      "prerequisiteUnits": [
+        "u-sdk-intro",
+        "u-sessions",
+        "u-checkpointing",
+        "u-costs"
+      ],
+      "order": 62,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-sdk-deploy",
+      "name": "Deploying agents with the SDK",
+      "nameEs": "Desplegar agentes con el SDK",
+      "island": "i8",
+      "services": [
+        "SessionStore",
+        "CLAUDE_CONFIG_DIR",
+        "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+        "ANTHROPIC_BASE_URL",
+        "CLAUDE_CODE_ENABLE_TELEMETRY"
+      ],
+      "concepts": [
+        "sdk-hosting-patterns",
+        "sdk-secure-deployment",
+        "sdk-observability"
+      ],
+      "prerequisiteUnits": [
+        "u-sdk-sessions",
+        "u-sandboxing",
+        "u-security-data"
+      ],
+      "order": 63,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-github-actions",
+      "name": "GitHub Actions and GitLab CI",
+      "nameEs": "GitHub Actions y GitLab CI",
+      "island": "i8",
+      "services": [
+        "anthropics/claude-code-action",
+        "/install-github-app",
+        "claude_args",
+        "@claude",
+        ".gitlab-ci.yml"
+      ],
+      "concepts": [
+        "gha-setup-auth",
+        "gha-modes-and-args",
+        "gitlab-ci-job"
+      ],
+      "prerequisiteUnits": [
+        "u-headless",
+        "u-skills-basics",
+        "u-memory"
+      ],
+      "order": 64,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-deep-links",
+      "name": "Deep links",
+      "nameEs": "Deep links",
+      "island": "i8",
+      "services": [
+        "claude-cli://open",
+        "disableDeepLinkRegistration"
+      ],
+      "concepts": [
+        "deep-links-claude-cli"
+      ],
+      "prerequisiteUnits": [
+        "u-interactive"
+      ],
+      "order": 65,
+      "iconHint": "cog"
+    },
+    {
+      "id": "u-cloud-sessions",
+      "name": "Claude Code in the cloud",
+      "nameEs": "Claude Code en la nube",
+      "island": "i9",
+      "services": [
+        "claude --cloud",
+        "--teleport",
+        "/teleport",
+        "/remote-env",
+        "cloud environments",
+        "setup scripts"
+      ],
+      "concepts": [
+        "cloud-session-basics",
+        "cloud-handoff-flags",
+        "cloud-environment-setup"
+      ],
+      "prerequisiteUnits": [
+        "u-sessions",
+        "u-permission-modes",
+        "u-hook-events",
+        "u-mcp-scopes"
+      ],
+      "order": 66,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-routines",
+      "name": "Routines",
+      "nameEs": "Routines",
+      "island": "i9",
+      "services": [
+        "routines",
+        "/schedule",
+        "API trigger",
+        "GitHub trigger",
+        "Desktop scheduled tasks",
+        "/autofix-pr"
+      ],
+      "concepts": [
+        "routine-triggers",
+        "routine-desktop-scheduled-tasks",
+        "cloud-autofix-pr"
+      ],
+      "prerequisiteUnits": [
+        "u-cloud-sessions",
+        "u-loops-goals"
+      ],
+      "order": 67,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-code-review",
+      "name": "Code Review, ultrareview and security",
+      "nameEs": "Code Review, ultrareview y seguridad",
+      "island": "i9",
+      "services": [
+        "Code Review",
+        "REVIEW.md",
+        "/code-review",
+        "/code-review ultra",
+        "security-guidance",
+        "/claude-security"
+      ],
+      "concepts": [
+        "review-managed-code-review",
+        "review-local-vs-ultra",
+        "review-security-plugins"
+      ],
+      "prerequisiteUnits": [
+        "u-memory",
+        "u-plugins-use",
+        "u-cloud-sessions"
+      ],
+      "order": 68,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-remote-mobile",
+      "name": "Remote Control and mobile",
+      "nameEs": "Remote Control y móvil",
+      "island": "i9",
+      "services": [
+        "claude remote-control",
+        "--remote-control",
+        "/remote-control",
+        "Claude mobile app",
+        "Projects",
+        "Dispatch"
+      ],
+      "concepts": [
+        "rc-remote-control",
+        "mobile-surface-choice",
+        "projects-coordinator"
+      ],
+      "prerequisiteUnits": [
+        "u-cloud-sessions",
+        "u-sessions"
+      ],
+      "order": 69,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-desktop",
+      "name": "The desktop app",
+      "nameEs": "La app de escritorio",
+      "island": "i9",
+      "services": [
+        "Claude Desktop Code tab",
+        "SSH sessions",
+        "WSL sessions",
+        "/desktop",
+        ".claude/launch.json",
+        "iOS Simulator pane"
+      ],
+      "concepts": [
+        "desktop-environments",
+        "desktop-preview-launch-json"
+      ],
+      "prerequisiteUnits": [
+        "u-permission-modes",
+        "u-worktrees"
+      ],
+      "order": 70,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-ide",
+      "name": "VS Code and JetBrains",
+      "nameEs": "VS Code y JetBrains",
+      "island": "i9",
+      "services": [
+        "VS Code extension",
+        "JetBrains plugin",
+        "/ide",
+        "ide MCP server",
+        "diffTool"
+      ],
+      "concepts": [
+        "ide-vscode-extension",
+        "ide-jetbrains-plugin"
+      ],
+      "prerequisiteUnits": [
+        "u-install-auth",
+        "u-mcp-basics"
+      ],
+      "order": 71,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-integrations",
+      "name": "Chrome, computer use, Slack and artifacts",
+      "nameEs": "Chrome, computer use, Slack y artifacts",
+      "island": "i9",
+      "services": [
+        "--chrome",
+        "/chrome",
+        "computer-use",
+        "Artifacts",
+        "/artifacts",
+        "/voice"
+      ],
+      "concepts": [
+        "integ-chrome-vs-computer-use",
+        "integ-artifacts",
+        "integ-voice-dictation"
+      ],
+      "prerequisiteUnits": [
+        "u-mcp-basics",
+        "u-permission-modes"
+      ],
+      "order": 72,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-providers",
+      "name": "Cloud providers and gateways",
+      "nameEs": "Proveedores cloud y gateways",
+      "island": "i9",
+      "services": [
+        "CLAUDE_CODE_USE_BEDROCK",
+        "CLAUDE_CODE_USE_VERTEX",
+        "CLAUDE_CODE_USE_FOUNDRY",
+        "ANTHROPIC_BASE_URL",
+        "HTTPS_PROXY",
+        "Claude apps gateway"
+      ],
+      "concepts": [
+        "provider-cloud-env-vars",
+        "provider-gateway-vs-proxy"
+      ],
+      "prerequisiteUnits": [
+        "u-install-auth",
+        "u-settings-keys",
+        "u-model-config"
+      ],
+      "order": 73,
+      "iconHint": "world"
+    },
+    {
+      "id": "u-enterprise",
+      "name": "Administration for organizations",
+      "nameEs": "Administración para organizaciones",
+      "island": "i9",
+      "services": [
+        "feature availability",
+        "self-hosted environments",
+        "admin settings",
+        "runners"
+      ],
+      "concepts": [
+        "ent-feature-availability",
+        "ent-self-hosted-environments"
+      ],
+      "prerequisiteUnits": [
+        "u-managed-settings",
+        "u-providers",
+        "u-cloud-sessions"
+      ],
+      "order": 74,
+      "iconHint": "world"
+    }
+  ]
+}

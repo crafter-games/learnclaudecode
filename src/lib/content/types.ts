@@ -73,6 +73,8 @@ export interface QuestionEs {
   explanation: string;
 }
 
+export type QuestionFormat = "scenario" | "lightning" | "thisorthat" | "command" | "order" | "config";
+
 export interface Question {
   id: string;
   conceptId: string;
@@ -89,8 +91,19 @@ export interface Question {
   /** Held-out questions are only ever shown in full mocks. */
   heldOut: boolean;
   source: "generated" | "open-study" | "lightning";
-  /** Absent = full exam-style scenario. Short formats never count toward readiness nor appear in mocks. */
-  format?: "scenario" | "lightning" | "thisorthat";
+  /**
+   * Absent = full exam-style scenario. Short formats (lightning, thisorthat, command) never count
+   * toward readiness; mocks only use scenarios.
+   * - order: options are the items (all marked correct); `order` holds the correct sequence.
+   * - command: options hold the accepted answers (all correct) and are never sent before answering;
+   *   the learner types the answer, compared after normalising (see normalizeCommand).
+   * - config: `template` has blanks {{slotId}}; each slot lists its option ids; exactly one option
+   *   per slot is correct, so selected = one option id per slot.
+   */
+  format?: QuestionFormat;
+  order?: string[];
+  template?: string;
+  slots?: { id: string; optionIds: string[] }[];
   verification: { status: "pass" | "fixed"; notes: string };
 }
 

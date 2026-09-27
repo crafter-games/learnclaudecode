@@ -13,7 +13,10 @@
     "test": "tsx --test src/lib/engine/engine.test.ts",
     "secrets": "bash scripts/setup-secrets.sh",
     "smoke": "tsx --conditions=react-server scripts/smoke.ts",
-    "check:diagrams": "tsx scripts/check-diagrams.ts"
+    "check:diagrams": "tsx scripts/check-diagrams.ts",
+    "docs:fetch": "tsx scripts/content/docs.ts",
+    "content:syllabus": "tsx scripts/content/build-syllabus.ts",
+    "content:units": "tsx scripts/content/units.ts"
   },
   "dependencies": {
     "@clerk/localizations": "^4.20.0",

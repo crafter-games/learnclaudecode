@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Rating } from "ts-fsrs";
-import type { Concept } from "../content/types";
+import type { Concept, Question } from "../content/types";
 import { applyLearnAttempt, applyReviewAttempt, INITIAL_CRITERION, type MasteryState } from "./mastery";
 import { newShare, planSession, type PlannerConcept } from "./planner";
 import { bookingGate, estimateReadiness } from "./readiness";
@@ -203,4 +203,24 @@ test("streak: one missed day per week is forgiven, two break it; today not studi
   assert.equal(frozen.streak, 4);
   assert.equal(frozen.freezeUsed, true);
   assert.equal(s(["2026-09-22", "2026-09-25", "2026-09-26"], "2026-09-26").streak, 2);
+});
+
+test("grading: order needs the exact sequence; command ignores spacing and wrapping quotes but not case; config needs every slot", async () => {
+  const { isCorrect } = await import("../study/grade");
+  const base: Omit<Question, "options" | "es"> = { id: "q", conceptId: "c", secondaryConcepts: [], domain: "d1", type: "single", difficulty: 1, stem: "", explanation: "", keywordCues: [], docs: [], heldOut: false, source: "generated", verification: { status: "pass", notes: "" } };
+  const opt = (id: string, text: string, correct: boolean) => ({ id, text, correct, why: "" });
+  const es = { stem: "", options: [], explanation: "" };
+  const order = { ...base, es, format: "order" as const, options: [opt("a", "managed", true), opt("b", "cli", true), opt("c", "local", true)], order: ["a", "b", "c"] };
+  assert.equal(isCorrect(order, ["a", "b", "c"]), true);
+  assert.equal(isCorrect(order, ["b", "a", "c"]), false);
+  assert.equal(isCorrect(order, ["a", "b"]), false);
+  const command = { ...base, es, format: "command" as const, options: [opt("A", "--output-format json", true), opt("B", "--output-format=json", true)] };
+  assert.equal(isCorrect(command, ["  `--output-format   json` "]), true);
+  assert.equal(isCorrect(command, ["--output-format=json"]), true);
+  assert.equal(isCorrect(command, ["--Output-Format json"]), false);
+  assert.equal(isCorrect(command, [""]), false);
+  const config = { ...base, es, format: "config" as const, options: [opt("1a", "allow", true), opt("1b", "deny", false), opt("2a", "Bash(npm test)", true), opt("2b", "Bash(*)", false)], template: "{{1}}: [{{2}}]", slots: [{ id: "1", optionIds: ["1a", "1b"] }, { id: "2", optionIds: ["2a", "2b"] }] };
+  assert.equal(isCorrect(config, ["1a", "2a"]), true);
+  assert.equal(isCorrect(config, ["1a", "2b"]), false);
+  assert.equal(isCorrect(config, ["1a", ""]), false);
 });
